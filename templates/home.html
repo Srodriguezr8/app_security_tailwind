@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="min-h-screen -mx-4 -my-8 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+    <main class="max-w-7xl mx-auto px-6 py-8">
+        <!-- Welcome Section -->
+        <div class="mb-8">
+            <div class="bg-gradient-to-r from-blue-500 to-indigo-400 rounded-2xl p-8 text-white relative overflow-hidden">
+                <div class="relative z-10">
+                    <h2 class="text-3xl font-bold mb-2">¡Bienvenido a SaludTotal!</h2>
+                    <p class="text-blue-100 text-lg">Gestiona tu citas y atenciones</p>
+                </div>
+                <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
+                <div class="absolute bottom-0 right-0 w-24 h-24 bg-white/5 rounded-full -mr-12 -mb-12"></div>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <!-- Tus estadísticas aquí -->
+        </div>
+
+        <!-- Menus del sistema -->
+        {% if user.is_authenticated %}
+            {% for menu_item in menu_list %}
+                <!-- Tus módulos aquí -->
+            {% endfor %}
+        {% endif %}
+    </main>
+</div>
+{% endblock %}

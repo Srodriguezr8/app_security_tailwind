@@ -1,0 +1,492 @@
+<div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:bg-gray-900 dark:from-gray-800 dark:via-gray-900 dark:to-gray-800">
+  <!-- Barra de navegación simplificada -->
+    <nav class="bg-white dark:bg-gray-800 shadow">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <div class="w-10 h-10 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                    </svg>
+                </div>
+                <span class="text-xl font-bold text-gray-900 dark:text-white">SaludTotal</span>
+            </div>
+            
+            <div class="flex items-center space-x-4">
+                <!-- Botón de tema -->
+                <button id="theme-toggle" class="p-2 rounded-lg focus:outline-none">
+                    <span id="theme-icon-dark" class="hidden dark:inline">☀️</span>
+                    <span id="theme-icon-light" class="dark:hidden">🌙</span>
+                </button>
+                
+                <!-- Botón de login alineado a la izquierda -->
+                <button onclick="openLoginModal()" class="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium px-6 py-2 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
+                    </svg>
+                    <span>Iniciar Sesión</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenido principal -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- Sección sobre la clínica -->
+        <section class="mb-8 bg-white p-8 rounded-xl shadow-lg">
+            <h2 class="text-3xl font-bold mb-6 text-center">Bienvenido a SaludTotal</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                    <h3 class="text-xl font-semibold mb-3 text-blue-600">Nuestra Misión</h3>
+                    <p class="text-gray-700">Proporcionar atención médica de calidad con un enfoque humano y
+                        profesional, utilizando tecnología de vanguardia para mejorar la salud y bienestar de nuestros
+                        pacientes.</p>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold mb-3 text-blue-600">Nuestra Visión</h3>
+                    <p class="text-gray-700">Ser reconocidos como el centro médico líder en nuestra región, destacando
+                        por nuestra excelencia en servicio, innovación y compromiso con la salud integral.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tarjetas para Especialidades y Médicos -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
+                <h3 class="text-xl font-bold mb-4 text-center">Nuestras Especialidades</h3>
+                <ul class="space-y-3">
+                    <li class="flex items-center">
+                        <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                            <i class="fas fa-heart text-blue-600"></i>
+                        </div>
+                        <span>Cardiología</span>
+                    </li>
+                    <li class="flex items-center">
+                        <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                            <i class="fas fa-brain text-green-600"></i>
+                        </div>
+                        <span>Neurología</span>
+                    </li>
+                    <li class="flex items-center">
+                        <div class="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center mr-3">
+                            <i class="fas fa-bone text-yellow-600"></i>
+                        </div>
+                        <span>Ortopedia</span>
+                    </li>
+                    <li class="flex items-center">
+                        <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center mr-3">
+                            <i class="fas fa-eye text-purple-600"></i>
+                        </div>
+                        <span>Oftalmología</span>
+                    </li>
+                </ul>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
+                <h3 class="text-xl font-bold mb-4 text-center">Nuestros Médicos</h3>
+                <ul class="space-y-3">
+                    <li class="flex items-center">
+                        <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                            <i class="fas fa-user-md text-blue-600"></i>
+                        </div>
+                        <span>Dr. Juan Pérez - Cardiología</span>
+                    </li>
+                    <li class="flex items-center">
+                        <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                            <i class="fas fa-user-md text-green-600"></i>
+                        </div>
+                        <span>Dra. María Gómez - Neurología</span>
+                    </li>
+                    <li class="flex items-center">
+                        <div class="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center mr-3">
+                            <i class="fas fa-user-md text-yellow-600"></i>
+                        </div>
+                        <span>Dr. Carlos Ruiz - Ortopedia</span>
+                    </li>
+                    <li class="flex items-center">
+                        <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center mr-3">
+                            <i class="fas fa-user-md text-purple-600"></i>
+                        </div>
+                        <span>Dra. Laura Díaz - Oftalmología</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Sección de Planes de Salud - Estilo MathCenter -->
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-bold text-gray-800">Planes de Salud Premium</h2>
+                <span class="text-sm text-gray-500">Acceso exclusivo</span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- Plan Silver -->
+                <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-all">
+                    <div class="flex justify-between items-start mb-3">
+                        <h3 class="font-medium">SHIELD Silver</h3>
+                        <span class="text-xs bg-gray-100 text-gray-800 px-2 py-1 rounded">Básico</span>
+                    </div>
+                    <div class="text-2xl font-bold mb-4">$29<span class="text-sm font-normal text-gray-500">/mes</span>
+                    </div>
+                    <ul class="space-y-2 text-sm text-gray-600 mb-6">
+                        <li class="flex items-center">
+                            <span class="w-4 h-4 bg-blue-100 rounded-full flex items-center justify-center mr-2">
+                                <svg class="w-2 h-2 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clip-rule="evenodd"></path>
+                                </svg>
+                            </span>
+                            4 consultas médicas
+                        </li>
+                        <li class="flex items-center">
+                            <span class="w-4 h-4 bg-blue-100 rounded-full flex items-center justify-center mr-2">
+                                <svg class="w-2 h-2 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clip-rule="evenodd"></path>
+                                </svg>
+                            </span>
+                            2 consultas odontológicas
+                        </li>
+                        <li class="flex items-center">
+                            <span class="w-4 h-4 bg-blue-100 rounded-full flex items-center justify-center mr-2">
+                                <svg class="w-2 h-2 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clip-rule="evenodd"></path>
+                                </svg>
+                            </span>
+                            15% descuento medicinas
+                        </li>
+                    </ul>
+                    <button
+                        class="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-2 px-4 rounded text-sm transition-colors">
+                        Suscribirse
+                    </button>
+                </div>
+
+                <!-- Plan Gold -->
+                <div class="border border-blue-200 rounded-lg p-4 bg-blue-50 hover:shadow-md transition-all">
+                    <div class="flex justify-between items-start mb-3">
+                        <h3 class="font-medium">GUARDIAN Gold</h3>
+                        <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">POPULAR</span>
+                    </div>
+                    <div class="text-2xl font-bold mb-4">$59<span class="text-sm font-normal text-gray-500">/mes</span>
+                    </div>
+                    <ul class="space-y-2 text-sm text-gray-600 mb-6">
+                        <li class="flex items-center">
+                            <span class="w-4 h-4 bg-blue-200 rounded-full flex items-center justify-center mr-2">
+                                <svg class="w-2 h-2 text-blue-700" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clip-rule="evenodd"></path>
+                                </svg>
+                            </span>
+                            Consultas médicas ilimitadas
+                        </li>
+                        <li class="flex items-center">
+                            <span class="w-4 h-4 bg-blue-200 rounded-full flex items-center justify-center mr-2">
+                                <svg class="w-2 h-2 text-blue-700" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clip-rule="evenodd"></path>
+                                </svg>
+                            </span>
+                            4 consultas odontológicas
+                        </li>
+                        <li class="flex items-center">
+                            <span class="w-4 h-4 bg-blue-200 rounded-full flex items-center justify-center mr-2">
+                                <svg class="w-2 h-2 text-blue-700" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clip-rule="evenodd"></path>
+                                </svg>
+                            </span>
+                            25% descuento medicinas
+                        </li>
+                        <li class="flex items-center">
+                            <span class="w-4 h-4 bg-blue-200 rounded-full flex items-center justify-center mr-2">
+                                <svg class="w-2 h-2 text-blue-700" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clip-rule="evenodd"></path>
+                                </svg>
+                            </span>
+                            Chequeos preventivos
+                        </li>
+                    </ul>
+                    <button
+                        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded text-sm transition-colors">
+                        Suscribirse
+                    </button>
+                </div>
+
+                <!-- Plan Platinum -->
+                <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-all">
+                    <div class="flex justify-between items-start mb-3">
+                        <h3 class="font-medium">TITAN Platinum</h3>
+                        <span class="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">Premium</span>
+                    </div>
+                    <div class="text-2xl font-bold mb-4">$99<span class="text-sm font-normal text-gray-500">/mes</span>
+                    </div>
+                    <ul class="space-y-2 text-sm text-gray-600 mb-6">
+                        <li class="flex items-center">
+                            <span class="w-4 h-4 bg-blue-100 rounded-full flex items-center justify-center mr-2">
+                                <svg class="w-2 h-2 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clip-rule="evenodd"></path>
+                                </svg>
+                            </span>
+                            Atención médica 24/7
+                        </li>
+                        <li class="flex items-center">
+                            <span class="w-4 h-4 bg-blue-100 rounded-full flex items-center justify-center mr-2">
+                                <svg class="w-2 h-2 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clip-rule="evenodd"></path>
+                                </svg>
+                            </span>
+                            Odontología completa
+                        </li>
+                        <li class="flex items-center">
+                            <span class="w-4 h-4 bg-blue-100 rounded-full flex items-center justify-center mr-2">
+                                <svg class="w-2 h-2 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clip-rule="evenodd"></path>
+                                </svg>
+                            </span>
+                            40% descuento medicinas
+                        </li>
+                        <li class="flex items-center">
+                            <span class="w-4 h-4 bg-blue-100 rounded-full flex items-center justify-center mr-2">
+                                <svg class="w-2 h-2 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clip-rule="evenodd"></path>
+                                </svg>
+                            </span>
+                            Chequeos ejecutivos
+                        </li>
+                        <li class="flex items-center">
+                            <span class="w-4 h-4 bg-blue-100 rounded-full flex items-center justify-center mr-2">
+                                <svg class="w-2 h-2 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clip-rule="evenodd"></path>
+                                </svg>
+                            </span>
+                            Atención domiciliaria
+                        </li>
+                    </ul>
+                    <button
+                        class="w-full bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded text-sm transition-colors">
+                        Suscribirse
+                    </button>
+                </div>
+            </div>
+
+            <div class="mt-4 text-xs text-gray-500 text-center">
+                * Todos los planes incluyen cobertura para enfermedades preexistentes
+            </div>
+        </div>
+
+
+    </main>
+</div>
+
+<!-- Modal Login -->
+<div id="loginModal" class="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center hidden">
+    <div class="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md mx-4 relative">
+        <!-- Botón de cerrar -->
+        <button onclick="closeLoginModal()"
+            class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition-colors">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </button>
+
+        <!-- Contenido del modal -->
+        <div class="space-y-6">
+            <div class="text-center">
+                <div
+                    class="w-16 h-16 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-md">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                    </svg>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-800">Iniciar Sesión</h2>
+                <p class="text-gray-600 mt-1">Ingresa tus credenciales para continuar</p>
+            </div>
+
+            <form method="post" action="{% url 'security:signin' %}" class="space-y-5" id="modalLoginForm">
+                {% csrf_token %}
+
+                <div>
+                    <label for="modalEmail" class="block text-sm font-medium text-gray-700">Correo electrónico</label>
+                    <input type="email" name="username" id="modalEmail" required autofocus
+                        class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all">
+                </div>
+
+                <div>
+                    <label for="modalPassword" class="block text-sm font-medium text-gray-700">Contraseña</label>
+                    <input type="password" name="password" id="modalPassword" required
+                        class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all">
+                </div>
+
+                <div id="loginErrors" class="text-sm text-red-600 hidden"></div>
+
+                <div class="flex items-center justify-between">
+                    <div class="text-sm">
+                        <a href="#" class="text-blue-600 hover:underline transition-colors">¿Olvidaste tu
+                            contraseña?</a>
+                    </div>
+                </div>
+
+                <button type="submit"
+                    class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition-all duration-300 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    Iniciar sesión
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<!-- Loading Component -->
+<div id="medicalLoading"
+    class="fixed inset-0 bg-gradient-to-br from-blue-900/95 to-indigo-900/95 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+    <div class="text-center">
+        <!-- Doctor Icon Animation -->
+        <div class="relative mb-8">
+            <div class="w-32 h-32 mx-auto bg-white rounded-full flex items-center justify-center shadow-2xl float">
+                <i class="fas fa-user-md text-6xl text-blue-600"></i>
+            </div>
+            <!-- Estetoscopio animado -->
+            <div class="absolute -bottom-2 left-1/2 transform -translate-x-1/2">
+                <i class="fas fa-stethoscope text-3xl text-red-500 heartbeat"></i>
+            </div>
+        </div>
+
+        <!-- Loading Text -->
+        <div class="text-white text-center mb-6">
+            <h2 class="text-2xl font-bold mb-2">Verificando credenciales...</h2>
+            <p class="text-blue-200 text-lg">Por favor espera un momento</p>
+        </div>
+
+        <!-- Loading Dots -->
+        <div class="flex justify-center space-x-2">
+            <div class="w-3 h-3 bg-white rounded-full animate-bounce"></div>
+            <div class="w-3 h-3 bg-white rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
+            <div class="w-3 h-3 bg-white rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Animaciones */
+    @keyframes float {
+
+        0%,
+        100% {
+            transform: translateY(0px);
+        }
+
+        50% {
+            transform: translateY(-10px);
+        }
+    }
+
+    @keyframes heartbeat {
+
+        0%,
+        100% {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.1);
+        }
+    }
+
+    .float {
+        animation: float 3s ease-in-out infinite;
+    }
+
+    .heartbeat {
+        animation: heartbeat 1.5s infinite;
+    }
+
+    /* Transición para el modal */
+    #loginModal {
+        transition: opacity 0.3s ease;
+        opacity: 0;
+    }
+
+    #loginModal:not(.hidden) {
+        opacity: 1;
+    }
+
+    #loginModal>div {
+        transform: translateY(-20px);
+        transition: transform 0.3s ease, opacity 0.3s ease;
+        opacity: 0;
+    }
+
+    #loginModal:not(.hidden)>div {
+        transform: translateY(0);
+        opacity: 1;
+    }
+</style>
+
+<script>
+    // Toggle de tema
+    document.addEventListener('DOMContentLoaded', function() {
+        const themeToggle = document.getElementById('theme-toggle');
+        const currentTheme = localStorage.getItem('theme') || 'light';
+        
+        // Aplicar tema guardado
+        if (currentTheme === 'dark') {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+        
+        themeToggle.addEventListener('click', function() {
+            alert('Cambiando tema...');
+            const isDark = document.documentElement.classList.contains('dark');
+
+            alert(isDark);
+
+            if (isDark) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+            }
+        });
+        
+    });
+
+    // Verificar preferencia del sistema
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.documentElement.classList.add('dark');
+        localStorage.setItem('theme', 'dark');
+    }
+
+    // Funciones del modal (mantén las que ya tienes)
+    function openLoginModal() {
+        document.body.classList.add('modal-open');
+        document.getElementById('loginModal').classList.remove('hidden');
+        document.getElementById('modalEmail').focus();
+    }
+
+    function closeLoginModal() {
+        document.body.classList.remove('modal-open');
+        document.getElementById('loginModal').classList.add('hidden');
+    }
+</script>

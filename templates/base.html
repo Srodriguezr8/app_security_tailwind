@@ -1,0 +1,82 @@
+{% load static tailwind_tags %}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>{% block title %}SaludTotal{% endblock %}</title>
+    {% tailwind_css %}
+</head>
+
+<body class="bg-gray-100 min-h-screen">
+ 
+    {% if user.is_authenticated %}
+    {% include 'navbar.html' %}
+    <div class="container mx-auto px-4 py-8">
+        {% block content %}{% endblock %}
+    </div>
+    {% else %}
+    {% block public_content %}
+    {% include 'public_content.html' %}
+    {% endblock %}
+    {% endif %}
+
+    {% block js %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Manejo del dropdown de usuario
+            const userDropdown = document.getElementById('userDropdown');
+            if (userDropdown) {
+                const userDropdownMenu = document.getElementById('userDropdownMenu');
+                const userDropdownIcon = document.getElementById('userDropdownIcon');
+
+                userDropdown.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    const isVisible = !userDropdownMenu.classList.contains('opacity-0');
+
+                    if (isVisible) {
+                        userDropdownMenu.classList.add('opacity-0', 'invisible', 'scale-95');
+                        userDropdownMenu.classList.remove('opacity-100', 'visible', 'scale-100');
+                        userDropdownIcon.classList.remove('rotate-180');
+                    } else {
+                        userDropdownMenu.classList.remove('opacity-0', 'invisible', 'scale-95');
+                        userDropdownMenu.classList.add('opacity-100', 'visible', 'scale-100');
+                        userDropdownIcon.classList.add('rotate-180');
+                    }
+                });
+
+                document.addEventListener('click', function (e) {
+                    if (!userDropdown.contains(e.target) && !userDropdownMenu.contains(e.target)) {
+                        userDropdownMenu.classList.add('opacity-0', 'invisible', 'scale-95');
+                        userDropdownMenu.classList.remove('opacity-100', 'visible', 'scale-100');
+                        userDropdownIcon.classList.remove('rotate-180');
+                    }
+                });
+
+                userDropdownMenu.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                });
+            }
+
+            // Selector de grupos
+            const groupSelect = document.getElementById('groupSelect');
+            if (groupSelect) {
+                groupSelect.addEventListener('change', function () {
+                    const selectedGroupId = this.value;
+                    if (selectedGroupId) {
+                        window.location.href = `{% url 'home' %}?gpid=${selectedGroupId}`;
+                    } else {
+                        window.location.href = `{% url 'home' %}`;
+                    }
+                });
+            }
+        });
+    </script>
+    {% endblock %}
+</body>
+
+</html>
