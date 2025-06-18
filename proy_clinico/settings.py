@@ -154,7 +154,7 @@ MEDIA_URL = '/media/' # url de imagenes
 
 # Default primary key field type# https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 AUTH_USER_MODEL = 'security.User'
-LOGIN_URL = '/auth/signin'
+LOGIN_URL = '/'
 LOGOUT_REDIRECT_URL = '/public-dashboard/'  # Redirección después de logout
 #SESSION_SERIALIZER = 'django.contrib.sessions.serializers.PickleSerializer'
 # SESSION_SERIALIZER = 'django.contrib.sessions.serializers.PickleSerializer'

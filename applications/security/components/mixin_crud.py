@@ -82,6 +82,7 @@ class DeleteViewMixin(object):
 class PermissionMixin(object):
     permission_required = ''
 
+
     @method_decorator(login_required)
     def get(self, request, *args, **kwargs):
         try:

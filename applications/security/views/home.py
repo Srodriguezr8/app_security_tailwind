@@ -6,7 +6,7 @@ from applications.security.components.mixin_crud import PermissionMixin
 
 class ModuloTemplateView(PermissionMixin,TemplateView):
     template_name = 'home.html'
-    print ('agerherhrthtrjytyjyt')
+
     def get_context_data(self, **kwargs):
         #context = super().get_context_data(**kwargs)
         context={}
