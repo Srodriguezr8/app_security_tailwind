@@ -22,54 +22,46 @@ A comprehensive clinic management system designed to streamline healthcare opera
 - Adrian Avila (Developer)
 
 ## 📁 Project Structure
-API_SEQUENT_XALUMIND/
-├── applications/ # Django apps
-├── proxy_dimco/ # Proxy configurations
-├── static/ # Static files
-├── templates/ # HTML templates
-├── theme/ # Custom themes
-├── verv/ # Version control
-├── db.sqlite3 # Database file
-├── dependencies.txt # Project dependencies
-├── manage.py # Django management script
-├── README.md # Project documentation
-└── tailwin4.config.js # Tailwind configuration
+  API_SEQUENT_XALUMIND/
+  ├── applications/ # Django apps
+  ├── proxy_dimco/ # Proxy configurations
+  ├── static/ # Static files
+  ├── templates/ # HTML templates
+  ├── theme/ # Custom themes
+  ├── verv/ # Version control
+  ├── db.sqlite3 # Database file
+  ├── dependencies.txt # Project dependencies
+  ├── manage.py # Django management script
+  ├── README.md # Project documentation
+  └── tailwin4.config.js # Tailwind configuration
 
-bash
-Copiar
-Editar
+
 
 ## 🚀 Installation
 
 1. **Clone the repository**
    ```
-   git clone https://your-repository-url.git
-   cd API_SEQUENT_XALUMIND
+    git clone https://your-repository-url.git
+    cd API_SEQUENT_XALUMIND
   ```
-Install dependencies
+2. **Install dependencies**
 
-bash
-Copiar
-Editar
-pip install -r dependencies.txt
-Run migrations
+  ```
+    pip install -r dependencies.txt
+  ```
+3. **IRun migrations**
+  ```
+    python manage.py migrate
+  ```
 
-bash
-Copiar
-Editar
-python manage.py migrate
-Start the development server
 
-bash
-Copiar
-Editar
-python manage.py runserver
-📄 License
+3. **Start the development server**
+  ```
+    python manage.py runserver
+  ```
+
+## 📄 License
 This project is proprietary software. All rights reserved by the development team.
-
-vbnet
-Copiar
-Editar
 
 Let me know if you'd like:
 - a logo or banner at the top,
