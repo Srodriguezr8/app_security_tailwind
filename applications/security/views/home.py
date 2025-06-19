@@ -18,3 +18,19 @@ class ModuloTemplateView(PermissionMixin,TemplateView):
        
         return context
     
+    
+class StartTemplateView(TemplateView):
+    template_name = 'base.html'
+
+    def get_context_data(self, **kwargs):
+        #context = super().get_context_data(**kwargs)
+        context={}
+        context["title"]= "IC - Modulos"
+        context["title1"]= "Modulos Disponibles"
+        MenuModule(self.request).fill(context)
+        
+        print("estoy saliendo en el modulo template view")
+       
+        return context
+    
+    
