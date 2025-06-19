@@ -21,7 +21,8 @@ class ListViewMixin(object):
         return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
-        
+        request = self.request
+        user = request.user  # 👈 Ahora sí defines 'user'
         print("---------------------------------- get_context_data", user.is_superuser )
         
         

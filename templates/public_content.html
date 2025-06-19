@@ -1,27 +1,34 @@
-<div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:bg-gray-900 dark:from-gray-800 dark:via-gray-900 dark:to-gray-800">
-  <!-- Barra de navegación simplificada -->
+<div
+    class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:bg-gray-900 dark:from-gray-800 dark:via-gray-900 dark:to-gray-800">
+    <!-- Barra de navegación simplificada -->
     <nav class="bg-white dark:bg-gray-800 shadow">
         <div class="container mx-auto px-4 py-3 flex justify-between items-center">
             <div class="flex items-center space-x-4">
-                <div class="w-10 h-10 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center">
+                <div
+                    class="w-10 h-10 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center">
                     <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
+                        </path>
                     </svg>
                 </div>
                 <span class="text-xl font-bold text-gray-900 dark:text-white">SaludTotal</span>
             </div>
-            
+
             <div class="flex items-center space-x-4">
                 <!-- Botón de tema -->
                 <button id="theme-toggle" class="p-2 rounded-lg focus:outline-none">
                     <span id="theme-icon-dark" class="hidden dark:inline">☀️</span>
                     <span id="theme-icon-light" class="dark:hidden">🌙</span>
                 </button>
-                
+
                 <!-- Botón de login alineado a la izquierda -->
-                <button onclick="openLoginModal()" class="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium px-6 py-2 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
+                <button onclick="openLoginModal()"
+                    class="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium px-6 py-2 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1">
+                        </path>
                     </svg>
                     <span>Iniciar Sesión</span>
                 </button>
@@ -325,18 +332,32 @@
             <form method="post" action="{% url 'security:signin' %}" class="space-y-5" id="modalLoginForm">
                 {% csrf_token %}
 
+                {% if form.non_field_errors %}
+                        <div class="mb-4 text-red-600 bg-red-100 p-3 rounded">
+                            {{ form.non_field_errors }}
+                        </div>
+                {% endif %}
+
                 <div>
                     <label for="modalEmail" class="block text-sm font-medium text-gray-700">Correo electrónico</label>
                     <input type="email" name="username" id="modalEmail" required autofocus
                         class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all">
                 </div>
 
-                <div>
+                <div class="relative">
                     <label for="modalPassword" class="block text-sm font-medium text-gray-700">Contraseña</label>
                     <input type="password" name="password" id="modalPassword" required
-                        class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all">
+                        class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all"
+                        placeholder="••••••••">
+
+                    <!-- Icono de ojo -->
+                    <button type="button" id="togglePassword"
+                        class="absolute inset-y-8 right-3 top-9 text-gray-500 hover:text-gray-700">
+                        <i id="eyeIcon" class="fas fa-eye"></i>
+                    </button>
                 </div>
 
+                <!-- Espacio para mensajes de error -->
                 <div id="loginErrors" class="text-sm text-red-600 hidden"></div>
 
                 <div class="flex items-center justify-between">
@@ -351,6 +372,7 @@
                     Iniciar sesión
                 </button>
             </form>
+
         </div>
     </div>
 </div>
@@ -443,42 +465,103 @@
 </style>
 
 <script>
-    // Toggle de tema
-    document.addEventListener('DOMContentLoaded', function() {
-        const themeToggle = document.getElementById('theme-toggle');
-        const currentTheme = localStorage.getItem('theme') || 'light';
-        
-        // Aplicar tema guardado
-        if (currentTheme === 'dark') {
-            document.documentElement.classList.add('dark');
-        } else {
-            document.documentElement.classList.remove('dark');
-        }
-        
-        themeToggle.addEventListener('click', function() {
-            alert('Cambiando tema...');
-            const isDark = document.documentElement.classList.contains('dark');
+    // Toggle ver/ocultar contraseña
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('modalPassword');
+    const eyeIcon = document.getElementById('eyeIcon');
 
-            alert(isDark);
-
-            if (isDark) {
-                document.documentElement.classList.remove('dark');
-                localStorage.setItem('theme', 'light');
-            } else {
-                document.documentElement.classList.add('dark');
-                localStorage.setItem('theme', 'dark');
-            }
+    if (togglePassword && passwordInput && eyeIcon) {
+        togglePassword.addEventListener('click', function () {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            eyeIcon.classList.toggle('fa-eye');
+            eyeIcon.classList.toggle('fa-eye-slash');
         });
-        
-    });
-
-    // Verificar preferencia del sistema
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        document.documentElement.classList.add('dark');
-        localStorage.setItem('theme', 'dark');
     }
 
-    // Funciones del modal (mantén las que ya tienes)
+
+  
+    // Toggle tema
+    document.addEventListener('DOMContentLoaded', function () {
+        const themeToggle = document.getElementById('theme-toggle');
+        const currentTheme = localStorage.getItem('theme') || 'light';
+
+            // Manejo del login con AJAX
+        const loginForm = document.getElementById('modalLoginForm');
+        const loginErrors = document.getElementById('loginErrors');
+                
+        if (loginForm) {
+                loginForm.addEventListener('submit', async function (e) {
+                    e.preventDefault(); // Evita el envío normal
+
+                    try {
+                        // Obtiene los valores del formulario
+                        const username = document.getElementById('modalEmail').value;
+                        const password = document.getElementById('modalPassword').value;
+
+                        // Verifica que los campos no estén vacíos
+                        if (!username || !password) {
+                            loginErrors.textContent = 'Los campos de correo electrónico y contraseña son obligatorios.';
+                            loginErrors.classList.remove('hidden');
+                            return;
+                        }
+                        console.log("Iniciando sesión con:", username, password);   
+   
+                        // Obtiene el CSRF token
+                        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+                        // Realiza la solicitud AJAX
+                        const response = await fetch("/security/signin/", {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': csrfToken,
+                            },
+                            body: JSON.stringify({
+                                username: username,
+                                password: password,
+                            }),
+                        });
+
+                        // Maneja la respuesta
+                        if (response.ok) {
+                            const result = await response.json();
+                            if (result.success) {
+                                window.location.href = result.redirect_url; // Redirige si el login es exitoso
+                            } else {
+                                loginErrors.textContent = result.error || "Credenciales inválidas";
+                                loginErrors.classList.remove('hidden');
+                            }
+                        } else {
+                            loginErrors.textContent = "Error al conectar con el servidor.";
+                            loginErrors.classList.remove('hidden');
+                        }
+                    } catch (error) {
+                        console.error("Error:", error);
+                        loginErrors.textContent = "Error al conectar con el servidor.";
+                        loginErrors.classList.remove('hidden');
+                    }
+                });
+            }
+            // Configura el tema inicial    
+
+            if (currentTheme === 'dark') {
+                document.documentElement.classList.add('dark');
+            }
+
+            themeToggle.addEventListener('click', function () {
+                const isDark = document.documentElement.classList.contains('dark');
+                if (isDark) {
+                    document.documentElement.classList.remove('dark');
+                    localStorage.setItem('theme', 'light');
+                } else {
+                    document.documentElement.classList.add('dark');
+                    localStorage.setItem('theme', 'dark');
+                }
+            });
+        });
+
+    // Funciones del modal
     function openLoginModal() {
         document.body.classList.add('modal-open');
         document.getElementById('loginModal').classList.remove('hidden');

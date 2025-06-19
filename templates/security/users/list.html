@@ -1,0 +1,207 @@
+{% extends 'home.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+{% load static %}
+{% include 'fragments/messages.html' %}
+
+<section class="dark:bg-principal mt-2">
+    <div class="text-center" data-aos="fade-up" data-aos-delay="200">
+        <h1 class="rounded-2xl bg-indigo-500 px-2 py-1 text-white uppercase text-4xl mt-4">
+            {{ title1 }}
+        </h1>
+
+        <!-- Buscador -->
+        <div class="p-4 flex justify-center">
+            <form method="GET" class="relative w-full max-w-md">
+                <input type="text" name="q" placeholder="Buscar por nombre o correo"
+                       class="text-center pl-10 shadow-sm w-full bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-principal dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                       value="{{ request.GET.q }}">
+                <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                    <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" fill="none" viewBox="0 0 20 20">
+                        <path d="M19 19l-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"
+                              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </div>
+            </form>
+        </div>
+
+        <!-- Tabla de usuarios -->
+        <div class="overflow-x-auto px-4">
+            <table class="w-full text-center text-lg">
+                <thead class="uppercase font-Tiny5 bg-gray-50 dark:bg-secundario dark:text-blue-300">
+                    <tr>
+                        <th class="px-6 py-3">ID</th>
+                        <th class="px-6 py-3">Nombre</th>
+                        <th class="px-6 py-3">Apellido</th>
+                        <th class="px-6 py-3">Correo</th>
+                        <th class="px-6 py-3">Activo</th>
+                        <th class="px-6 py-3">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr class="dark:text-gray-400 bg-white border-b dark:bg-[#0b1121] dark:border-secundario hover:bg-gray-50 dark:hover:bg-[#121c33]">
+                        <td class="px-6 py-4">{{ user.id }}</td>
+                        <td class="px-6 py-4">{{ user.first_name|default:"-" }}</td>
+                        <td class="px-6 py-4">{{ user.last_name|default:"-" }}</td>
+                        <td class="px-6 py-4">{{ user.email }}</td>
+                        <td class="px-6 py-4">
+                            {% if user.is_active %}
+                            <span class="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300 px-2 py-1 rounded-full text-sm">Sí</span>
+                            {% else %}
+                            <span class="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300 px-2 py-1 rounded-full text-sm">No</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4">
+                            {% if permissions.change_user and user.id != request.user.id %}
+                           <button data-user-id="{{ user.id }}"
+                                class="btn-status-toggle text-yellow-600 dark:text-yellow-400 hover:text-yellow-800 mx-1"
+                                title="Editar estado">
+                                  <i class="fa-solid fa-pen-to-square text-lg"></i>
+                            </button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="6" class="py-4 text-gray-500 dark:text-gray-400">No se encontraron usuarios.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Paginación -->
+        <div class="flex justify-center mt-4">
+            <nav>
+                <ul class="inline-flex -space-x-px">
+                    {% if page_obj.has_previous %}
+                    <li>
+                        <a href="?page=1{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}"
+                           class="px-3 h-8 flex items-center bg-white border rounded-s-lg dark:bg-[#0b1121] dark:text-gray-400">
+                            Anterior
+                        </a>
+                    </li>
+                    {% endif %}
+                    {% for num in page_obj.paginator.page_range %}
+                    <li>
+                        <a href="?page={{ num }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}"
+                           class="px-3 h-8 flex items-center border {% if num == page_obj.number %}bg-blue-100 text-blue-600 dark:bg-secundario dark:text-blue-300{% else %}bg-white text-gray-500 dark:bg-[#0b1121] dark:text-gray-400{% endif %}">
+                            {{ num }}
+                        </a>
+                    </li>
+                    {% endfor %}
+                    {% if page_obj.has_next %}
+                    <li>
+                        <a href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}"
+                           class="px-3 h-8 flex items-center bg-white border rounded-e-lg dark:bg-[#0b1121] dark:text-gray-400">
+                            Siguiente
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Modal Cambiar Estado -->
+    <div id="statusModal" class="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md mx-4 relative">
+            <!-- Botón de cerrar -->
+            <button onclick="closeStatusModal()"
+                    class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+            <!-- Contenido del modal -->
+            <div class="space-y-6">
+                <div class="text-center">
+                    <h2 class="text-2xl font-bold text-gray-800">Cambiar Estado del Usuario</h2>
+                    <p class="text-gray-600 mt-1">¿Estás seguro de que deseas cambiar el estado?</p>
+                </div>
+                <form id="statusForm" class="space-y-5">
+                    {% csrf_token %}
+                    <input type="hidden" name="user_id" id="statusUserId">
+                    <div>
+                        <label for="newStatus" class="block text-sm font-medium text-gray-700">Nuevo Estado</label>
+                        <select id="newStatus" name="is_active" required
+                                class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all">
+                            <option value="1">Activo</option>
+                            <option value="0">Inactivo</option>
+                        </select>
+                    </div>
+                   <button type="submit"
+                        class="confirm-button w-full bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition-all duration-300 transform hover:scale-[1.02]">
+                    Confirmar Cambio
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+</section>
+
+{% endblock %}
+
+{% block js %}
+<script>
+    // Abrir modal de cambio de estado
+    function openStatusModal(userId) {
+        document.getElementById('statusUserId').value = userId;
+        document.getElementById('statusModal').classList.remove('hidden');
+        document.body.classList.add('modal-open'); // Añade clase para oscurecer el fondo
+    }
+
+    // Cerrar modal de cambio de estado
+    function closeStatusModal() {
+        document.body.classList.remove('modal-open');
+        document.getElementById('statusModal').classList.add('hidden');
+        
+    }
+
+    // Manejar clic en botón de toggle
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('.btn-status-toggle');
+        if (!btn) return;
+
+        const userId = btn.getAttribute('data-user-id');
+        openStatusModal(userId);
+    });
+
+    // Manejar envío del formulario del modal
+    document.getElementById('statusForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const userId = document.getElementById('statusUserId').value;
+        const isActive = document.getElementById('newStatus').value;
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+        try {
+            const response = await fetch(`/security/user/${userId}/toggle-status/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({ is_active: isActive })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                closeStatusModal();
+                location.reload(); // Puedes actualizar solo una fila si prefieres
+            } else {
+                alert(data.error || "Hubo un error.");
+            }
+        } catch (err) {
+            console.error(err);
+            alert("Error al conectar con el servidor.");
+        }
+    });
+
+  
+
+</script>
+{% endblock %}

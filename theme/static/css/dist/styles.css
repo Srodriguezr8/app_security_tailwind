@@ -47,6 +47,22 @@ body.dark {
 
 
 
+.confirm-button {
+    background-image: linear-gradient(to right, #2ecc71, #27ae60) !important; /* ¡Importante! */
+    color: white !important;
+    font-weight: bold;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+
+    &:hover {
+        background-image: linear-gradient(to right, #27ae60, #229954) !important;
+        transform: scale(1.02);
+    }
+}
+
+
     /* Estilo cuando el modal está abierto */
     body.modal-open {
         overflow: hidden; /* Deshabilita el scroll */

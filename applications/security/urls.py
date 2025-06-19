@@ -3,6 +3,7 @@ from django.urls import path
 from applications.security.views.auth import signin, signout
 from applications.security.views.menu import MenuCreateView, MenuDeleteView, MenuListView, MenuUpdateView
 from applications.security.views.module import ModuleCreateView, ModuleDeleteView, ModuleListView, ModuleUpdateView
+from applications.security.views.user import UserListView, UserUpdateView, UserUpdateView,toggle_user_status
 
 
 app_name='security' # define un espacio de nombre para la aplicacion
@@ -19,6 +20,14 @@ urlpatterns = [
   path('menu_create/', MenuCreateView.as_view(),name="menu_create"),
   path('menu_update/<int:pk>/', MenuUpdateView.as_view(),name='menu_update'),
   path('menu_delete/<int:pk>/', MenuDeleteView.as_view(),name='menu_delete'),
+  
+
+    # Rutas de usuarios
+    path('user_list/', UserListView.as_view(), name="user_list"),
+    path('user_update/<int:pk>/', UserUpdateView.as_view(), name='user_update'),
+    path('user/<int:user_id>/toggle-status/', toggle_user_status, name='user_toggle_status'),
+
+  
 
   # rutas de autenticacion
   path('logout/', signout, name='signout'),
