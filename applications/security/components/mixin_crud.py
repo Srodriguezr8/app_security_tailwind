@@ -92,7 +92,7 @@ class PermissionMixin(object):
             user_session.set_group_session()
 
             if 'group_id' not in request.session:
-                return redirect('home')
+                return redirect('security:home')
             
             print("********************************", user.is_superuser)
             if user.is_superuser:
@@ -109,7 +109,7 @@ class PermissionMixin(object):
                     permissions__codename__in=permissions
             ).exists():
                 messages.error(request, 'No tiene permiso para ingresar a este módulo')
-                return redirect('home')
+                return redirect('security:home')
 
             return super().get(request, *args, **kwargs)
 

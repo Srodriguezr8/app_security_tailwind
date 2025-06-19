@@ -49,7 +49,7 @@ def signin(request):
             login(request, user)
             return JsonResponse({
                 'success': True,
-                'redirect_url': reverse("home")
+                'redirect_url': reverse("security:home")
             })
         else:
             print(f"No se pudo autenticar al usuario '{username}'")

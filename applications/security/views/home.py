@@ -18,16 +18,3 @@ class ModuloTemplateView(PermissionMixin,TemplateView):
        
         return context
     
-class PublicDashboardView(TemplateView):
-    template_name = 'home.html'
-    extra_context = {
-        'clinic_name': 'Clinica Medica S.A.',
-        'mission': 'Brindar atención médica de calidad...',
-        'vision': 'Ser líder en servicios médicos...',
-        'contact': 'info@clinica.com | +593 987654321',
-        'specialties': ['Cardiología', 'Pediatría', 'Dermatología'],
-        'doctors': [
-            {'name': 'Dr. Juan Pérez', 'specialty': 'Cardiología'},
-            {'name': 'Dr. María Gómez', 'specialty': 'Pediatría'},
-        ]
-    }

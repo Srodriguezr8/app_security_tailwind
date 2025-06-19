@@ -68,9 +68,9 @@
                 groupSelect.addEventListener('change', function () {
                     const selectedGroupId = this.value;
                     if (selectedGroupId) {
-                        window.location.href = `{% url 'home' %}?gpid=${selectedGroupId}`;
+                        window.location.href = `{% url 'security:home' %}?gpid=${selectedGroupId}`;
                     } else {
-                        window.location.href = `{% url 'home' %}`;
+                        window.location.href = `{% url 'security:home' %}`;
                     }
                 });
             }

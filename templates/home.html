@@ -87,7 +87,6 @@
                 </div>
             </div>
         </div>
-        
         <!-- Iterar por cada menú -->
         {% for menu_item in menu_list %}
         <div class="mb-12">
@@ -108,11 +107,11 @@
                 </div>
             </div>
             <hr class="border-0 h-1 bg-gradient-to-r from-transparent via-gray-400 to-transparent my-4 rounded">
-
+            
             <!-- Cards de Módulos del Menú -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {% for module_permission in menu_item.group_module_permission_list %}
-                <a href="{% if module_permission.module.url %}{{ module_permission.module.url }}{% else %}#{% endif %}"
+               <a href="{% if module_permission.module and module_permission.module.url %}/security/{{ module_permission.module.url }}{% else %}javascript:void(0);{% endif %}"
                     class="module-card bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 transform hover:scale-105 border border-gray-100 group cursor-pointer block text-decoration-none">
                     <!-- Icono del Módulo -->
                     <div class="flex items-center justify-center w-14 h-14 bg-gradient-to-r 
@@ -157,6 +156,7 @@
                 </div>
                 {% endfor %}
             </div>
+
         </div>
         {% empty %}
         <!-- Mensaje cuando no hay menús disponibles -->
