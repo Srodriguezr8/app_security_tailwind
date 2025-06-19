@@ -1,0 +1,535 @@
+{% extends 'home.html' %} 
+<title>{% block title %}{{title}}{% endblock %}</title>
+{% load static %}
+{% block content %}
+<section class="dark:bg-principal">
+    <div class="text-center" data-aos="fade" data-aos-delay="200">
+        <div class="sm:pt-28 lg:pt-4">
+             <h1 class="rounded-2xl  bg-indigo-500 px-2 py-1 text-white uppercase text-4xl">
+                {{ title1 }}
+             </h1>
+        </div>
+
+        <!-- Mensajes de error del formulario (no específicos de campo) -->
+        {% if form.non_field_errors %}
+        <div class="mx-4 lg:mx-20 mb-6" data-aos="fade-up">
+            <div class="bg-red-50 dark:bg-red-900/30 border-l-4 border-red-500 p-4 rounded-lg max-w-4xl mx-auto">
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        <i class="fa-solid fa-exclamation-triangle text-red-500 text-lg"></i>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-red-800 dark:text-red-200 font-medium">
+                            Se encontraron errores en el formulario:
+                        </h3>
+                        <div class="mt-2 text-red-700 dark:text-red-300">
+                            <ul class="list-disc list-inside space-y-1">
+                                {% for error in form.non_field_errors %}
+                                <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <form method="post" class="space-y-6 py-4">
+            <div class="mx-4 lg:mx-20" data-aos="fade">
+                <!-- Contenedor principal del formulario -->
+                <div class="bg-white dark:bg-secundario rounded-3xl p-8 max-w-4xl mx-auto"
+                    data-aos="fade-up" data-aos-delay="200">
+                    {% csrf_token %}
+                    
+                    <!-- Título del formulario -->
+                    <div class="text-center mb-8">
+                        <div class="bg-gray-100 dark:bg-principal rounded-full w-20 h-20 mx-auto flex items-center justify-center mb-4">
+                            <i class="fa-solid fa-users-gear text-3xl text-blue-600 dark:text-blue-400"></i>
+                        </div>
+                        <h2 class="dark:text-blue-300 text-2xl font-Pacifico">Asignación de Permisos</h2>
+                    </div>
+
+                    <!-- Grid de campos principales -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                        <!-- Campo Group -->
+                        <div class="field-container {% if form.group.errors %}has-error{% endif %}">
+                            <label for="{{ form.group.id_for_label }}"
+                                class="font-black uppercase text-lg block mb-2
+                                       {% if form.group.errors %}text-red-600 dark:text-red-400{% else %}dark:text-blue-300{% endif %}">
+                                <i class="fa-solid fa-users mr-2"></i>{{ form.group.label }}
+                                {% if form.group.field.required %}<span class="text-red-500">*</span>{% endif %}
+                            </label>
+                            <div class="relative">
+                                {{ form.group }}
+                                {% if form.group.errors %}
+                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                    <i class="fa-solid fa-exclamation-circle text-red-500"></i>
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% if form.group.errors %}
+                            <div class="mt-2 text-red-600 dark:text-red-400 text-sm">
+                                {% for error in form.group.errors %}
+                                <div class="flex items-center mt-1">
+                                    <i class="fa-solid fa-circle-exclamation text-xs mr-2"></i>
+                                    {{ error }}
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Campo Module -->
+                        <div class="field-container {% if form.module.errors %}has-error{% endif %}">
+                            <label for="{{ form.module.id_for_label }}"
+                                class="font-black uppercase text-lg block mb-2
+                                       {% if form.module.errors %}text-red-600 dark:text-red-400{% else %}dark:text-blue-300{% endif %}">
+                                <i class="fa-solid fa-puzzle-piece mr-2"></i>{{ form.module.label }}
+                                {% if form.module.field.required %}<span class="text-red-500">*</span>{% endif %}
+                            </label>
+                            <div class="relative">
+                                {{ form.module }}
+                                {% if form.module.errors %}
+                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                    <i class="fa-solid fa-exclamation-circle text-red-500"></i>
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% if form.module.errors %}
+                            <div class="mt-2 text-red-600 dark:text-red-400 text-sm">
+                                {% for error in form.module.errors %}
+                                <div class="flex items-center mt-1">
+                                    <i class="fa-solid fa-circle-exclamation text-xs mr-2"></i>
+                                    {{ error }}
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Campo Permissions (Sección completa) -->
+                    <div class="field-container {% if form.permissions.errors %}has-error{% endif %} mb-8">
+                        <label class="font-black uppercase text-lg block mb-4
+                                     {% if form.permissions.errors %}text-red-600 dark:text-red-400{% else %}dark:text-blue-300{% endif %}">
+                            <i class="fa-solid fa-shield-halved mr-2"></i>{{ form.permissions.label }}
+                            {% if form.permissions.field.required %}<span class="text-red-500">*</span>{% endif %}
+                        </label>
+
+                        <!-- Buscador de permisos -->
+                        <div class="mb-6">
+                            <div class="relative">
+                                <input type="text" id="permissionSearch" 
+                                       placeholder="Buscar permisos..." 
+                                       class="w-full px-4 py-3 pl-10 pr-4 border border-gray-300 dark:border-gray-600 rounded-lg 
+                                              bg-white dark:bg-principal text-gray-900 dark:text-gray-100 
+                                              focus:ring-2 focus:ring-blue-500 focus:border-blue-500 
+                                              placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-200">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fa-solid fa-search text-gray-400 dark:text-gray-500"></i>
+                                </div>
+                                <button type="button" id="clearSearch" 
+                                        class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200"
+                                        style="display: none;">
+                                    <i class="fa-solid fa-times"></i>
+                                </button>
+                            </div>
+                            <!-- Contador de resultados -->
+                            <div class="mt-2 text-center">
+                                <span id="searchResults" class="text-sm text-gray-600 dark:text-gray-400"></span>
+                            </div>
+                        </div>
+                        
+                        <!-- Contenedor de permisos con scroll -->
+                        <div class="bg-gray-50 dark:bg-principal rounded-lg p-6 border border-gray-200 dark:border-gray-600 max-h-80 overflow-y-auto">
+                            <div class="permissions-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {% for choice in form.permissions %}
+                                <div class="permission-item bg-white dark:bg-secundario rounded-lg p-4 border border-gray-200 dark:border-gray-600 
+                                           hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:border-blue-300 dark:hover:border-blue-600
+                                           transition-all duration-200 cursor-pointer shadow-sm hover:shadow-md"
+                                     data-permission-name="{{ choice.choice_label|lower }}">
+                                    <label class="flex items-start space-x-3 cursor-pointer h-full">
+                                        {{ choice.tag }}
+                                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300 flex-1 leading-5">
+                                            <i class="fa-solid fa-key text-blue-600 dark:text-blue-400 mr-2"></i>
+                                            {{ choice.choice_label }}
+                                        </span>
+                                    </label>
+                                </div>
+                                {% endfor %}
+                            </div>
+
+                            <!-- Mensaje cuando no hay resultados -->
+                            <div id="noResults" class="text-center py-8 hidden">
+                                <i class="fa-solid fa-search text-4xl text-gray-400 dark:text-gray-600 mb-4"></i>
+                                <p class="text-gray-500 dark:text-gray-400 text-lg">No se encontraron permisos</p>
+                                <p class="text-gray-400 dark:text-gray-500 text-sm mt-2">Intenta con otros términos de búsqueda</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Botones de selección masiva -->
+                        <div class="flex flex-wrap gap-3 mt-6 justify-center">
+                            <button type="button" id="selectAll" 
+                                    class="bg-green-600 hover:bg-green-700 text-gray-600 px-4 py-2 rounded-lg text-sm flex items-center space-x-2 transition-colors duration-300 shadow-md hover:shadow-lg">
+                                <i class="fa-solid fa-check-double"></i>
+                                <span >Seleccionar Todos</span>
+                            </button>
+                            <button type="button" id="deselectAll" 
+                                    class="bg-red-600 hover:bg-red-700 text-gray-600 px-4 py-2 rounded-lg text-sm flex items-center space-x-2 transition-colors duration-300 shadow-md hover:shadow-lg">
+                                <i class="fa-solid fa-times"></i>
+                                <span>Deseleccionar Todos</span>
+                            </button>
+                            <button type="button" id="toggleSelection" 
+                                    class="bg-yellow-600 hover:bg-yellow-700 text-gray-600 px-4 py-2 rounded-lg text-sm flex items-center space-x-2 transition-colors duration-300 shadow-md hover:shadow-lg">
+                                <i class="fa-solid fa-exchange-alt"></i>
+                                <span >Invertir Selección</span>
+                            </button>
+                            <button type="button" id="selectVisible" 
+                                    class="bg-purple-600 hover:bg-purple-700 text-gray-600 px-4 py-2 rounded-lg text-sm flex items-center space-x-2 transition-colors duration-300 shadow-md hover:shadow-lg">
+                                <i class="fa-solid fa-eye"></i>
+                                <span >Seleccionar Visibles</span>
+                            </button>
+                        </div>
+                        
+                        <!-- Contador de permisos seleccionados -->
+                        <div class="mt-4 text-center">
+                            <span class="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-4 py-2 rounded-full text-sm font-medium shadow-sm">
+                                <i class="fa-solid fa-info-circle mr-1"></i>
+                                Permisos seleccionados: <span id="selectedCount">0</span>
+                            </span>
+                        </div>
+
+                        {% if form.permissions.errors %}
+                        <div class="mt-2 text-red-600 dark:text-red-400 text-sm">
+                            {% for error in form.permissions.errors %}
+                            <div class="flex items-center mt-1">
+                                <i class="fa-solid fa-circle-exclamation text-xs mr-2"></i>
+                                {{ error }}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Botones de acción -->
+                    <div class="flex flex-col md:flex-row justify-center items-center mt-8 space-y-3 md:space-y-0 md:space-x-8">
+                        <button type="submit"
+                            class="w-full md:w-auto bg-blue-700 hover:bg-blue-800 text-white py-3 px-8 rounded-lg flex items-center justify-center transition-all duration-300 font-medium shadow-lg hover:shadow-xl">
+                            <i class="fa-solid fa-save mr-2"></i>{{ grabar|default:"Guardar Permisos" }}
+                        </button>
+                        <a class="w-full md:w-auto bg-red-700 hover:bg-red-800 text-white py-3 px-8 rounded-lg flex items-center justify-center transition-all duration-300 font-medium shadow-lg hover:shadow-xl"
+                            href="{% url 'security:group_module_permission_list' %}">
+                            <i class="fa-solid fa-xmark mr-2"></i>Cancelar
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</section>
+
+<!-- CSS para estilos personalizados -->
+<style>
+/* Estilos para campos con errores */
+.field-container.has-error input,
+.field-container.has-error select,
+.field-container.has-error textarea {
+    border-color: #ef4444 !important;
+    background-color: rgba(254, 242, 242, 0.5) !important;
+    color: #991b1b !important;
+}
+
+.field-container.has-error input:focus,
+.field-container.has-error select:focus,
+.field-container.has-error textarea:focus {
+    border-color: #dc2626 !important;
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2) !important;
+    outline: none !important;
+}
+
+/* Dark mode para campos con errores */
+@media (prefers-color-scheme: dark) {
+    .field-container.has-error input,
+    .field-container.has-error select,
+    .field-container.has-error textarea {
+        background-color: rgba(153, 27, 27, 0.2) !important;
+        color: #fca5a5 !important;
+        border-color: #ef4444 !important;
+    }
+    
+    .field-container.has-error input:focus,
+    .field-container.has-error select:focus,
+    .field-container.has-error textarea:focus {
+        box-shadow: 0 0 0 2px rgba(185, 28, 28, 0.4) !important;
+    }
+}
+
+/* Estilo para checkboxes de permisos */
+.permission-item input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    border: 2px solid #d1d5db;
+    accent-color: #3b82f6;
+    flex-shrink: 0;
+}
+
+.permission-item input[type="checkbox"]:checked {
+    background-color: #3b82f6;
+    border-color: #3b82f6;
+}
+
+.permission-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.permission-item.selected {
+    background-color: #dbeafe !important;
+    border-color: #3b82f6 !important;
+}
+
+.dark .permission-item.selected {
+    background-color: rgba(59, 130, 246, 0.2) !important;
+    border-color: #60a5fa !important;
+}
+
+/* Estilos para checkboxes con errores */
+.field-container.has-error input[type="checkbox"] {
+    border-color: #ef4444 !important;
+    accent-color: #ef4444 !important;
+}
+
+/* Animación sutil para errores */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-2px); }
+    20%, 40%, 60%, 80% { transform: translateX(2px); }
+}
+
+.field-container.has-error {
+    animation: shake 0.5s ease-in-out;
+}
+
+/* Scroll personalizado */
+.permissions-grid::-webkit-scrollbar {
+    width: 8px;
+}
+
+.permissions-grid::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 4px;
+}
+
+.permissions-grid::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+
+.permissions-grid::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Estilo para elementos ocultos por búsqueda */
+.permission-item.hidden {
+    display: none;
+}
+
+/* Animaciones para el buscador */
+#permissionSearch:focus {
+    transform: scale(1.02);
+}
+
+/* Efectos de hover mejorados */
+.permission-item:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const checkboxes = document.querySelectorAll('input[name="permissions"]');
+    const selectedCount = document.getElementById('selectedCount');
+    const selectAllBtn = document.getElementById('selectAll');
+    const deselectAllBtn = document.getElementById('deselectAll');
+    const toggleSelectionBtn = document.getElementById('toggleSelection');
+    const selectVisibleBtn = document.getElementById('selectVisible');
+    const searchInput = document.getElementById('permissionSearch');
+    const clearSearchBtn = document.getElementById('clearSearch');
+    const searchResults = document.getElementById('searchResults');
+    const noResults = document.getElementById('noResults');
+    const permissionItems = document.querySelectorAll('.permission-item');
+
+    // Función para actualizar el contador
+    function updateCounter() {
+        const checked = document.querySelectorAll('input[name="permissions"]:checked').length;
+        const total = checkboxes.length;
+        selectedCount.textContent = checked;
+        
+        // Actualizar el texto del contador con más información
+        const counterElement = selectedCount.parentElement;
+        counterElement.innerHTML = `
+            <i class="fa-solid fa-info-circle mr-1"></i>
+            Permisos seleccionados: <span id="selectedCount">${checked}</span> de ${total}
+        `;
+    }
+
+    // Función para actualizar resultados de búsqueda
+    function updateSearchResults() {
+        const visible = document.querySelectorAll('.permission-item:not(.hidden)').length;
+        const total = permissionItems.length;
+        
+        if (searchInput.value.trim()) {
+            searchResults.textContent = `Mostrando ${visible} de ${total} permisos`;
+            clearSearchBtn.style.display = visible > 0 ? 'flex' : 'none';
+        } else {
+            searchResults.textContent = '';
+            clearSearchBtn.style.display = 'none';
+        }
+        
+        // Mostrar/ocultar mensaje de no resultados
+        noResults.classList.toggle('hidden', visible > 0);
+        document.querySelector('.permissions-grid').classList.toggle('hidden', visible === 0);
+    }
+
+    // Función de búsqueda
+    function searchPermissions() {
+        const searchTerm = searchInput.value.toLowerCase().trim();
+        
+        permissionItems.forEach(item => {
+            const permissionName = item.getAttribute('data-permission-name');
+            const label = item.querySelector('span').textContent.toLowerCase();
+            
+            if (!searchTerm || permissionName.includes(searchTerm) || label.includes(searchTerm)) {
+                item.classList.remove('hidden');
+            } else {
+                item.classList.add('hidden');
+            }
+        });
+        
+        updateSearchResults();
+    }
+
+    // Función para seleccionar todos
+    function selectAll() {
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = true;
+            updateItemVisualState(checkbox);
+        });
+        updateCounter();
+    }
+
+    // Función para deseleccionar todos
+    function deselectAll() {
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = false;
+            updateItemVisualState(checkbox);
+        });
+        updateCounter();
+    }
+
+    // Función para invertir selección
+    function toggleSelection() {
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = !checkbox.checked;
+            updateItemVisualState(checkbox);
+        });
+        updateCounter();
+    }
+
+    // Función para seleccionar solo los visibles
+    function selectVisible() {
+        const visibleCheckboxes = document.querySelectorAll('.permission-item:not(.hidden) input[name="permissions"]');
+        visibleCheckboxes.forEach(checkbox => {
+            checkbox.checked = true;
+            updateItemVisualState(checkbox);
+        });
+        updateCounter();
+    }
+
+    // Función para actualizar el estado visual del item
+    function updateItemVisualState(checkbox) {
+        const item = checkbox.closest('.permission-item');
+        if (checkbox.checked) {
+            item.classList.add('selected');
+        } else {
+            item.classList.remove('selected');
+        }
+    }
+
+    // Event listeners para botones
+    selectAllBtn.addEventListener('click', selectAll);
+    deselectAllBtn.addEventListener('click', deselectAll);
+    toggleSelectionBtn.addEventListener('click', toggleSelection);
+    selectVisibleBtn.addEventListener('click', selectVisible);
+
+    // Event listener para búsqueda
+    searchInput.addEventListener('input', searchPermissions);
+    searchInput.addEventListener('keyup', function(e) {
+        if (e.key === 'Escape') {
+            this.value = '';
+            searchPermissions();
+        }
+    });
+
+    // Event listener para limpiar búsqueda
+    clearSearchBtn.addEventListener('click', function() {
+        searchInput.value = '';
+        searchPermissions();
+        searchInput.focus();
+    });
+
+    // Actualizar contador cuando cambie cualquier checkbox
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            updateCounter();
+            updateItemVisualState(this);
+        });
+    });
+
+    // Mejorar la interacción con las tarjetas de permisos
+    document.querySelectorAll('.permission-item').forEach(item => {
+        const checkbox = item.querySelector('input[type="checkbox"]');
+        
+        // Hacer que toda la tarjeta sea clickeable (excepto el checkbox)
+        item.addEventListener('click', function(e) {
+            // Solo cambiar estado si no se clickeó directamente el checkbox
+            if (e.target !== checkbox) {
+                e.preventDefault();
+                checkbox.checked = !checkbox.checked;
+                updateCounter();
+                updateItemVisualState(checkbox);
+            }
+        });
+
+        // Aplicar estilo inicial si ya está seleccionado
+        if (checkbox.checked) {
+            updateItemVisualState(checkbox);
+        }
+    });
+
+    // Inicializar
+    updateCounter();
+    updateSearchResults();
+
+    // Agregar atajos de teclado
+    document.addEventListener('keydown', function(e) {
+        // Ctrl/Cmd + F para enfocar búsqueda
+        if ((e.ctrlKey || e.metaKey) && e.key === 'f' && !e.shiftKey) {
+            e.preventDefault();
+            searchInput.focus();
+            searchInput.select();
+        }
+        
+        // Ctrl/Cmd + A para seleccionar todos (cuando el foco está en el contenedor)
+        if ((e.ctrlKey || e.metaKey) && e.key === 'a' && e.target.closest('.permissions-grid')) {
+            e.preventDefault();
+            selectAll();
+        }
+    });
+});
+</script>
+
+{% endblock %}
