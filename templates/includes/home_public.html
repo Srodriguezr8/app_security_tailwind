@@ -1,45 +1,11 @@
 <div
     class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:bg-gray-900 dark:from-gray-800 dark:via-gray-900 dark:to-gray-800">
-    <!-- Barra de navegación simplificada -->
-    <nav class="bg-white dark:bg-gray-800 shadow">
-        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
-            <div class="flex items-center space-x-4">
-                <div
-                    class="w-10 h-10 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center">
-                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
-                        </path>
-                    </svg>
-                </div>
-                <span class="text-xl font-bold text-gray-900 dark:text-white">SaludTotal</span>
-            </div>
-
-            <div class="flex items-center space-x-4">
-                <!-- Botón de tema -->
-                <button id="theme-toggle" class="p-2 rounded-lg focus:outline-none">
-                    <span id="theme-icon-dark" class="hidden dark:inline">☀️</span>
-                    <span id="theme-icon-light" class="dark:hidden">🌙</span>
-                </button>
-
-                <!-- Botón de login alineado a la izquierda -->
-                <button onclick="openLoginModal()"
-                    class="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium px-6 py-2 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1">
-                        </path>
-                    </svg>
-                    <span>Iniciar Sesión</span>
-                </button>
-            </div>
-        </div>
-    </nav>
 
     <!-- Contenido principal -->
     <main class="container mx-auto px-4 py-8">
+
         <!-- Sección sobre la clínica -->
-        <section class="mb-8 bg-white p-8 rounded-xl shadow-lg">
+        <section class="mb-8 bg-white p-8 rounded-xl shadow-lg bg-red-500">
             <h2 class="text-3xl font-bold mb-6 text-center">Bienvenido a SaludTotal</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div>
@@ -344,7 +310,7 @@
                         class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all">
                 </div>
 
-         
+
                 <!-- Icono de ojo -->
                 <div class="relative">
                     <label for="modalPassword" class="block text-sm font-medium text-gray-700">Contraseña</label>
@@ -359,7 +325,7 @@
                         </button>
                     </div>
                 </div>
-              
+
 
                 <!-- Espacio para mensajes de error -->
                 <div id="loginErrors" class="text-sm text-red-600 hidden"></div>
@@ -412,179 +378,4 @@
     </div>
 </div>
 
-<style>
-    /* Animaciones */
-    @keyframes float {
 
-        0%,
-        100% {
-            transform: translateY(0px);
-        }
-
-        50% {
-            transform: translateY(-10px);
-        }
-    }
-
-    @keyframes heartbeat {
-
-        0%,
-        100% {
-            transform: scale(1);
-        }
-
-        50% {
-            transform: scale(1.1);
-        }
-    }
-
-    /* Ensure the input field has enough padding for the eye icon */
-    input[type="password"] {
-        padding-right: 40px;
-        /* Adjust as needed to accommodate the icon */
-    }
-
-    /* Style the eye icon inside the input field */
-    #togglePassword {
-        pointer-events: auto;
-        /* Ensure the button is clickable */
-        cursor: pointer;
-    }
-
-    .float {
-        animation: float 3s ease-in-out infinite;
-    }
-
-    .heartbeat {
-        animation: heartbeat 1.5s infinite;
-    }
-
-    /* Transición para el modal */
-    #loginModal {
-        transition: opacity 0.3s ease;
-        opacity: 0;
-    }
-
-    #loginModal:not(.hidden) {
-        opacity: 1;
-    }
-
-    #loginModal>div {
-        transform: translateY(-20px);
-        transition: transform 0.3s ease, opacity 0.3s ease;
-        opacity: 0;
-    }
-
-    #loginModal:not(.hidden)>div {
-        transform: translateY(0);
-        opacity: 1;
-    }
-</style>
-
-<script>
-    // Toggle ver/ocultar contraseña
-    const togglePassword = document.getElementById('togglePassword');
-    const passwordInput = document.getElementById('modalPassword');
-    const eyeIcon = document.getElementById('eyeIcon');
-    if (togglePassword && passwordInput && eyeIcon) {
-        togglePassword.addEventListener('click', function () {
-            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-            passwordInput.setAttribute('type', type);
-            eyeIcon.classList.toggle('fa-eye');
-            eyeIcon.classList.toggle('fa-eye-slash');
-        });
-    }
-
-
-    // Toggle tema
-    document.addEventListener('DOMContentLoaded', function () {
-        const themeToggle = document.getElementById('theme-toggle');
-        const currentTheme = localStorage.getItem('theme') || 'light';
-
-        // Manejo del login con AJAX
-        const loginForm = document.getElementById('modalLoginForm');
-        const loginErrors = document.getElementById('loginErrors');
-
-        if (loginForm) {
-            loginForm.addEventListener('submit', async function (e) {
-                e.preventDefault(); // Evita el envío normal
-
-                try {
-                    // Obtiene los valores del formulario
-                    const username = document.getElementById('modalEmail').value;
-                    const password = document.getElementById('modalPassword').value;
-
-                    // Verifica que los campos no estén vacíos
-                    if (!username || !password) {
-                        loginErrors.textContent = 'Los campos de correo electrónico y contraseña son obligatorios.';
-                        loginErrors.classList.remove('hidden');
-                        return;
-                    }
-                    console.log("Iniciando sesión con:", username, password);
-
-                    // Obtiene el CSRF token
-                    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-
-                    // Realiza la solicitud AJAX
-                    const response = await fetch("/security/signin/", {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRFToken': csrfToken,
-                        },
-                        body: JSON.stringify({
-                            username: username,
-                            password: password,
-                        }),
-                    });
-
-                    // Maneja la respuesta
-                    if (response.ok) {
-                        const result = await response.json();
-                        if (result.success) {
-                            window.location.href = result.redirect_url; // Redirige si el login es exitoso
-                        } else {
-                            loginErrors.textContent = result.error || "Credenciales inválidas";
-                            loginErrors.classList.remove('hidden');
-                        }
-                    } else {
-                        loginErrors.textContent = "Error al conectar con el servidor.";
-                        loginErrors.classList.remove('hidden');
-                    }
-                } catch (error) {
-                    console.error("Error:", error);
-                    loginErrors.textContent = "Error al conectar con el servidor.";
-                    loginErrors.classList.remove('hidden');
-                }
-            });
-        }
-        // Configura el tema inicial    
-
-        if (currentTheme === 'dark') {
-            document.documentElement.classList.add('dark');
-        }
-
-        themeToggle.addEventListener('click', function () {
-            const isDark = document.documentElement.classList.contains('dark');
-            if (isDark) {
-                document.documentElement.classList.remove('dark');
-                localStorage.setItem('theme', 'light');
-            } else {
-                document.documentElement.classList.add('dark');
-                localStorage.setItem('theme', 'dark');
-            }
-        });
-    });
-
-    // Funciones del modal
-    function openLoginModal() {
-        document.body.classList.add('modal-open');
-        document.getElementById('loginModal').classList.remove('hidden');
-        document.getElementById('modalEmail').focus();
-    }
-
-    function closeLoginModal() {
-        document.body.classList.remove('modal-open');
-        document.getElementById('loginModal').classList.add('hidden');
-    }
-</script>

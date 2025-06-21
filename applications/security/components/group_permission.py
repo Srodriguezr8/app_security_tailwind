@@ -7,8 +7,7 @@ class GroupPermission:
     # y si no es superusuario obtiene los permisos del grupo al que pertenece   
     def get_permission_dict_of_group(user: User,group:Group):
         
-        print("Is super users: ", user.is_superuser )
-        # print("get_permission_dict_of_group")
+       # print("get_permission_dict_of_group")
         if user.is_superuser:   
             permissions = list(Permission.objects.all().values_list('codename',flat=True))
             permissions = {x: x for x in permissions if x not in (None, '')}

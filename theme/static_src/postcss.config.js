@@ -1,7 +1,7 @@
+// theme/static_src/postcss.config.js
 module.exports = {
   plugins: {
-    "@tailwindcss/postcss": {},
-    "postcss-simple-vars": {},
-    "postcss-nested": {}
+    tailwindcss: {}, // ¡Esta es la configuración estándar para Tailwind CSS v3.x!
+    autoprefixer: {},
   },
 }

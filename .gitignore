@@ -1,7 +1,51 @@
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-db.sqlite3
-.env
+# Entornos virtuales
 venv/
+.env
+
+# Archivos de base de datos
+db.sqlite3
+
+# Archivos temporales y bytecode
+__pycache__/
+*.py[cod]
+*.pyd
+
+# Archivos de configuración del sistema operativo
+.DS_Store
+Thumbs.db
+
+# Archivos de log y caché
+*.log
+*.pot
+*.mo
+*.cache
+*.coverage
+*.cover
+
+# Archivos de compilación
+build/
+dist/
+*.egg-info/
+
+# Archivos de Node.js (Tailwind o frontend)
+node_modules/
+package-lock.json
+yarn.lock
+
+# Archivos estáticos generados
+staticfiles/
+theme/static/css/dist/
+theme/static/js/
+theme/static_src/src/*.css
+
+# Archivos de configuración del editor (opcional)
+.vscode/
+.idea/
+
+# Archivos de migración rotos o descartados (opcional)
+*/migrations/*.pyc
+*/migrations/__pycache__/
+
+__pycache__
+
+*.pyc
