@@ -10,12 +10,12 @@
     {% tailwind_css %}
 </head>
 
-<body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 sidebar-expanded"> {# AÑADIR sidebar-expanded AQUÍ #}
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 sidebar-expanded">
     <div class="flex h-screen overflow-hidden">
         
         {% include 'includes/sidebar.html' %}
 
-       
+
         <div id="main-content-wrapper" class="flex-1 flex flex-col overflow-hidden transition-all duration-300 ease-in-out"> 
 
             {% include 'includes/header.html' %}
@@ -39,6 +39,7 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+   
 
         // --- Theme Toggle Management ---
         const themeToggle = document.getElementById('theme-toggle');
@@ -241,8 +242,41 @@
         const toggleIconRight = document.getElementById('toggle-icon-right');
         const toggleIconLeft = document.getElementById('toggle-icon-left');
 
+        
+        if (sidebarToggle) {
+            sidebarToggle.addEventListener('click', function (e) {
+                this.classList.toggle('active');
+            });
+        }
+
+        // Verifica si los elementos existen antes de agregar el evento
+       if (sidebarToggle && sidebar) {
+        // Inicializar posición del botón
+        function updateSidebarButtonPosition() {
+            const isCollapsed = document.body.classList.contains('sidebar-collapsed');
+            if (isCollapsed) {
+                sidebarToggle.classList.remove('left-20rem');
+                sidebarToggle.classList.add('left-6rem');
+            } else {
+                sidebarToggle.classList.remove('left-6rem');
+                sidebarToggle.classList.add('left-20rem');
+            }
+        }
+
+        updateSidebarButtonPosition();
+
+        sidebarToggle.addEventListener('click', function () {
+            this.classList.toggle('active');
+            document.body.classList.toggle('sidebar-expanded');
+            document.body.classList.toggle('sidebar-collapsed');
+            setTimeout(updateSidebarButtonPosition, 100); // Delay para que se vea animación
+        });
+    }
+
         if (sidebarToggle && sidebar && mainContentWrapper && toggleIconRight && toggleIconLeft) {
             function updateSidebarToggleIcons() {
+
+                
                 if (document.body.classList.contains('sidebar-collapsed')) {
                     toggleIconRight.classList.remove('hidden');
                     toggleIconLeft.classList.add('hidden');

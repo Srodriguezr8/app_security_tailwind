@@ -12,22 +12,24 @@
                 </svg>
             </div>
 
-            <h2 class="text-2xl font-bold text-gray-900 dark:text-white transition-opacity duration-300">MediCenter</h2>
+            <!-- Agrega margen derecho al título -->
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white transition-opacity duration-300 mr-2">MediCenter</h2>
 
-            {# Botón de Toggle del Sidebar - Colocado aquí con sus SVGs #}
-            <button id="sidebar-toggle"
-                class="absolute -right-8 top-1/2 -translate-y-1/2 p-1 rounded-full text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 focus:outline-none z-10">
-                <svg id="toggle-icon-right" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path> {#
-                    Flecha apuntando a la izquierda #}
-                </svg>
-                <svg id="toggle-icon-left" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path> {#
-                    Flecha apuntando a la derecha #}
-                </svg>
-            </button>
+           
+        <!-- Botón Toggle Sidebar -->
+        <button id="sidebar-toggle"
+            class="absolute top-1/2 -translate-y-1/2 right-0 p-1 rounded-full bg-white dark:bg-gray-800 shadow-md border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 z-50">
+
+            <!-- Icono ☰ -->
+            <svg id="toggle-icon-menu" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+            </svg>
+
+            <!-- Icono X (opcional) -->
+            <svg id="toggle-icon-close" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </button>
 
         </div>
 
@@ -40,50 +42,13 @@
                             <path
                                 d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zm0-8h14V7H7v2z" />
                         </svg>
-                        <span class="transition-opacity duration-300">Dashboard</span> {# AÑADIR SPAN Y CLASE #}
+                        <span class="transition-opacity duration-300">Dashboard</span>
                     </a>
                 </li>
-                <li class="mb-2">
-                    <a href="" class="flex items-center px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-blue-500 hover:text-white transition-colors duration-200
-                        {% if 'doctor' in request.path %}bg-blue-600 text-white shadow-md{% endif %}">
-                        <svg class="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 24 24">
-                            <path
-                                d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.29-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.93-3.5 3.22-6 3.22z" />
-                        </svg>
-                        <span class="transition-opacity duration-300">Doctors</span> {# AÑADIR SPAN Y CLASE #}
-                    </a>
-                </li>
-                <li class="mb-2">
-                    <a href="#"
-                        class="flex items-center px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-blue-500 hover:text-white transition-colors duration-200">
-                        <svg class="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 24 24">
-                            <path
-                                d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.29-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.93-3.5 3.22-6 3.22z" />
-                        </svg>
-                        <span class="transition-opacity duration-300">Patients</span> {# AÑADIR SPAN Y CLASE #}
-                    </a>
-                </li>
-                <li class="mb-2">
-                    <a href="#"
-                        class="flex items-center px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-blue-500 hover:text-white transition-colors duration-200">
-                        <svg class="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M19 13H5v-2h14v2zm-2-7H7v2h10V6zM17 17H7v2h10v-2z" />
-                        </svg>
-                        <span class="transition-opacity duration-300">Medical History</span> {# AÑADIR SPAN Y CLASE #}
-                    </a>
-                </li>
-                <li class="mb-2">
-                    <a href="#"
-                        class="flex items-center px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-blue-500 hover:text-white transition-colors duration-200">
-                        <svg class="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 24 24">
-                            <path
-                                d="M17 12h-2v2h2v-2zm-4 0h-2v2h2v-2zm-4 0H7v2h2v-2zm10-5V4c0-1.1-.9-2-2-2H8c-1.1 0-2 .9-2 2v3H4c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2h-2zM8 4h8v3H8V4zm12 16H4V9h16v11z" />
-                        </svg>
-                        <span class="transition-opacity duration-300">Appointments</span> {# AÑADIR SPAN Y CLASE #}
-                    </a>
-                </li>
+                <!-- Resto de los elementos del menú -->
             </ul>
         </nav>
+
     </div>
 
     {% if user.is_authenticated %}
@@ -97,9 +62,10 @@
                         d="M17 16l4-4m0 0l-4-4m4 4H7m6 0v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v8a4 4 0 004 4h3a4 4 0 004-4v-2">
                     </path>
                 </svg>
-                <span class="transition-opacity duration-300">Cerrar Sesión</span> {# AÑADIR SPAN Y CLASE #}
+                <span class="transition-opacity duration-300">Cerrar Sesión</span>
             </button>
         </form>
     </div>
     {% endif %}
+    
 </aside>

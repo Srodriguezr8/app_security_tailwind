@@ -19,11 +19,20 @@
   transition: width 0.3s ease-in-out, padding 0.3s ease-in-out;
 }
 
+body {
+    position: relative;
+}
+
 /* Estado expandido por defecto */
 body.sidebar-expanded #sidebar {
-  width: 16rem; /* 256px, w-64 */
+  width: 20rem; /* 256px, w-64 */
   padding-left: 1.5rem; /* Ajusta este padding si es necesario, 24px */
   padding-right: 1.5rem; /* Ajusta este padding si es necesario, 24px */
+}
+
+/* Rota el icono al hacer clic */
+#sidebar-toggle.active svg {
+    transform: rotate(90deg);
 }
 
 /* Estado colapsado del sidebar */
@@ -32,6 +41,7 @@ body.sidebar-collapsed #sidebar {
   padding-left: 0.5rem; /* Reduce el padding al contraer */
   padding-right: 0.5rem; /* Reduce el padding al contraer */
 }
+
 
 /* Oculta el texto del título "MediCenter" */
 body.sidebar-collapsed #sidebar h2 {
@@ -67,11 +77,11 @@ body.sidebar-collapsed #sidebar form button {
 }
 
 body.sidebar-expanded #main-content-wrapper {
-  margin-left: 16rem; /* Margen para empujar el contenido más allá del sidebar expandido (ancho de w-64) */
+  margin-left: 0rem; /* Margen para empujar el contenido más allá del sidebar expandido (ancho de w-64) */
 }
 
 body.sidebar-collapsed #main-content-wrapper {
-  margin-left: 5rem; /* Margen para empujar el contenido más allá del sidebar contraído (ancho de w-20) */
+  margin-left: 0rem; /* Margen para empujar el contenido más allá del sidebar contraído (ancho de w-20) */
 }
 
 /* Media query para pantallas más pequeñas (opcional, si quieres que el sidebar se oculte completamente en móvil) */
