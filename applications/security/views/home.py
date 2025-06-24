@@ -14,8 +14,14 @@ class ModuloTemplateView(PermissionMixin,TemplateView):
         context["title1"]= "Modulos Disponibles"
         MenuModule(self.request).fill(context)
         
-        print("estoy saliendo en el modulo template view")
-       
+         # Si no hay grupo actual pero hay grupos disponibles, selecciona el primero
+        if not context.get("group") and context.get("group_list"):
+            context["group"] = context["group_list"].first()
+        
+        # print("estoy saliendo en el modulo template view")
+        # print("MENUS:", context.get("menu_list"))
+        # print("GRUPOS:", context.get("group_list"))
+        # print("GRUPO ACTUAL:", context.get("group"))
         return context
     
     
