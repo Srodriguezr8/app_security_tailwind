@@ -7,21 +7,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <title>{% block title %}SaludTotal{% endblock %}</title>
+
+    {# Carga Tailwind CSS primero #}
     {% tailwind_css %}
+    {# Carga tu CSS personalizado después para que pueda sobrescribir las reglas de Tailwind si es necesario #}
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+
 </head>
 
-<body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 sidebar-expanded">
+
+<body class="bg-primary-custom text-primary-custom font-sans sidebar-expanded transition-colors duration-300">
     <div class="flex h-screen overflow-hidden">
-        
+
         {% include 'includes/sidebar.html' %}
 
-
-        <div id="main-content-wrapper" class="flex-1 flex flex-col overflow-hidden transition-all duration-300 ease-in-out"> 
+        <div id="main-content-wrapper" class="flex-1 flex flex-col overflow-hidden transition-all duration-300 ease-in-out">
 
             {% include 'includes/header.html' %}
 
-            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 dark:bg-gray-800 p-6 md:p-8">
-                <div class="max-w-7xl mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6"> 
+            <main class="flex-1 overflow-x-hidden overflow-y-auto p-6 md:p-8">
+
+                <div class="max-w-7xl mx-auto rounded-lg bg-primary-custom shadow-custom p-6">
                     {% if request.user.is_authenticated %}
                     {% block content %}{% endblock %}
                     {% else %}
@@ -39,7 +45,7 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-   
+
 
         // --- Theme Toggle Management ---
         const themeToggle = document.getElementById('theme-toggle');
@@ -235,68 +241,45 @@
             });
         }
 
-        // --- Sidebar Toggle Management ---
+     // --- Sidebar Toggle Management ---
         const sidebarToggle = document.getElementById('sidebar-toggle');
-        const sidebar = document.getElementById('sidebar');
-        const mainContentWrapper = document.getElementById('main-content-wrapper');
-        const toggleIconRight = document.getElementById('toggle-icon-right');
-        const toggleIconLeft = document.getElementById('toggle-icon-left');
+        const sidebar = document.getElementById('sidebar'); // Necesario para verificar su existencia
+        const mainContentWrapper = document.getElementById('main-content-wrapper'); // Necesario para verificar su existencia
+        const toggleIconMenu = document.getElementById('toggle-icon-menu');
+        const toggleIconClose = document.getElementById('toggle-icon-close');
 
-        
-        if (sidebarToggle) {
-            sidebarToggle.addEventListener('click', function (e) {
-                this.classList.toggle('active');
-            });
-        }
-
-        // Verifica si los elementos existen antes de agregar el evento
-       if (sidebarToggle && sidebar) {
-        // Inicializar posición del botón
-        function updateSidebarButtonPosition() {
-            const isCollapsed = document.body.classList.contains('sidebar-collapsed');
-            if (isCollapsed) {
-                sidebarToggle.classList.remove('left-20rem');
-                sidebarToggle.classList.add('left-6rem');
+        if (sidebarToggle && sidebar && mainContentWrapper && toggleIconMenu && toggleIconClose) {
+            // Establecer el estado inicial de los iconos al cargar la página
+            // Si el body tiene 'sidebar-collapsed' al inicio, muestra el icono de menú y esconde el de cerrar
+            const isInitiallyCollapsed = document.body.classList.contains('sidebar-collapsed');
+            if (isInitiallyCollapsed) {
+                toggleIconMenu.classList.add('hidden');
+                toggleIconClose.classList.remove('hidden');
             } else {
-                sidebarToggle.classList.remove('left-6rem');
-                sidebarToggle.classList.add('left-20rem');
-            }
-        }
-
-        updateSidebarButtonPosition();
-
-        sidebarToggle.addEventListener('click', function () {
-            this.classList.toggle('active');
-            document.body.classList.toggle('sidebar-expanded');
-            document.body.classList.toggle('sidebar-collapsed');
-            setTimeout(updateSidebarButtonPosition, 100); // Delay para que se vea animación
-        });
-    }
-
-        if (sidebarToggle && sidebar && mainContentWrapper && toggleIconRight && toggleIconLeft) {
-            function updateSidebarToggleIcons() {
-
-                
-                if (document.body.classList.contains('sidebar-collapsed')) {
-                    toggleIconRight.classList.remove('hidden');
-                    toggleIconLeft.classList.add('hidden');
-                } else {
-                    toggleIconRight.classList.add('hidden');
-                    toggleIconLeft.classList.remove('hidden');
-                }
+                // Si no está colapsado, muestra el icono de cerrar (para indicar que se puede colapsar) y esconde el de menú
+                toggleIconMenu.classList.remove('hidden');
+                toggleIconClose.classList.add('hidden');
             }
 
-            updateSidebarToggleIcons();
-
-            sidebarToggle.addEventListener('click', function() {
+            sidebarToggle.addEventListener('click', function () {
+                // Alternar las clases del body para cambiar el estado de la barra lateral
                 document.body.classList.toggle('sidebar-expanded');
                 document.body.classList.toggle('sidebar-collapsed');
-                updateSidebarToggleIcons();
+
+                // Actualizar la visibilidad de los iconos después de alternar las clases
+                const isCollapsed = document.body.classList.contains('sidebar-collapsed');
+                if (isCollapsed) {
+                    toggleIconMenu.classList.remove('hidden'); // Cuando está colapsado, muestra el menú (☰)
+                    toggleIconClose.classList.add('hidden');    // Y esconde la "X"
+                } else {
+                    toggleIconMenu.classList.add('hidden');     // Cuando está expandido, esconde el menú (☰)
+                    toggleIconClose.classList.remove('hidden'); // Y muestra la "X"
+                }
             });
         }
 
     });
-    
+
 </script>
 
 {% endblock %}

@@ -1,10 +1,8 @@
-// theme/static_src/tailwind.config.js
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
     '../../templates/**/*.{html,js}', // Crucial para que Tailwind escanee tus plantillas HTML
-    // Agrega aquí cualquier otra ruta donde uses clases de Tailwind, por ejemplo:
-    // './src/**/*.js', // Si tienes archivos JS en src/ que añaden clases de Tailwind
+    // Agrega aquí cualquier otra ruta donde uses clases de Tailwind
   ],
   darkMode: 'class', // Habilita el modo oscuro basado en la clase 'dark' en el elemento html
   theme: {
@@ -32,13 +30,12 @@ module.exports = {
         // --- Colores de acento para gráficos y elementos interactivos del dashboard ---
         'dashboard-accent-purple': '#7E48E8', // Púrpura vibrante para acentos y gráficos
         'dashboard-accent-cyan': '#4ACADF',   // Azul cian para acentos y gráficos
-        'dashboard-progress-green': '#4CAF50', // Verde para barras de progreso, etc. (observado en algunos dashboards similares)
-        'dashboard-progress-red': '#EF5350',   // Rojo para indicar problemas (observado en algunos dashboards similares)
+        'dashboard-progress-green': '#4CAF50', // Verde para barras de progreso, etc.
+        'dashboard-progress-red': '#EF5350',   // Rojo para indicar problemas
         
         // --- Bordes y sombras sutiles para el dashboard oscuro ---
         'dark-border-subtle': '#3A3D42',    // Bordes muy oscuros para separación
       },
-      // Puedes extender otras propiedades aquí si es necesario, como sombras o fuentes
       boxShadow: {
         'dark-card-shadow': '0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.1)', // Sombra para cards
       }
