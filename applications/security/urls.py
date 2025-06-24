@@ -51,7 +51,6 @@ urlpatterns = [
 
   # rutas de autenticacion
   path('logout/', signout, name='signout'),
-  path('', StartTemplateView.as_view()),
   path('signin/', signin, name='signin'),
   #path('signup/', signup, name='signup'),
 ]
