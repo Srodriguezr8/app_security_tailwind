@@ -7,76 +7,281 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <title>{% block title %}SaludTotal{% endblock %}</title>
+
+    {# Carga Tailwind CSS primero #}
     {% tailwind_css %}
+    {# Carga tu CSS personalizado después para que pueda sobrescribir las reglas de Tailwind si es necesario #}
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+
 </head>
 
-<body class="bg-gray-100 min-h-screen">
- 
-    {% if user.is_authenticated %}
-    {% include 'navbar.html' %}
-    <div class="container mx-auto px-4 py-8">
-        {% block content %}{% endblock %}
+
+<body class="bg-primary-custom text-primary-custom font-sans sidebar-expanded transition-colors duration-300">
+    <div class="flex h-screen overflow-hidden">
+
+        {% include 'includes/sidebar.html' %}
+
+        <div id="main-content-wrapper" class="flex-1 flex flex-col overflow-hidden transition-all duration-300 ease-in-out">
+
+            {% include 'includes/header.html' %}
+
+            <main class="flex-1 overflow-x-hidden overflow-y-auto p-6 md:p-8">
+
+                <div class="max-w-7xl mx-auto rounded-lg bg-primary-custom shadow-custom p-6">
+                    {% if request.user.is_authenticated %}
+                    {% block content %}{% endblock %}
+                    {% else %}
+                    {% include 'includes/home_public.html' %}
+                    {% endif %}
+                </div>
+            </main>
+
+        </div>
     </div>
-    {% else %}
-    {% block public_content %}
-    {% include 'public_content.html' %}
-    {% endblock %}
-    {% endif %}
 
-    {% block js %}
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            // Manejo del dropdown de usuario
-            const userDropdown = document.getElementById('userDropdown');
-            if (userDropdown) {
-                const userDropdownMenu = document.getElementById('userDropdownMenu');
-                const userDropdownIcon = document.getElementById('userDropdownIcon');
-
-                userDropdown.addEventListener('click', function (e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-
-                    const isVisible = !userDropdownMenu.classList.contains('opacity-0');
-
-                    if (isVisible) {
-                        userDropdownMenu.classList.add('opacity-0', 'invisible', 'scale-95');
-                        userDropdownMenu.classList.remove('opacity-100', 'visible', 'scale-100');
-                        userDropdownIcon.classList.remove('rotate-180');
-                    } else {
-                        userDropdownMenu.classList.remove('opacity-0', 'invisible', 'scale-95');
-                        userDropdownMenu.classList.add('opacity-100', 'visible', 'scale-100');
-                        userDropdownIcon.classList.add('rotate-180');
-                    }
-                });
-
-                document.addEventListener('click', function (e) {
-                    if (!userDropdown.contains(e.target) && !userDropdownMenu.contains(e.target)) {
-                        userDropdownMenu.classList.add('opacity-0', 'invisible', 'scale-95');
-                        userDropdownMenu.classList.remove('opacity-100', 'visible', 'scale-100');
-                        userDropdownIcon.classList.remove('rotate-180');
-                    }
-                });
-
-                userDropdownMenu.addEventListener('click', function (e) {
-                    e.stopPropagation();
-                });
-            }
-
-            // Selector de grupos
-            const groupSelect = document.getElementById('groupSelect');
-            if (groupSelect) {
-                groupSelect.addEventListener('change', function () {
-                    const selectedGroupId = this.value;
-                    if (selectedGroupId) {
-                        window.location.href = `{% url 'security:home' %}?gpid=${selectedGroupId}`;
-                    } else {
-                        window.location.href = `{% url 'security:home' %}`;
-                    }
-                });
-            }
-        });
-    </script>
-    {% endblock %}
 </body>
+
+{% block js %}
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+
+        // --- Theme Toggle Management ---
+        const themeToggle = document.getElementById('theme-toggle');
+        const sunIcon = document.getElementById('sun-icon');
+        const moonIcon = document.getElementById('moon-icon');
+
+        function updateThemeIcons() {
+            if (document.documentElement.classList.contains('dark')) {
+                sunIcon.style.display = 'block';
+                moonIcon.style.display = 'none';
+            } else {
+                sunIcon.style.display = 'none';
+                moonIcon.style.display = 'block';
+            }
+        }
+
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+
+        updateThemeIcons();
+
+        if (themeToggle) {
+            themeToggle.addEventListener('click', function () {
+                const isDark = document.documentElement.classList.toggle('dark');
+                localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                updateThemeIcons();
+            });
+        }
+
+        // --- User Dropdown Management ---
+        const userDropdown = document.getElementById('userDropdown');
+        if (userDropdown) {
+            const userDropdownMenu = document.getElementById('userDropdownMenu');
+            const userDropdownIcon = document.getElementById('userDropdownIcon');
+
+            function toggleUserDropdown() {
+                const isVisible = !userDropdownMenu.classList.contains('opacity-0');
+                if (isVisible) {
+                    userDropdownMenu.classList.add('opacity-0', 'invisible', 'scale-95');
+                    userDropdownMenu.classList.remove('opacity-100', 'visible', 'scale-100');
+                    userDropdownIcon.classList.remove('rotate-180');
+                } else {
+                    userDropdownMenu.classList.remove('opacity-0', 'invisible', 'scale-95');
+                    userDropdownMenu.classList.add('opacity-100', 'visible', 'scale-100');
+                    userDropdownIcon.classList.add('rotate-180');
+                }
+            }
+
+            userDropdown.addEventListener('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleUserDropdown();
+            });
+
+            document.addEventListener('click', function (e) {
+                if (!userDropdown.contains(e.target) && !userDropdownMenu.contains(e.target)) {
+                    if (!userDropdownMenu.classList.contains('opacity-0')) {
+                        toggleUserDropdown();
+                    }
+                }
+            });
+
+            userDropdownMenu.addEventListener('click', function (e) {
+                e.stopPropagation();
+            });
+        }
+
+        // --- Group Selector Management ---
+        const groupSelect = document.getElementById('groupSelect');
+        if (groupSelect) {
+            groupSelect.addEventListener('change', function () {
+                const selectedGroupId = this.value;
+                if (selectedGroupId) {
+                    window.location.assign(`{% url 'security:home' %}?gpid=${selectedGroupId}`);
+                } else {
+                    window.location.assign(`{% url 'security:home' %}`);
+                }
+            });
+        }
+
+        // --- Password Toggle Visibility ---
+        const togglePassword = document.getElementById('togglePassword');
+        const passwordInput = document.getElementById('modalPassword');
+        const eyeIcon = document.getElementById('eyeIcon');
+        if (togglePassword && passwordInput && eyeIcon) {
+            togglePassword.addEventListener('click', function () {
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+                eyeIcon.classList.toggle('fa-eye');
+                eyeIcon.classList.toggle('fa-eye-slash');
+            });
+        }
+
+        // --- Login Modal Management ---
+        const loginModal = document.getElementById('loginModal');
+        const medicalLoading = document.getElementById('medicalLoading');
+        const loginErrors = document.getElementById('loginErrors');
+        const loginForm = document.getElementById('modalLoginForm');
+
+        window.openLoginModal = function () {
+            if (loginModal) {
+                loginModal.classList.remove('hidden');
+                const emailInput = document.getElementById('modalEmail');
+                if (emailInput) emailInput.focus();
+            }
+        };
+
+        window.closeLoginModal = function () {
+            if (loginModal) {
+                loginModal.classList.add('hidden');
+                if (loginErrors) {
+                    loginErrors.textContent = '';
+                    loginErrors.classList.add('hidden');
+                }
+                if (loginForm) {
+                    loginForm.reset();
+                }
+            }
+        };
+
+        if (loginForm) {
+            loginForm.addEventListener('submit', async function (e) {
+                e.preventDefault();
+
+                if (medicalLoading) medicalLoading.classList.remove('hidden');
+                if (loginErrors) {
+                    loginErrors.textContent = '';
+                    loginErrors.classList.add('hidden');
+                }
+
+                try {
+                    const username = document.getElementById('modalEmail').value;
+                    const password = document.getElementById('modalPassword').value;
+
+                    if (!username || !password) {
+                        if (loginErrors) {
+                            loginErrors.textContent = 'Los campos de correo electrónico y contraseña son obligatorios.';
+                            loginErrors.classList.remove('hidden');
+                        }
+                        return;
+                    }
+
+                    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+                    const response = await fetch("/security/signin/", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': csrfToken,
+                        },
+                        body: JSON.stringify({
+                            username: username,
+                            password: password,
+                        }),
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        console.log('Login successful:', data);
+                        window.location.href = '/security/home/';
+                    } else {
+                        const errorData = await response.json();
+                        let errorMessage = 'Error al iniciar sesión. Inténtalo de nuevo.';
+
+                        if (errorData.errors && typeof errorData.errors === 'string') {
+                            errorMessage = errorData.errors;
+                        } else if (errorData.error) {
+                            errorMessage = errorData.error;
+                        } else if (errorData.non_field_errors && errorData.non_field_errors.length > 0) {
+                            errorMessage = errorData.non_field_errors.join(' ');
+                        } else if (errorData.username) {
+                            errorMessage = 'Correo electrónico: ' + errorData.username.join(' ');
+                        } else if (errorData.password) {
+                            errorMessage = 'Contraseña: ' + errorData.password.join(' ');
+                        }
+                        if (loginErrors) {
+                            loginErrors.textContent = errorMessage;
+                            loginErrors.classList.remove('hidden');
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error during login request:', error);
+                    if (loginErrors) {
+                        loginErrors.textContent = 'Ocurrió un error en la conexión. Por favor, inténtalo más tarde.';
+                        loginErrors.classList.remove('hidden');
+                    }
+                } finally {
+                    if (medicalLoading) medicalLoading.classList.add('hidden');
+                }
+            });
+        }
+
+     // --- Sidebar Toggle Management ---
+        const sidebarToggle = document.getElementById('sidebar-toggle');
+        const sidebar = document.getElementById('sidebar'); // Necesario para verificar su existencia
+        const mainContentWrapper = document.getElementById('main-content-wrapper'); // Necesario para verificar su existencia
+        const toggleIconMenu = document.getElementById('toggle-icon-menu');
+        const toggleIconClose = document.getElementById('toggle-icon-close');
+
+        if (sidebarToggle && sidebar && mainContentWrapper && toggleIconMenu && toggleIconClose) {
+            // Establecer el estado inicial de los iconos al cargar la página
+            // Si el body tiene 'sidebar-collapsed' al inicio, muestra el icono de menú y esconde el de cerrar
+            const isInitiallyCollapsed = document.body.classList.contains('sidebar-collapsed');
+            if (isInitiallyCollapsed) {
+                toggleIconMenu.classList.add('hidden');
+                toggleIconClose.classList.remove('hidden');
+            } else {
+                // Si no está colapsado, muestra el icono de cerrar (para indicar que se puede colapsar) y esconde el de menú
+                toggleIconMenu.classList.remove('hidden');
+                toggleIconClose.classList.add('hidden');
+            }
+
+            sidebarToggle.addEventListener('click', function () {
+                // Alternar las clases del body para cambiar el estado de la barra lateral
+                document.body.classList.toggle('sidebar-expanded');
+                document.body.classList.toggle('sidebar-collapsed');
+
+                // Actualizar la visibilidad de los iconos después de alternar las clases
+                const isCollapsed = document.body.classList.contains('sidebar-collapsed');
+                if (isCollapsed) {
+                    toggleIconMenu.classList.remove('hidden'); // Cuando está colapsado, muestra el menú (☰)
+                    toggleIconClose.classList.add('hidden');    // Y esconde la "X"
+                } else {
+                    toggleIconMenu.classList.add('hidden');     // Cuando está expandido, esconde el menú (☰)
+                    toggleIconClose.classList.remove('hidden'); // Y muestra la "X"
+                }
+            });
+        }
+
+    });
+
+</script>
+
+{% endblock %}
 
 </html>

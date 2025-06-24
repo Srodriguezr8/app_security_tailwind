@@ -1,0 +1,244 @@
+{% extends 'home.html' %}
+{% load static %}
+
+<title>{% block title %}{{ title }}{% endblock %}</title>
+
+{% block content %}
+    {% include 'fragments/messages.html' %}
+    <section class="dark:bg-principal mt-2">
+        <div class="text-center" data-aos="fade-up" data-aos-delay="200">
+            <div class="sm:pt-8 lg:pt-4">
+                <h1 class="rounded-2xl bg-indigo-500 px-2 py-1 text-white uppercase text-4xl">
+                    {{ title1 }}
+                </h1>
+            </div>
+            <div class="lg:p-2 rounded-3xl" data-aos="fade-up" data-aos-delay="200">
+                <!-- Barra de búsqueda -->
+                <div class="p-4 flex justify-center">
+                    <label for="table-search" class="sr-only">Search</label>
+                    <div class="relative mt-1">
+                        <div class="absolute inset-y-0 rtl:inset-r-0 start-0 flex items-center ps-3 pointer-events-none">
+                            <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true"
+                                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                    stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+                            </svg>
+                        </div>
+                        <form method="GET">
+                            <input type="text" name="q" id="table-search"
+                                class="text-center pl-10 shadow-sm bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 pr-12 dark:bg-principal dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"
+                                placeholder="Búsqueda sin límites" value="{{ request.GET.q }}">
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Tabla de grupos -->
+                <div class="overflow-x-auto">
+                    <table class="w-full text-center text-lg">
+                        <thead class="uppercase font-Tiny5 bg-gray-50 dark:bg-secundario dark:text-blue-300">
+                            <tr>
+                                <th scope="col" class="px-6 py-3">ID</th>
+                                <th scope="col" class="px-6 py-3">Nombre del Grupo</th>
+                                <th scope="col" class="px-6 py-3">Permisos</th>
+                                <th scope="col" class="px-6 py-3">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in group %}
+                            <tr class="dark:text-gray-400 bg-white border-b dark:bg-[#0b1121] dark:border-secundario hover:bg-gray-50 dark:hover:bg-[#121c33]">
+                                <td class="px-6 py-4">{{ item.id }}</td>
+                                <td class="px-6 py-4 font-semibold">{{ item.name }}</td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center justify-center space-x-2">
+                                        <button onclick="openPermissionsModal('{{ item.id }}', '{{ item.name }}')"
+                                                class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg text-sm flex items-center space-x-2 transition-colors duration-300">
+                                            <i class="fa-solid fa-eye text-sm"></i>
+                                            <span>Ver permisos</span>
+                                        </button>
+                                        <span class="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded-full text-sm font-semibold">
+                                            {{ item.permissions.count }}
+                                        </span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    {% if permissions.change_group %}
+                                    <a href="{% url 'security:group_update' item.id %}"
+                                        class="text-blue-600 dark:text-blue-500 hover:text-blue-800 mx-1">
+                                        <i class="fa-solid fa-edit text-lg"></i>
+                                    </a>
+                                    {% endif %}
+                                    {% if permissions.delete_group %}
+                                    <a href="#"
+                                        class="text-red-600 dark:text-red-500 hover:text-red-800 mx-1"
+                                        onclick="openDeleteModal('{{ item.id }}', '{{ item.name }}')">
+                                        <i class="fa-solid fa-trash text-lg"></i>
+                                    </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Paginación -->
+                <div class="flex justify-center mt-4">
+                    <nav aria-label="Page navigation example">
+                        <ul class="inline-flex -space-x-px">
+                            {% if page_obj.has_previous %}
+                            <li>
+                                <a href="?page=1{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}"
+                                    class="flex items-center justify-center px-3 h-8 ms-0 leading-tight text-gray-500 bg-white border border-e-0 border-gray-300 rounded-s-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-[#0b1121] dark:border-secundario dark:text-gray-400 dark:hover:bg-[#121c33] dark:hover:text-white">Anterior</a>
+                            </li>
+                            {% endif %}
+                            {% for num in page_obj.paginator.page_range %}
+                            <li>
+                                <a href="?page={{ num }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}"
+                                    class="flex items-center justify-center px-3 h-8 leading-tight {% if num == page_obj.number %}text-blue-600 bg-blue-50 border border-gray-300 hover:bg-blue-100 hover:text-blue-700 dark:bg-secundario dark:border-principal dark:text-blue-300{% else %}text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-[#0b1121] dark:border-secundario dark:text-gray-400 dark:hover:bg-[#121c33] dark:hover:text-white{% endif %}">
+                                    {{ num }}
+                                </a>
+                            </li>
+                            {% endfor %}
+                            {% if page_obj.has_next %}
+                            <li>
+                                <a href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}"
+                                    class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 rounded-e-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-[#0b1121] dark:border-secundario dark:text-gray-400 dark:hover:bg-[#121c33] dark:hover:text-white">Siguiente</a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+
+                <!-- Enlaces adicionales -->
+                <div class="flex flex-col md:flex-row justify-center form-group text-center p-4">
+                    {% if permissions.add_group %}
+                    <a class="bg-blue-700 hover:bg-blue-800 text-white py-2 px-4 rounded-full mr-0 md:mr-2 mb-2 md:mb-0 flex items-center justify-center transition-colors duration-300"
+                        href="{{ create_url }}">
+                        <i class="fa-solid fa-plus mr-2"></i> Nuevo Grupo
+                    </a>
+                    {% endif %}
+                    <a class="bg-blue-700 hover:bg-blue-800 text-white py-2 px-4 rounded-full flex items-center justify-center transition-colors duration-300"
+                        href="{% url 'security:home' %}">
+                        <i class="fa-solid fa-house"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Modal para ver permisos -->
+    <div id="permissionsModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white dark:bg-[#0b1121] rounded-lg shadow-xl" style="width: 400px; height: 500px;">
+            <!-- Header del modal -->
+            <div class="flex justify-between items-center p-4 border-b dark:border-gray-600">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                    Permisos Asignados
+                </h3>
+                <button onclick="closePermissionsModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                    <i class="fa-solid fa-times text-xl"></i>
+                </button>
+            </div>
+            <!-- Contenido del modal -->
+            <div class="p-4 overflow-y-auto" style="height: calc(500px - 120px);">
+                <div class="mb-3">
+                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                        <strong>Grupo:</strong> <span id="modalGroupName"></span>
+                    </p>
+                </div>
+                <div class="border-t dark:border-gray-600 pt-3">
+                    <h4 class="font-medium text-gray-900 dark:text-white mb-3">Lista de Permisos:</h4>
+                    <div id="permissionsList" class="space-y-2">
+                        <!-- Los permisos se cargarán aquí via JavaScript -->
+                    </div>
+                </div>
+            </div>
+            <!-- Footer del modal -->
+            <div class="flex justify-end p-4 border-t dark:border-gray-600">
+                <button onclick="closePermissionsModal()" 
+                        class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors duration-300">
+                    <i class="fa-solid fa-times mr-2"></i>Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    {% include 'fragments/delete.html' %}
+
+    <script>
+        // Función para abrir modal de permisos
+        function openPermissionsModal(id, groupName) {
+            document.getElementById('modalGroupName').textContent = groupName;
+            fetch(`/security/group/${id}/permissions/`)
+                .then(response => response.json())
+                .then(data => {
+                    const permissionsList = document.getElementById('permissionsList');
+                    permissionsList.innerHTML = '';
+                    if (data.permissions && data.permissions.length > 0) {
+                        data.permissions.forEach(permission => {
+                            const permissionItem = document.createElement('div');
+                            permissionItem.className = 'bg-gray-100 dark:bg-gray-800 p-2 rounded-lg';
+                            permissionItem.innerHTML = `
+                                <div class="flex items-center space-x-2">
+                                    <i class="fa-solid fa-shield-alt text-blue-600 dark:text-blue-400"></i>
+                                    <span class="text-gray-200 dark:text-white">${permission.name}</span>
+                                </div>
+                            `;
+                            permissionsList.appendChild(permissionItem);
+                        });
+                    } else {
+                        permissionsList.innerHTML = '<p class="text-gray-500 dark:text-white-400 text-sm">No hay permisos asignados</p>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    const permissionsList = document.getElementById('permissionsList');
+                    permissionsList.innerHTML = '<p class="text-red-500 text-sm">Error al cargar los permisos</p>';
+                });
+            document.getElementById('permissionsModal').classList.remove('hidden');
+        }
+
+        // Función para cerrar modal de permisos
+        function closePermissionsModal() {
+            document.getElementById('permissionsModal').classList.add('hidden');
+        }
+
+        // Función para abrir modal de eliminar
+        function openDeleteModal(id, name) {
+            const deleteForm = document.getElementById('deleteForm');
+            deleteForm.action = `{% url 'security:group_delete' 0 %}`.replace('0', id);
+            document.getElementById('Description').textContent = `ID: ${id} - ${name}`;
+            document.getElementById('deleteModal').classList.remove('hidden');
+        }
+
+        // Función para cerrar modal de eliminar
+        function closeModal() {
+            document.getElementById('deleteModal').classList.add('hidden');
+        }
+
+        // Cerrar modales al hacer clic fuera de ellos
+        document.addEventListener('click', function(event) {
+            const permissionsModal = document.getElementById('permissionsModal');
+            const deleteModal = document.getElementById('deleteModal');
+            if (event.target === permissionsModal) {
+                closePermissionsModal();
+            }
+            if (event.target === deleteModal) {
+                closeModal();
+            }
+        });
+
+        // Asegurar redirección correcta en formulario de eliminación
+        document.addEventListener('DOMContentLoaded', function() {
+            const deleteForm = document.getElementById('deleteForm');
+            if (deleteForm) {
+                deleteForm.addEventListener('submit', function(e) {
+                    const submitBtn = deleteForm.querySelector('button[type="submit"]');
+                    if (submitBtn) {
+                        submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Eliminando...';
+                        submitBtn.disabled = true;
+                    }
+                });
+            }
+        });
+    </script>
+{% endblock %}

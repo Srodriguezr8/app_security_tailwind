@@ -19,9 +19,11 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 
-from applications.security.views.auth import signin, signout
+from applications.security.views.home import StartTemplateView
+
 
 urlpatterns = [
+    path('', StartTemplateView.as_view()),
     path('admin/', admin.site.urls),
     path('security/', include('applications.security.urls', namespace='security')),
     path("__reload__/", include("django_browser_reload.urls")),
