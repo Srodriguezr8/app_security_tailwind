@@ -4,11 +4,12 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Tus variables CSS personalizadas */
+/*  variables CSS personalizadas */
 :root {
     /* Colores base para el tema CLARO (ESTOS SON LOS VALORES POR DEFECTO DE LAS VARIABLES GENÉRICAS) */
     --bg-primary: #FFFFFF;
-    --bg-secondary: #F8F9FA;
+    --bg-secondary: #dbe0e6;
+    --bg-tertiary: #adb6c5; 
     --text-primary: #1F2937;
     --text-secondary: #4B5563;
     --accent-color: #3B82F6;
@@ -17,21 +18,29 @@
 
     /* Colores específicos para el tema CLARO (se mantienen como referencia si los necesitas directamente, pero pueden ser redundantes si solo usas las genéricas) */
     --bg-primary-light: #FFFFFF;
-    --bg-secondary-light: #F8F9FA;
+    --bg-secondary-light: #d9dfe6;
+    --bg-tertiary-light: #c0c7d4;
+    --bg-cuaternary-light: #8895ac; /* Un color terciario para fondos menos importantes */
     --text-primary-light: #1F2937;
     --text-secondary-light: #4B5563;
+    --text-tertiary-light: #3B2F59; /* Un color terciario para textos menos importantes */
     --accent-color-light: #3B82F6;
     --border-light: #E5E7EB;
     --shadow-light: rgba(0, 0, 0, 0.1);
+    --shadow1-light: rgba(32, 30, 30, 0.2);
 
     /* Colores específicos para el tema OSCURO (ajustados para mejor contraste) */
     --bg-primary-dark: #060C1B;
-    --bg-secondary-dark: #111827;
+    --bg-secondary-dark: #161e2e;
+    --bg-tertiary-dark: #2b3242;
+    --bg-cuaternary-dark: #3f475a;
     --text-primary-dark: #E2E8F0;
     --text-secondary-dark: #A0AEC0;
+    --text-tertiary-dark: #A854F7; /* Un color terciario para textos menos importantes */
     --accent-color-dark: #3B82F6;
     --border-dark: #4A5568;
     --shadow-dark: rgba(0, 0, 0, 0.3);
+    --shadow1-dark: rgba(48, 42, 42, 0.5);
 
     /* Colores generales que pueden ser los mismos o específicos */
     --logo-gradient-start: #3B82F6;
@@ -43,15 +52,44 @@
     --card-bg-tertiary: #1C363B;
 }
 
+
+/* Clases personalizadas que usarán las variables genéricas (que a su vez cambian con el tema) */
+.bg-primary-custom { background-color: var(--bg-primary); }
+.bg-secondary-custom { background-color: var(--bg-secondary); }
+.bg-tertiary-custom { background-color: var(--bg-tertiary); } 
+.bg-cuaternary-custom { background-color: var(--bg-cuaternary); }
+.text-primary-custom { color: var(--text-primary); }
+.text-secondary-custom { color: var(--text-secondary); }
+.text-tertiary-custom { color: var(--text-tertiary); } 
+.text-accent-custom { color: var(--accent-color); }
+.border-custom { border-color: var(--border-color); }
+.shadow-custom { box-shadow: 0 4px 6px -1px var(--shadow-color), 0 2px 4px -2px var(--shadow-color); }
+.shadow1-custom { box-shadow: 0 4px 6px -1px var(--shadow1-light), 0 2px 4px -2px var(--shadow1-light); }
+.bg-card-primary-custom { background-color: var(--card-bg-primary); }
+.bg-card-secondary-custom { background-color: var(--card-bg-secondary); }
+.bg-card-tertiary-custom { background-color: var(--card-bg-tertiary); }
+.text-on-accent-custom { color: #FFFFFF; } /* Blanco sobre el color de acento */
+
+
 /* Aplicar colores del tema OSCURO cuando 'dark' class está activa en html */
 html.dark {
     --bg-primary: var(--bg-primary-dark);
     --bg-secondary: var(--bg-secondary-dark);
+    --bg-tertiary: var(--bg-tertiary-dark);
+    --bg-cuaternary: var(--bg-cuaternary-dark);
     --text-primary: var(--text-primary-dark);
     --text-secondary: var(--text-secondary-dark);
+    --text-tertiary: var(--text-tertiary-dark);
     --accent-color: var(--accent-color-dark);
     --border-color: var(--border-dark);
     --shadow-color: var(--shadow-dark);
+    --shadow1-color: var(--shadow1-dark);
+   
+
+    /* ¡¡Faltaban estas variables para los fondos de tarjetas/menús en modo oscuro!! */
+    --bg-card-primary: var(--bg-card-primary-dark);
+    --bg-card-secondary: var(--bg-card-secondary-dark);
+    --bg-card-tertiary: var(--bg-card-tertiary-dark);
 }
 
 /* --- CLASES ADICIONALES PARA FORZAR TEMA EN ELEMENTOS ESPECÍFICOS --- */
@@ -82,18 +120,31 @@ html.dark {
 /* --- FIN CLASES ADICIONALES --- */
 
 
-/* Clases personalizadas que usarán las variables genéricas (que a su vez cambian con el tema) */
-.bg-primary-custom { background-color: var(--bg-primary); }
-.bg-secondary-custom { background-color: var(--bg-secondary); }
-.text-primary-custom { color: var(--text-primary); }
-.text-secondary-custom { color: var(--text-secondary); }
-.text-accent-custom { color: var(--accent-color); }
-.border-custom { border-color: var(--border-color); }
-.shadow-custom { box-shadow: 0 4px 6px -1px var(--shadow-color), 0 2px 4px -2px var(--shadow-color); }
-.bg-card-primary-custom { background-color: var(--card-bg-primary); }
-.bg-card-secondary-custom { background-color: var(--card-bg-secondary); }
-.bg-card-tertiary-custom { background-color: var(--card-bg-tertiary); }
-.text-on-accent-custom { color: #FFFFFF; } /* Blanco sobre el color de acento */
+
+
+/* Animaciones para el colapso de menús */
+.collapse-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
+    opacity: 0;
+}
+
+.collapse-content.show {
+    max-height: 500px;
+    opacity: 1;
+    transition: max-height 0.3s ease-in, opacity 0.3s ease-in;
+}
+
+
+/* Animación para el chevron cuando se colapsa */
+.bi-chevron-down {
+    transition: transform 0.3s ease;
+}
+
+.bi-chevron-down.rotate-180 {
+    transform: rotate(180deg);
+}
 
 
 /* Estilos generales para el body y otros elementos */
@@ -120,10 +171,9 @@ body {
     border: 1px solid var(--accent-color);
     transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
-.button-custom:hover {
-    background-color: var(--accent-color-dark);
-    border-color: var(--accent-color-dark);
-}
+
+
+
 
 /* Estilos para input */
 .input-custom {
@@ -170,6 +220,7 @@ header .icon-button {
     color: var(--text-secondary);
     transition: background-color 0.2s ease, color 0.2s ease;
 }
+
 header .icon-button:hover {
     background-color: var(--bg-secondary);
     color: var(--text-primary);
@@ -230,6 +281,50 @@ body.sidebar-collapsed #sidebar-toggle {
     opacity: 0;
     pointer-events: none;
 }
+
+/* Efecto hover para los botones de menú */
+.menu-item {
+    background-color: var(--bg-primary) !important;
+    color: var(--text-secondary) !important;
+}
+.menu-item:hover {
+    color: var(--text-primary) !important;
+    transform: translateX(2px);
+}
+
+/* Estilos específicos para los elementos del submenú */
+
+.submenu-item {
+    background-color: var(--shadow-color) !important;
+    margin-left: 0.5rem;
+    border-left: 2px solid var(--text-tertiary);
+    padding-left: 1rem !important;
+    color: var(--text-tertiary);
+}
+
+/* Indicador visual para items activos en submenú */
+.submenu-item.active {
+    background-color: var(--bg-tertiary) !important;
+    color: var(--shadow-color) !important;
+}
+
+.submenu-item.active i {
+   background-color: var(--bg-tertiary) !important;
+   color: var(--shadow-color) !important;
+}
+
+
+.submenu-item:hover {
+    background-color: var(--bg-tertiary) !important;
+    transform: translateX(4px);
+}
+
+
+.button-custom:hover {
+    background-color: var(--accent-color-dark);
+    border-color: var(--accent-color-dark);
+}
+
 
 /* Oculta el texto del título "MediCenter" y otros elementos de texto */
 body.sidebar-collapsed #sidebar h2,

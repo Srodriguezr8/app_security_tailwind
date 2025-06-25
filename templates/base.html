@@ -5,13 +5,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css"> 
+    
     <title>{% block title %}SaludTotal{% endblock %}</title>
 
-    {# Carga Tailwind CSS primero #}
     {% tailwind_css %}
-    {# Carga tu CSS personalizado después para que pueda sobrescribir las reglas de Tailwind si es necesario #}
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    
 
 </head>
 
@@ -21,7 +23,8 @@
 
         {% include 'includes/sidebar.html' %}
 
-        <div id="main-content-wrapper" class="flex-1 flex flex-col overflow-hidden transition-all duration-300 ease-in-out">
+        <div id="main-content-wrapper"
+            class="flex-1 flex flex-col overflow-hidden transition-all duration-300 ease-in-out">
 
             {% include 'includes/header.html' %}
 
@@ -44,6 +47,20 @@
 {% block js %}
 
 <script>
+
+    // Manejar navegación del navegador (botón atrás/adelante)
+    window.addEventListener('popstate', function (event) {
+        if (event.state && event.state.groupId !== undefined) {
+            const groupSelect = document.getElementById('groupSelect');
+            if (groupSelect) {
+                groupSelect.value = event.state.groupId || '';
+                // Disparar evento change para actualizar menús
+                groupSelect.dispatchEvent(new Event('change'));
+            }
+        }
+    });
+
+
     document.addEventListener('DOMContentLoaded', function () {
 
 
@@ -62,13 +79,14 @@
             }
         }
 
+     
         if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             document.documentElement.classList.add('dark');
         } else {
             document.documentElement.classList.remove('dark');
         }
 
-        updateThemeIcons();
+    
 
         if (themeToggle) {
             themeToggle.addEventListener('click', function () {
@@ -78,56 +96,6 @@
             });
         }
 
-        // --- User Dropdown Management ---
-        const userDropdown = document.getElementById('userDropdown');
-        if (userDropdown) {
-            const userDropdownMenu = document.getElementById('userDropdownMenu');
-            const userDropdownIcon = document.getElementById('userDropdownIcon');
-
-            function toggleUserDropdown() {
-                const isVisible = !userDropdownMenu.classList.contains('opacity-0');
-                if (isVisible) {
-                    userDropdownMenu.classList.add('opacity-0', 'invisible', 'scale-95');
-                    userDropdownMenu.classList.remove('opacity-100', 'visible', 'scale-100');
-                    userDropdownIcon.classList.remove('rotate-180');
-                } else {
-                    userDropdownMenu.classList.remove('opacity-0', 'invisible', 'scale-95');
-                    userDropdownMenu.classList.add('opacity-100', 'visible', 'scale-100');
-                    userDropdownIcon.classList.add('rotate-180');
-                }
-            }
-
-            userDropdown.addEventListener('click', function (e) {
-                e.preventDefault();
-                e.stopPropagation();
-                toggleUserDropdown();
-            });
-
-            document.addEventListener('click', function (e) {
-                if (!userDropdown.contains(e.target) && !userDropdownMenu.contains(e.target)) {
-                    if (!userDropdownMenu.classList.contains('opacity-0')) {
-                        toggleUserDropdown();
-                    }
-                }
-            });
-
-            userDropdownMenu.addEventListener('click', function (e) {
-                e.stopPropagation();
-            });
-        }
-
-        // --- Group Selector Management ---
-        const groupSelect = document.getElementById('groupSelect');
-        if (groupSelect) {
-            groupSelect.addEventListener('change', function () {
-                const selectedGroupId = this.value;
-                if (selectedGroupId) {
-                    window.location.assign(`{% url 'security:home' %}?gpid=${selectedGroupId}`);
-                } else {
-                    window.location.assign(`{% url 'security:home' %}`);
-                }
-            });
-        }
 
         // --- Password Toggle Visibility ---
         const togglePassword = document.getElementById('togglePassword');
@@ -241,7 +209,7 @@
             });
         }
 
-     // --- Sidebar Toggle Management ---
+        // --- Sidebar Toggle Management ---
         const sidebarToggle = document.getElementById('sidebar-toggle');
         const sidebar = document.getElementById('sidebar'); // Necesario para verificar su existencia
         const mainContentWrapper = document.getElementById('main-content-wrapper'); // Necesario para verificar su existencia
