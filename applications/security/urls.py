@@ -3,7 +3,7 @@ from django.urls import path
 from applications.security.views.auth import signin, signout
 from applications.security.views.group import GroupCreateView, GroupDeleteView, GroupListView, GroupPermissionsDetailView, GroupUpdateView
 from applications.security.views.group_module_pemission import GroupModulePermissionCreateView, GroupModulePermissionDeleteView, GroupModulePermissionListView, GroupModulePermissionPermissionsView, GroupModulePermissionUpdateView
-from applications.security.views.home import ModuloTemplateView, StartTemplateView
+from applications.security.views.home import ModuloTemplateView, StartTemplateView, get_group_menus, test_group_menus
 from applications.security.views.menu import MenuCreateView, MenuDeleteView, MenuListView, MenuUpdateView
 from applications.security.views.module import ModuleCreateView, ModuleDeleteView, ModuleListView, ModuleUpdateView
 from applications.security.views.user import UserListView, UserUpdateView, UserUpdateView,toggle_user_status
@@ -47,7 +47,10 @@ urlpatterns = [
   path('group_update/<int:pk>/', GroupUpdateView.as_view(),name='group_update'),
   path('group_delete/<int:pk>/', GroupDeleteView.as_view(),name='group_delete'),
   path('group/<int:pk>/permissions/', GroupPermissionsDetailView.as_view(), name='group_permissions'),
-
+  
+  # list menus by grupos
+  path('get-group-menus/', get_group_menus, name='get_group_menus'),
+  path('test-group-menus/', test_group_menus, name='test_group_menus'),
 
   # rutas de autenticacion
   path('logout/', signout, name='signout'),

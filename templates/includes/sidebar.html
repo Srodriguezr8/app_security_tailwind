@@ -1,11 +1,7 @@
 <aside id="sidebar"
-    class="bg-primary-custom w-64 border-r border-gray-200 p-6 flex flex-col justify-between transition-all duration-300 ease-in-out ">
-
-
-    <div>
-
-        <div class="flex items-center  mb-8 relative">
-
+    class="bg-primary-custom w-64 border-r border-gray-200 p-6 flex flex-col justify-between transition-all duration-300 ease-in-out">
+    <div class="flex-1 flex flex-col">
+        <div class="flex items-center mb-8 relative">
             <div id="logo-medical"
                 class="w-10 h-10 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center">
                 <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -19,60 +15,30 @@
 
             <button id="sidebar-toggle"
                 class="absolute top-1/2 -translate-y-1/2 p-2 rounded-full shadow-custom border-custom text-secondary-custom hover:bg-secondary-custom transition-all duration-300 z-50">
-                {# La posición 'right' de este botón ahora se gestiona completamente en input.css #}
                 <svg id="toggle-icon-menu" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 25 25">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16">
                     </path>
                 </svg>
-
                 <svg id="toggle-icon-close" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 25 25">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
                     </path>
                 </svg>
             </button>
-
         </div>
 
-        <nav>
+        <nav class="flex-1 overflow-y-auto overflow-x-hidden">
             <ul>
                 <li class="mb-2">
                     <a href="{% url 'security:home' %}" class="flex items-center px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-blue-500 hover:text-white transition-colors duration-200
-                        {% if request.resolver_match.url_name == 'home' %}bg-blue-600 text-white shadow-md{% endif %}">
-                        <svg class="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 24 24">
+                       {% if request.resolver_match.url_name == 'home' %}bg-blue-600 text-white shadow-md{% endif %}">
+                        <svg class="w-8 h-8 mr-3" fill="currentColor" viewBox="0 0 24 24">
                             <path
                                 d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zm0-8h14V7H7v2z" />
                         </svg>
                         <span class="transition-opacity duration-300">Dashboard</span>
                     </a>
                 </li>
-                <li class="mb-2">
-                    <a href="#"
-                        class="flex items-center px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-blue-500 hover:text-white transition-colors duration-200">
-                        <i class="fas fa-user-md w-5 h-5 mr-3"></i>
-                        <span class="transition-opacity duration-300">Doctors</span>
-                    </a>
-                </li>
-                <li class="mb-2">
-                    <a href="#"
-                        class="flex items-center px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-blue-500 hover:text-white transition-colors duration-200">
-                        <i class="fas fa-users w-5 h-5 mr-3"></i>
-                        <span class="transition-opacity duration-300">Patients</span>
-                    </a>
-                </li>
-                <li class="mb-2">
-                    <a href="#"
-                        class="flex items-center px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-blue-500 hover:text-white transition-colors duration-200">
-                        <i class="fas fa-notes-medical w-5 h-5 mr-3"></i>
-                        <span class="transition-opacity duration-300">Medical History</span>
-                    </a>
-                </li>
-                <li class="mb-2">
-                    <a href="#"
-                        class="flex items-center px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-blue-500 hover:text-white transition-colors duration-200">
-                        <i class="fas fa-calendar-check w-5 h-5 mr-3"></i>
-                        <span class="transition-opacity duration-300">Appointments</span>
-                    </a>
-                </li>
+
             </ul>
         </nav>
 
@@ -94,5 +60,208 @@
         </form>
     </div>
     {% endif %}
-
 </aside>
+
+{% block js %}
+<script>
+    // Función para alternar el colapso de menús
+    function toggleCollapse(menuId) {
+        const element = document.getElementById(menuId);
+        const chevron = document.getElementById(`chevron-${menuId}`);
+
+        if (element && chevron) {
+            element.classList.toggle('show');
+            chevron.classList.toggle('rotate-180');
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        // --- User Dropdown Management ---
+        const userDropdown = document.getElementById('userDropdown');
+        if (userDropdown) {
+            const userDropdownMenu = document.getElementById('userDropdownMenu');
+            const userDropdownIcon = document.getElementById('userDropdownIcon');
+
+            function toggleUserDropdown() {
+                const isVisible = !userDropdownMenu.classList.contains('opacity-0');
+                if (isVisible) {
+                    userDropdownMenu.classList.add('opacity-0', 'invisible', 'scale-95');
+                    userDropdownMenu.classList.remove('opacity-100', 'visible', 'scale-100');
+                    userDropdownIcon.classList.remove('rotate-180');
+                } else {
+                    userDropdownMenu.classList.remove('opacity-0', 'invisible', 'scale-95');
+                    userDropdownMenu.classList.add('opacity-100', 'visible', 'scale-100');
+                    userDropdownIcon.classList.add('rotate-180');
+                }
+            }
+
+            userDropdown.addEventListener('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleUserDropdown();
+            });
+
+            document.addEventListener('click', function (e) {
+                if (!userDropdown.contains(e.target) && !userDropdownMenu.contains(e.target)) {
+                    if (!userDropdownMenu.classList.contains('opacity-0')) {
+                        toggleUserDropdown();
+                    }
+                }
+            });
+
+            userDropdownMenu.addEventListener('click', function (e) {
+                e.stopPropagation();
+            });
+        }
+
+
+        // --- Group Selector Management ---
+        const groupSelect = document.getElementById('groupSelect');
+        if (groupSelect) {
+
+            groupSelect.addEventListener('change', async function () {
+
+                const selectedGroupId = this.value;
+
+                // Mostrar indicador de carga
+                const sidebar = document.getElementById('sidebar');
+                const menuContainer = sidebar.querySelector('nav ul');
+                const originalMenuHTML = menuContainer.innerHTML;
+
+                sidebar.style.pointerEvents = 'none';
+
+                try {
+                    // Realizar petición AJAX para obtener los menús del grupo
+                    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+                    const requestData = {
+                        group_id: selectedGroupId
+                    };
+
+                    const response = await fetch('/security/get-group-menus/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': csrfToken,
+                        },
+                        body: JSON.stringify(requestData)
+                    });
+
+
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.success) {
+
+                            // Actualizar los menús en el sidebar
+                            updateSidebarMenus(data.menus);
+
+                            // Actualizar la URL sin recargar la página
+                            const newUrl = selectedGroupId ?
+                                `${window.location.pathname}?gpid=${selectedGroupId}` :
+                                window.location.pathname;
+                            window.history.pushState({ groupId: selectedGroupId }, '', newUrl);
+
+
+                        } else {
+
+                            menuContainer.innerHTML = originalMenuHTML;
+                        }
+
+                    } else {
+                        const errorText = await response.text();
+
+                        menuContainer.innerHTML = originalMenuHTML;
+                    }
+
+                } catch (error) {
+
+                    menuContainer.innerHTML = originalMenuHTML;
+                } finally {
+                    // Quitar indicador de carga
+                    sidebar.style.opacity = '1';
+                    sidebar.style.pointerEvents = 'auto';
+
+                }
+            });
+        }
+
+
+
+    });
+
+    // Función para actualizar los menús del sidebar 
+    function updateSidebarMenus(menus) {
+
+        const menuContainer = document.querySelector('#sidebar nav ul');
+        if (!menuContainer) {
+
+            return;
+        }
+
+        // Limpiar menús existentes (excepto Dashboard)
+        const dashboardItem = menuContainer.querySelector('li:first-child');
+
+        menuContainer.innerHTML = '';
+
+        // Mantener Dashboard como primer elemento
+        if (dashboardItem) {
+            menuContainer.appendChild(dashboardItem);
+
+        }
+
+        // Agregar nuevos menús
+        menus.forEach((menu, index) => {
+
+            const menuItem = createMenuElement(menu);
+            menuContainer.appendChild(menuItem);
+
+        });
+
+
+    }
+
+    // Función para crear elementos de menú
+    function createMenuElement(menu) {
+        const li = document.createElement('li');
+        li.className = 'mb-2';
+
+            // Botón del elemento principal del menú - ¡CORREGIDO!
+            let menuHtml = `
+                <button onclick="toggleCollapse('menu-${menu.id}')"
+                class="w-full flex items-center justify-between px-4 py-3 text-left text-primary-custom  rounded-lg menu-item transition-colors duration-200 >
+                    <div class="flex items-center">
+                        <i class="${menu.icon} mr-3 text-xl"></i>
+                        <span class="font-medium">${menu.name}</span>
+                    </div>
+                    <i class="bi bi-chevron-down transition-transform duration-200" id="chevron-menu-${menu.id}"></i>
+                </button>
+            `;
+        // Submenú (si existen módulos)
+        if (menu.modules && menu.modules.length > 0) {
+            menuHtml += `
+                <div id="menu-${menu.id}" class="collapse-content ml-4 mt-2">
+            `;
+            menu.modules.forEach(module => {
+                menuHtml += `
+                    <button onclick="loadContent('${module.url}')"
+                        class="w-full flex items-center px-4 py-2 text-left text-secondary-custom  rounded-md mb-1 submenu-item transition-colors duration-200">
+                        <i class="${module.icon} mr-3 text-m"></i>
+                        <span class="text-sm">${module.name}</span>
+                    </button>
+                `;
+            });
+            menuHtml += `
+                </div>
+            `;
+        }
+
+        li.innerHTML = menuHtml;
+        return li;
+    }
+
+
+
+
+</script>
+{% endblock %}
