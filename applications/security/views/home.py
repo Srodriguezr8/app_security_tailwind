@@ -85,11 +85,7 @@ def get_group_menus(request):
         ).distinct().order_by('order', 'name')
         
         menu_list = _serialize_menus_with_modules(menus, group)
-        
-        print('-----------------------------------')
-        for item in menu_list:
-            print('itesm:', item)
-            
+   
         return JsonResponse({
             'success': True,
             'menus': menu_list

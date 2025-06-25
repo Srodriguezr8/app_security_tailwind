@@ -5,15 +5,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css"> 
-    
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+
     <title>{% block title %}SaludTotal{% endblock %}</title>
 
     {% tailwind_css %}
-    
+
 
 </head>
 
@@ -28,15 +28,12 @@
 
             {% include 'includes/header.html' %}
 
-            <main class="flex-1 overflow-x-hidden overflow-y-auto p-6 md:p-8">
-
-                <div class="max-w-7xl mx-auto rounded-lg bg-primary-custom shadow-custom p-6">
-                    {% if request.user.is_authenticated %}
-                    {% block content %}{% endblock %}
-                    {% else %}
-                    {% include 'includes/home_public.html' %}
-                    {% endif %}
-                </div>
+            <main id="dynamic-content-container" class="flex-1 overflow-x-hidden overflow-y-auto p-6 md:p-8">
+                {% if request.user.is_authenticated %}
+                {% include 'includes/home.html' %}
+                {% else %}
+                {% include 'includes/home_public.html' %}
+                {% endif %}
             </main>
 
         </div>
@@ -47,6 +44,53 @@
 {% block js %}
 
 <script>
+
+
+
+    // Función GLOBAL para cargar contenido dinámicamente en 'dynamic-content-container'
+    async function loadContent(url, replaceState = true) {
+        console.log(`Cargando contenido dinámicamente desde: ${url}`);
+        try {
+            // NO incluyas el header 'X-Requested-With' aquí.
+            // Esta función SIEMPRE carga el HTML completo de un parcial.
+            const response = await fetch(url); // <-- Quita el objeto headers si lo tenías
+            if (!response.ok) {
+                throw new Error(`Error HTTP: ${response.status}`);
+            }
+            const htmlContent = await response.text();
+
+            const container = document.getElementById('dynamic-content-container');
+            if (container) {
+                container.innerHTML = htmlContent;
+                executeScripts(container);
+                if (replaceState) {
+                    history.pushState(null, '', url);
+                }
+            } else {
+                console.error("Contenedor 'dynamic-content-container' no encontrado.");
+            }
+        } catch (error) {
+            console.error("Hubo un error al cargar el contenido:", error);
+            const container = document.getElementById('dynamic-content-container');
+            if (container) {
+                container.innerHTML = `<p class="text-red-500 text-center">Error al cargar el contenido: ${error.message}. Por favor, intente de nuevo.</p>`;
+            }
+        }
+    }
+
+    // *** NUEVA FUNCIÓN: Para ejecutar scripts dentro de un elemento DOM ***
+    function executeScripts(element) {
+        const scripts = element.querySelectorAll('script');
+        scripts.forEach(oldScript => {
+            const newScript = document.createElement('script');
+            // Copia todos los atributos del script original (ej. src, async, defer, type)
+            Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
+            // Copia el contenido del script
+            newScript.appendChild(document.createTextNode(oldScript.innerHTML));
+            // Reemplaza el script original por el nuevo para que se ejecute
+            oldScript.parentNode.replaceChild(newScript, oldScript);
+        });
+    }
 
     // Manejar navegación del navegador (botón atrás/adelante)
     window.addEventListener('popstate', function (event) {
@@ -79,14 +123,14 @@
             }
         }
 
-     
+
         if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             document.documentElement.classList.add('dark');
         } else {
             document.documentElement.classList.remove('dark');
         }
 
-    
+
 
         if (themeToggle) {
             themeToggle.addEventListener('click', function () {
@@ -247,6 +291,7 @@
         }
 
     });
+
 
 </script>
 

@@ -1,0 +1,27 @@
+{# Este archivo solo contendrá la lista de paginación #}
+<ul class="inline-flex -space-x-px">
+    {% if page_obj.has_previous %}
+    <li>
+        <a href="?page=1{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}"
+           class="pagination-link px-3 h-8 flex items-center bg-white border rounded-s-lg dark:bg-[#0b1121] dark:text-gray-400">
+            Anterior
+        </a>
+    </li>
+    {% endif %}
+    {% for num in page_obj.paginator.page_range %}
+    <li>
+        <a href="?page={{ num }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}"
+           class="pagination-link px-3 h-8 flex items-center border {% if num == page_obj.number %}bg-blue-100 text-blue-600 dark:bg-secundario dark:text-blue-300{% else %}bg-white text-gray-500 dark:bg-[#0b1121] dark:text-gray-400{% endif %}">
+            {{ num }}
+        </a>
+    </li>
+    {% endfor %}
+    {% if page_obj.has_next %}
+    <li>
+        <a href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}"
+           class="pagination-link px-3 h-8 flex items-center bg-white border rounded-e-lg dark:bg-[#0b1121] dark:text-gray-400">
+            Siguiente
+        </a>
+    </li>
+    {% endif %}
+</ul>

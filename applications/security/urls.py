@@ -6,13 +6,14 @@ from applications.security.views.group_module_pemission import GroupModulePermis
 from applications.security.views.home import ModuloTemplateView, StartTemplateView, get_group_menus, test_group_menus
 from applications.security.views.menu import MenuCreateView, MenuDeleteView, MenuListView, MenuUpdateView
 from applications.security.views.module import ModuleCreateView, ModuleDeleteView, ModuleListView, ModuleUpdateView
-from applications.security.views.user import UserListView, UserUpdateView, UserUpdateView,toggle_user_status
+from applications.security.views.user import UserListView, UserUpdateView, UserUpdateView,toggle_user_status, user_list_view
 
 
 app_name='security' # define un espacio de nombre para la aplicacion
 urlpatterns = [
     
   path('home/', ModuloTemplateView.as_view(), name='home'),
+  path('', StartTemplateView.as_view()),
 
   # rutas de modulos
   path('module_list/',ModuleListView.as_view() ,name="module_list"),
