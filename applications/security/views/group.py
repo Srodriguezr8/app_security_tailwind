@@ -106,12 +106,13 @@ class GroupPermissionsView(View):
             return JsonResponse({'error': 'Grupo no encontrado'}, status=404)
         
 class GroupPermissionsDetailView(DetailView):
-    model = Group  # Muy importante definir el modelo
+    model = Group  
 
     def get(self, request, *args, **kwargs):
         try:
-            obj = self.get_object()  # Usará pk de kwargs automáticamente
+            obj = self.get_object()  
             permissions = list(obj.permissions.values('name'))
             return JsonResponse({'permissions': permissions})
+        
         except Group.DoesNotExist:
             return JsonResponse({'error': 'Grupo no encontrado'}, status=404)
