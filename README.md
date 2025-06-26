@@ -20,7 +20,7 @@ A comprehensive clinic management system designed to streamline healthcare opera
 ## 👨‍💻 Development Team
 - Juan Taday (Developer)
 - Adrian Avila (Developer)
-
+- Damian Solari (Developer)
 ## 📁 Project Structure
 
 ```plaintext
