@@ -32,12 +32,6 @@ node_modules/
 package-lock.json
 yarn.lock
 
-# Archivos estáticos generados
-staticfiles/
-theme/static/css/dist/
-theme/static/js/
-theme/static_src/src/*.css
-
 # Archivos de configuración del editor (opcional)
 .vscode/
 .idea/

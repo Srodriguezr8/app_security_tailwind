@@ -15,9 +15,13 @@ class GroupModulePermissionListView(TemplateView):
         context = super().get_context_data(**kwargs)
         context['groups'] = Group.objects.all()
         context['modules'] = Module.objects.all()
+        context['modules_json'] = json.dumps([
+        {
+            'id': module.id,
+            'name': module.name,
+        } for module in Module.objects.all()])
+
         return context
-
-
 
 
 class GroupModulePermissionPermissionsView(View):
