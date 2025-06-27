@@ -5,6 +5,8 @@ from django.contrib.auth.models import AbstractUser, Group, Permission, Permissi
 from django.db import models
 from django.db.models import UniqueConstraint
 
+from applications.security.utils.audit_user import AccionChoices
+
 
 """
 Modelo Menu: Representa las categorías principales de navegación del sistema.
@@ -178,3 +180,22 @@ class User(AbstractUser, PermissionsMixin):
             return self.image.url
         else:
             return '/static/img/usuario_anonimo.png'
+
+class AuditUser(models.Model):
+    usuario = models.ForeignKey(User, verbose_name='Usuario',on_delete=models.PROTECT)
+    tabla = models.CharField(max_length=100, verbose_name='Tabla')
+    registroid = models.IntegerField(verbose_name='Registro Id')
+    accion = models.CharField(choices=AccionChoices, max_length=15, verbose_name='Accion')
+    fecha = models.DateField(verbose_name='Fecha')
+    hora = models.TimeField(verbose_name='Hora')
+    estacion = models.CharField(max_length=100, verbose_name='Estacion')
+
+    def __str__(self):
+        return "{} - {} [{}]".format(self.usuario.username, self.tabla, self.accion)
+
+    class Meta:
+        verbose_name = 'Auditoria Usuario '
+        verbose_name_plural = 'Auditorias Usuarios'
+        ordering = ('-fecha', 'hora')
+        
+        

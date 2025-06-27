@@ -38,26 +38,23 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 ]
-
 # Aplicaciones de terceros
 THIRD_PARTY_APPS = [
-    'django_extensions', 
-    'tailwind', 
+    'django_extensions',
+    'tailwind',
     'theme',
     'django_browser_reload', 
-]
 
+]
 # Aplicaciones propias
 LOCAL_APPS = [
     'applications.security.apps.SecurityConfig',
+    'applications.core.apps.CoreConfig',
     'applications.doctor.apps.DoctorConfig',
 ]
-
-TAILWIND_APP_NAME = 'theme'
-
 INSTALLED_APPS = INSTALLED_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
-
+TAILWIND_APP_NAME = 'theme'
 
 NPM_BIN_PATH = r"C:\Program Files\nodejs\npm.cmd" 
 
@@ -134,28 +131,28 @@ AUTH_PASSWORD_VALIDATORS = [
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
 LANGUAGE_CODE = 'es-ec'
-
-TIME_ZONE = 'UTC'
-
+TIME_ZONE = 'America/Guayaquil'  # Mejor que UTC para Ecuador
 USE_I18N = True
-
+USE_L10N = False  # ← CLAVE: Deshabilita localización de números
 USE_TZ = True
+
+# Opcional: Configuraciones específicas
+DECIMAL_SEPARATOR = '.'
+DATE_FORMAT = 'd/m/Y'
 
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
-MEDIA_URL = '/media/'
 STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static'),)#carpeta fisica de archivos estaticos
-print(f'STATICFILES_DIRS: {STATICFILES_DIRS}')
 MEDIA_ROOT = os.path.join(BASE_DIR,'media') # carpeta fisica de archivos de Imagenes
 MEDIA_URL = '/media/' # url de imagenes
+# Default primary key field type
+# https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
-# Default primary key field type# https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 AUTH_USER_MODEL = 'security.User'
-LOGIN_URL = '/'
-LOGOUT_REDIRECT_URL = '/public-dashboard/'  # Redirección después de logout
+LOGIN_URL = '/security/signin'
 #SESSION_SERIALIZER = 'django.contrib.sessions.serializers.PickleSerializer'
 # SESSION_SERIALIZER = 'django.contrib.sessions.serializers.PickleSerializer'
 SESSION_SERIALIZER = 'django.contrib.sessions.serializers.JSONSerializer'
