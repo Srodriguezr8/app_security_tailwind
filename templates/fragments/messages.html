@@ -1,339 +1,447 @@
-<!-- templates/fragments/messages.html -->
-{% if messages %}
-<div id="messagesContainer" class="messages-container">
-    {% for message in messages %}
-    <div id="message-{{ forloop.counter }}" 
-         class="message-alert message-{{ message.tags }}"
-         data-message-id="{{ forloop.counter }}">
-        
-        <div class="message-content">
-            <div class="message-body">
-                <!-- Icono según tipo de mensaje -->
-                <div class="message-icon">
-                    {% if message.tags == 'success' %}
-                        <div class="icon-circle icon-success">
-                            <i class="fa-solid fa-check"></i>
-                        </div>
-                    {% elif message.tags == 'error' %}
-                        <div class="icon-circle icon-error">
-                            <i class="fa-solid fa-times"></i>
-                        </div>
-                    {% elif message.tags == 'warning' %}
-                        <div class="icon-circle icon-warning">
-                            <i class="fa-solid fa-exclamation"></i>
-                        </div>
-                    {% elif message.tags == 'info' %}
-                        <div class="icon-circle icon-info">
-                            <i class="fa-solid fa-info"></i>
-                        </div>
-                    {% endif %}
-                </div>
-                
-                <!-- Contenido del mensaje -->
-                <div class="message-text">
-                    <p>{{ message|safe }}</p>
-                </div>
+{% extends 'home.html' %}
+<title>{% block title %}Permisos de Grupo y Módulo{% endblock %}</title>
+{% block content %}
+    {% load static %}
+    {% include 'fragments/messages.html' %}
+    
+    <section class="dark:bg-principal mt-2">
+        <div class="text-center" data-aos="fade-up" data-aos-delay="200">
+            <div class="sm:pt-8 lg:pt-4">
+                <h1 class="rounded-2xl bg-indigo-500 px-2 py-1 text-white uppercase text-4xl">
+                    Gestión de Permisos
+                </h1>
             </div>
             
-            <!-- Botón cerrar -->
-            <button onclick="closeMessage({{ forloop.counter }})" class="close-btn">
-                <i class="fa-solid fa-times"></i>
-            </button>
-        </div>
-        
-        <!-- Barra de progreso para auto-hide -->
-        <div class="progress-bar"></div>
-    </div>
-    {% endfor %}
-</div>
-
-<!-- CSS personalizado -->
-<style>
-/* Contenedor principal */
-.messages-container {
-    position: fixed;
-    top: 1rem;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 9999;
-    width: 100%;
-    max-width: 28rem;
-    padding: 0 1rem;
-}
-
-/* Alerta base */
-.message-alert {
-    position: relative;
-    margin-bottom: 1rem;
-    padding: 1rem;
-    border-radius: 0.75rem;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-    border-left: 4px solid;
-    backdrop-filter: blur(4px);
-    animation: slideInDown 0.5s ease-out forwards;
-    overflow: hidden;
-}
-
-/* Tipos de mensaje */
-.message-success {
-    background: linear-gradient(to right, #ecfdf5, #d1fae5);
-    border-left-color: #10b981;
-    color: #065f46;
-}
-
-.message-error {
-    background: linear-gradient(to right, #fef2f2, #fecaca);
-    border-left-color: #ef4444;
-    color: #991b1b;
-    animation: slideInDown 0.5s ease-out forwards, shake 0.5s ease-in-out;
-}
-
-.message-warning {
-    background: linear-gradient(to right, #fffbeb, #fde68a);
-    border-left-color: #f59e0b;
-    color: #92400e;
-}
-
-.message-info {
-    background: linear-gradient(to right, #eff6ff, #bfdbfe);
-    border-left-color: #3b82f6;
-    color: #1e40af;
-}
-
-/* Dark mode */
-@media (prefers-color-scheme: dark) {
-    .message-success {
-        background: linear-gradient(to right, rgba(6, 95, 70, 0.3), rgba(4, 120, 87, 0.3));
-        color: #a7f3d0;
-    }
-    
-    .message-error {
-        background: linear-gradient(to right, rgba(153, 27, 27, 0.3), rgba(185, 28, 28, 0.3));
-        color: #fca5a5;
-    }
-    
-    .message-warning {
-        background: linear-gradient(to right, rgba(146, 64, 14, 0.3), rgba(180, 83, 9, 0.3));
-        color: #fcd34d;
-    }
-    
-    .message-info {
-        background: linear-gradient(to right, rgba(30, 64, 175, 0.3), rgba(37, 99, 235, 0.3));
-        color: #93c5fd;
-    }
-}
-
-/* Contenido del mensaje */
-.message-content {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-}
-
-.message-body {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.75rem;
-    flex: 1;
-}
-
-.message-icon {
-    flex-shrink: 0;
-    padding-top: 0.125rem;
-}
-
-.icon-circle {
-    width: 1.5rem;
-    height: 1.5rem;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 0.75rem;
-}
-
-.icon-success { background-color: #10b981; }
-.icon-error { background-color: #ef4444; }
-.icon-warning { background-color: #f59e0b; }
-.icon-info { background-color: #3b82f6; }
-
-.message-text {
-    flex: 1;
-}
-
-.message-text p {
-    margin: 0;
-    font-weight: 600;
-    font-size: 0.875rem;
-    line-height: 1.5;
-}
-
-/* Botón cerrar */
-.close-btn {
-    flex-shrink: 0;
-    margin-left: 1rem;
-    padding: 0.25rem;
-    border: none;
-    background: none;
-    border-radius: 50%;
-    cursor: pointer;
-    opacity: 0.6;
-    transition: all 0.2s;
-    color: inherit;
-}
-
-.close-btn:hover {
-    opacity: 1;
-    background-color: rgba(0, 0, 0, 0.1);
-}
-
-@media (prefers-color-scheme: dark) {
-    .close-btn:hover {
-        background-color: rgba(255, 255, 255, 0.1);
-    }
-}
-
-/* Barra de progreso */
-.progress-bar {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    height: 0.25rem;
-    background-color: currentColor;
-    opacity: 0.2;
-    border-radius: 0 0 0.75rem 0;
-    animation: progressBar 5s linear forwards;
-}
-
-/* Animaciones */
-@keyframes slideInDown {
-    from {
-        transform: translateY(-100%);
-        opacity: 0;
-    }
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
-}
-
-@keyframes slideOutUp {
-    from {
-        transform: translateY(0);
-        opacity: 1;
-        max-height: 200px;
-        margin-bottom: 1rem;
-    }
-    to {
-        transform: translateY(-100%);
-        opacity: 0;
-        max-height: 0;
-        margin-bottom: 0;
-    }
-}
-
-@keyframes progressBar {
-    from { width: 100%; }
-    to { width: 0%; }
-}
-
-@keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    10%, 30%, 50%, 70%, 90% { transform: translateX(-2px); }
-    20%, 40%, 60%, 80% { transform: translateX(2px); }
-}
-
-.animate-slideOutUp {
-    animation: slideOutUp 0.4s ease-in forwards;
-}
-
-/* Responsive */
-@media (max-width: 640px) {
-    .messages-container {
-        max-width: 95%;
-        padding: 0 0.5rem;
-    }
-    
-    .message-alert {
-        padding: 0.75rem;
-    }
-}
-</style>
-
-<script>
-// JavaScript para manejo de mensajes
-document.addEventListener('DOMContentLoaded', function() {
-    // Auto-hide messages después de 5 segundos
-    setTimeout(function() {
-        const messages = document.querySelectorAll('.message-alert');
-        messages.forEach(function(message) {
-            closeMessage(message.dataset.messageId);
-        });
-    }, 5000);
-});
-
-function closeMessage(messageId) {
-    const message = document.getElementById('message-' + messageId);
-    if (message) {
-        message.classList.add('animate-slideOutUp');
-        
-        // Remover del DOM después de la animación
-        setTimeout(function() {
-            if (message.parentNode) {
-                message.parentNode.removeChild(message);
-            }
-            
-            // Ocultar el contenedor si no hay más mensajes
-            const container = document.getElementById('messagesContainer');
-            if (container && container.children.length === 0) {
-                container.style.display = 'none';
-            }
-        }, 400);
-    }
-}
-
-// Función para mostrar mensaje programáticamente
-function showMessage(text, type = 'info') {
-    const container = document.getElementById('messagesContainer');
-    if (!container) return;
-    
-    const messageId = Date.now();
-    const icons = {
-        'success': 'check',
-        'error': 'times', 
-        'warning': 'exclamation',
-        'info': 'info'
-    };
-    
-    const messageHtml = `
-        <div id="message-${messageId}" 
-             class="message-alert message-${type}"
-             data-message-id="${messageId}">
-            <div class="message-content">
-                <div class="message-body">
-                    <div class="message-icon">
-                        <div class="icon-circle icon-${type}">
-                            <i class="fa-solid fa-${icons[type] || 'info'}"></i>
-                        </div>
-                    </div>
-                    <div class="message-text">
-                        <p>${text}</p>
+            <div class="lg:p-2 rounded-3xl" data-aos="fade-up" data-aos-delay="200">
+                <!-- Combobox de grupos -->
+                <div class="p-4 flex justify-center">
+                    <div class="w-full max-w-md">
+                        <label for="group-select" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Seleccionar Grupo
+                        </label>
+                        <select id="group-select" 
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="">-- Selecciona un grupo --</option>
+                            {% for group in groups %}
+                                <option value="{{ group.id }}">{{ group.name }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
                 </div>
-                <button onclick="closeMessage(${messageId})" class="close-btn">
-                    <i class="fa-solid fa-times"></i>
+            </div>
+        </div>
+    </section>
+
+    <!-- Modal 1: Lista de módulos -->
+    <div id="modules-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[80vh] overflow-hidden">
+            <!-- Header del modal -->
+            <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                    Módulos - <span id="selected-group-name"></span>
+                </h3>
+                <button id="close-modules-modal" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                    <i class="fa-solid fa-times text-xl"></i>
                 </button>
             </div>
-            <div class="progress-bar"></div>
+            
+            <!-- Contenido del modal -->
+            <div class="p-4 max-h-96 overflow-y-auto">
+                <div id="modules-list" class="space-y-3">
+                    <!-- Los módulos se cargarán dinámicamente -->
+                </div>
+            </div>
         </div>
-    `;
-    
-    container.insertAdjacentHTML('beforeend', messageHtml);
-    container.style.display = 'block';
-    
-    // Auto-hide después de 5 segundos
-    setTimeout(() => closeMessage(messageId), 5000);
-}
-</script>
-{% endif %}
+    </div>
+
+    <!-- Modal 2: Permisos del módulo -->
+    <div id="permissions-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4">
+            <!-- Header del modal -->
+            <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                    Permisos - <span id="selected-module-name"></span>
+                </h3>
+                <button id="close-permissions-modal" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                    <i class="fa-solid fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <!-- Contenido del modal -->
+            <div class="p-4">
+                <div id="permissions-list" class="space-y-3 mb-4">
+                    <!-- Los permisos se cargarán dinámicamente -->
+                </div>
+                
+                <!-- Opciones de selección -->
+                <div class="border-t border-gray-200 dark:border-gray-700 pt-4">
+                    <div class="flex space-x-4 mb-3">
+                        <button id="select-all-permissions" 
+                                class="text-sm bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 px-3 py-1 rounded-full hover:bg-green-200 dark:hover:bg-green-800">
+                            Seleccionar Todos
+                        </button>
+                        <button id="deselect-all-permissions" 
+                                class="text-sm bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 px-3 py-1 rounded-full hover:bg-red-200 dark:hover:bg-red-800">
+                            Deseleccionar Todos
+                        </button>
+                    </div>
+                    
+                    <!-- Contador de permisos -->
+                    <div class="mb-4">
+                        <span class="text-sm text-gray-600 dark:text-gray-400">
+                            Permisos seleccionados: <span id="selected-permissions-count">0</span> de <span id="total-permissions-count">4</span>
+                        </span>
+                    </div>
+                    
+                    <!-- Botón guardar -->
+                    <button id="save-permissions" 
+                            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200">
+                        Guardar Permisos
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de confirmación para eliminar -->
+    <div id="delete-confirmation-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4">
+            <div class="p-6">
+                <div class="flex items-center mb-4">
+                    <div class="flex-shrink-0 w-10 h-10 rounded-full bg-red-100 dark:bg-red-900 flex items-center justify-center">
+                        <i class="fa-solid fa-exclamation-triangle text-red-600 dark:text-red-400"></i>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-white">Confirmar Eliminación</h3>
+                    </div>
+                </div>
+                
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">
+                    ¿Estás seguro de eliminar los permisos del módulo <span id="module-to-delete" class="font-semibold"></span> del grupo?
+                </p>
+                
+                <div class="flex space-x-3">
+                    <button id="confirm-delete" 
+                            class="flex-1 bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200">
+                        Eliminar
+                    </button>
+                    <button id="cancel-delete" 
+                            class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 font-medium py-2 px-4 rounded-lg transition-colors duration-200">
+                        Cancelar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let currentGroupId = null;
+        let currentModuleId = null;
+        let currentModuleName = '';
+        let modulePermissions = {};
+
+        // Elementos del DOM
+        const groupSelect = document.getElementById('group-select');
+        const modulesModal = document.getElementById('modules-modal');
+        const permissionsModal = document.getElementById('permissions-modal');
+        const deleteModal = document.getElementById('delete-confirmation-modal');
+
+        // Event listeners
+        groupSelect.addEventListener('change', handleGroupChange);
+        document.getElementById('close-modules-modal').addEventListener('click', () => closeModal(modulesModal));
+        document.getElementById('close-permissions-modal').addEventListener('click', () => closeModal(permissionsModal));
+        document.getElementById('select-all-permissions').addEventListener('click', selectAllPermissions);
+        document.getElementById('deselect-all-permissions').addEventListener('click', deselectAllPermissions);
+        document.getElementById('save-permissions').addEventListener('click', savePermissions);
+        document.getElementById('confirm-delete').addEventListener('click', confirmDelete);
+        document.getElementById('cancel-delete').addEventListener('click', () => closeModal(deleteModal));
+
+        // Funciones principales
+        function handleGroupChange() {
+            const groupId = groupSelect.value;
+            if (groupId) {
+                currentGroupId = groupId;
+                const groupName = groupSelect.options[groupSelect.selectedIndex].text;
+                document.getElementById('selected-group-name').textContent = groupName;
+                loadModules();
+                showModal(modulesModal);
+            }
+        }
+
+        function loadModules() {
+            const modulesList = document.getElementById('modules-list');
+            modulesList.innerHTML = '';
+
+            {% for module in modules %}
+            const moduleDiv = document.createElement('div');
+            moduleDiv.className = 'flex items-center justify-between p-3 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200';
+            
+            // Cargar permisos existentes para este módulo
+            loadExistingPermissions({{ module.id }}, currentGroupId).then(existingPerms => {
+                const permCount = existingPerms.length;
+                const permissionsText = existingPerms.map(p => p.name).join(', ');
+                
+                moduleDiv.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <input type="checkbox" id="module-{{ module.id }}" 
+                               class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                        <label for="module-{{ module.id }}" class="text-sm font-medium text-gray-900 dark:text-gray-300 cursor-pointer"
+                               title="${permissionsText || 'Sin permisos asignados'}">
+                            <i class="{{ module.icon }} mr-2"></i>{{ module.name }}
+                        </label>
+                        ${permCount > 0 ? `<span class="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs px-2 py-1 rounded-full">${permCount}</span>` : ''}
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        ${permCount > 0 ? `<button class="delete-module-permissions text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-200" data-module-id="{{ module.id }}" data-module-name="{{ module.name }}">
+                            🗑️
+                        </button>` : ''}
+                    </div>
+                `;
+                
+                // Event listener para el checkbox del módulo
+                const checkbox = moduleDiv.querySelector('#module-{{ module.id }}');
+                checkbox.addEventListener('change', () => {
+                    if (checkbox.checked) {
+                        currentModuleId = {{ module.id }};
+                        currentModuleName = '{{ module.name }}';
+                        document.getElementById('selected-module-name').textContent = currentModuleName;
+                        loadModulePermissions({{ module.id }});
+                        showModal(permissionsModal);
+                        checkbox.checked = false; // Resetear el checkbox
+                    }
+                });
+                
+                // Event listener para el botón de eliminar
+                const deleteBtn = moduleDiv.querySelector('.delete-module-permissions');
+                if (deleteBtn) {
+                    deleteBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        showDeleteConfirmation({{ module.id }}, '{{ module.name }}');
+                    });
+                }
+            });
+            
+            modulesList.appendChild(moduleDiv);
+            {% endfor %}
+        }
+
+        async function loadExistingPermissions(moduleId, groupId) {
+            try {
+                const response = await fetch(`{% url 'security:group_module_permissions_by_group_module' %}?group_id=${groupId}&module_id=${moduleId}`);
+                const data = await response.json();
+                return data.permissions || [];
+            } catch (error) {
+                console.error('Error loading existing permissions:', error);
+                return [];
+            }
+        }
+
+        async function loadModulePermissions(moduleId) {
+            try {
+                // Cargar todos los permisos del módulo
+                const moduleResponse = await fetch(`{% url 'security:module_permissions' pk=0 %}`.replace('0', moduleId));
+                const moduleData = await moduleResponse.json();
+                
+                // Cargar permisos existentes
+                const existingResponse = await fetch(`{% url 'security:group_module_permissions_by_group_module' %}?group_id=${currentGroupId}&module_id=${moduleId}`);
+                const existingData = await existingResponse.json();
+                
+                const permissionsList = document.getElementById('permissions-list');
+                permissionsList.innerHTML = '';
+                
+                const existingPermIds = existingData.permissions.map(p => p.id);
+                
+                moduleData.modules.forEach(permission => {
+                    const isChecked = existingPermIds.includes(permission.id);
+                    const permDiv = document.createElement('div');
+                    permDiv.className = 'flex items-center space-x-3';
+                    permDiv.innerHTML = `
+                        <input type="checkbox" id="perm-${permission.id}" value="${permission.id}" 
+                               class="permission-checkbox w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                               ${isChecked ? 'checked' : ''}>
+                        <label for="perm-${permission.id}" class="text-sm font-medium text-gray-900 dark:text-gray-300 cursor-pointer">
+                            ${permission.name}
+                        </label>
+                    `;
+                    permissionsList.appendChild(permDiv);
+                });
+                
+                // Actualizar contador
+                updatePermissionsCount();
+                
+                // Event listeners para los checkboxes de permisos
+                document.querySelectorAll('.permission-checkbox').forEach(checkbox => {
+                    checkbox.addEventListener('change', updatePermissionsCount);
+                });
+                
+            } catch (error) {
+                console.error('Error loading module permissions:', error);
+                showMessage('Error al cargar los permisos del módulo', 'error');
+            }
+        }
+
+        function updatePermissionsCount() {
+            const checkedPermissions = document.querySelectorAll('.permission-checkbox:checked').length;
+            const totalPermissions = document.querySelectorAll('.permission-checkbox').length;
+            document.getElementById('selected-permissions-count').textContent = checkedPermissions;
+            document.getElementById('total-permissions-count').textContent = totalPermissions;
+        }
+
+        function selectAllPermissions() {
+            document.querySelectorAll('.permission-checkbox').forEach(checkbox => {
+                checkbox.checked = true;
+            });
+            updatePermissionsCount();
+        }
+
+        function deselectAllPermissions() {
+            document.querySelectorAll('.permission-checkbox').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            updatePermissionsCount();
+        }
+
+        async function savePermissions() {
+            const checkedPermissions = Array.from(document.querySelectorAll('.permission-checkbox:checked'))
+                .map(checkbox => parseInt(checkbox.value));
+            
+            try {
+                const response = await fetch('{% url "security:save_group_module_permission" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({
+                        group_id: currentGroupId,
+                        module_id: currentModuleId,
+                        permissions: checkedPermissions
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage(data.success, 'success');
+                    closeModal(permissionsModal);
+                    // Recargar la lista de módulos para actualizar los contadores
+                    loadModules();
+                } else if (data.error) {
+                    showMessage(data.error, 'error');
+                }
+                
+            } catch (error) {
+                console.error('Error saving permissions:', error);
+                showMessage('Error al guardar los permisos', 'error');
+            }
+        }
+
+        function showDeleteConfirmation(moduleId, moduleName) {
+            currentModuleId = moduleId;
+            document.getElementById('module-to-delete').textContent = moduleName;
+            showModal(deleteModal);
+        }
+
+        async function confirmDelete() {
+            try {
+                const response = await fetch('{% url "security:delete_group_module_permission" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({
+                        group_id: currentGroupId,
+                        module_id: currentModuleId
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'deleted') {
+                    showMessage(data.message, 'success');
+                    closeModal(deleteModal);
+                    loadModules(); // Recargar módulos
+                } else if (data.status === 'not_found') {
+                    showMessage(data.message, 'warning');
+                } else if (data.error) {
+                    showMessage(data.error, 'error');
+                }
+                
+            } catch (error) {
+                console.error('Error deleting permissions:', error);
+                showMessage('Error al eliminar los permisos', 'error');
+            }
+        }
+
+        // Funciones auxiliares
+        function showModal(modal) {
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal(modal) {
+            modal.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        function showMessage(message, type) {
+            // Crear elemento de mensaje
+            const messageDiv = document.createElement('div');
+            const bgColor = type === 'success' ? 'bg-green-100 border-green-500 text-green-700' : 
+                           type === 'error' ? 'bg-red-100 border-red-500 text-red-700' : 
+                           'bg-yellow-100 border-yellow-500 text-yellow-700';
+            
+            messageDiv.className = `${bgColor} border-l-4 p-4 mb-4 fixed top-4 right-4 z-50 rounded shadow-lg max-w-md`;
+            messageDiv.innerHTML = `
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fa-solid ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-exclamation-triangle'}"></i>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm">${message}</p>
+                    </div>
+                    <div class="ml-auto pl-3">
+                        <button class="text-gray-400 hover:text-gray-600" onclick="this.parentElement.parentElement.parentElement.remove()">
+                            <i class="fa-solid fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(messageDiv);
+            
+            // Auto-remover después de 5 segundos
+            setTimeout(() => {
+                if (messageDiv.parentNode) {
+                    messageDiv.remove();
+                }
+            }, 5000);
+        }
+
+        // Cerrar modales al hacer clic fuera
+        [modulesModal, permissionsModal, deleteModal].forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    closeModal(modal);
+                }
+            });
+        });
+    </script>
+{% endblock %}
