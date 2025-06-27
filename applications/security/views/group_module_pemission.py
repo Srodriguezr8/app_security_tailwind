@@ -21,6 +21,7 @@ class GroupModulePermissionListView(TemplateView):
             'name': module.name,
         } for module in Module.objects.all()])
 
+        print('grupos: ', context['groups'] )
         return context
 
 
