@@ -26,21 +26,17 @@
             </button>
         </div>
 
-        <nav class="flex-1 overflow-y-auto overflow-x-hidden">
-            <ul>
-                <li class="mb-2">
-                    <a href="{% url 'security:home' %}" class="flex items-center px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-blue-500 hover:text-white transition-colors duration-200
-                       {% if request.resolver_match.url_name == 'home' %}bg-blue-600 text-white shadow-md{% endif %}">
-                        <svg class="w-8 h-8 mr-3" fill="currentColor" viewBox="0 0 24 24">
-                            <path
-                                d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zm0-8h14V7H7v2z" />
-                        </svg>
-                        <span class="transition-opacity duration-300">Dashboard</span>
-                    </a>
-                </li>
-
+     <nav class="flex-1 overflow-y-auto overflow-x-hidden h-[calc(100vh-4rem)]" x-data="{ openMenus: [] }">
+        <ul class="space-y-2">
+            <li>
+                <a href="#" class="flex items-center p-2 hover:bg-blue-50 rounded">
+                    <i class="fas fa-home mr-3"></i>
+                    <span class="hidden-collapsed">Inicio</span>
+                </a>
+            </li>
             </ul>
-        </nav>
+    </nav>
+
 
     </div>
 
@@ -62,21 +58,58 @@
     {% endif %}
 </aside>
 
-{% block js %}
-<script>
-    // Función para alternar el colapso de menús
-    function toggleCollapse(menuId) {
-        const element = document.getElementById(menuId);
-        const chevron = document.getElementById(`chevron-${menuId}`);
+{% if menu_list %}
+    <!-- # ¡IMPORTANTE: NO ENVOLVER ESTO EN OTRA ETIQUETA <script>! # -->
+    {{ menu_list|json_script:"django-menu-data" }}
+{% endif %}
 
-        if (element && chevron) {
-            element.classList.toggle('show');
-            chevron.classList.toggle('rotate-180');
+{% block js %}
+
+<script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+<script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.store('openMenus', []);
+    });
+
+      // Manejar navegación del navegador (botón atrás/adelante)
+    window.addEventListener('popstate', function (event) {
+        if (event.state && event.state.groupId !== undefined) {
+            const groupSelected = document.getElementById('groupSelected');
+            if (groupSelected) {
+                groupSelected.value = event.state.groupId || '';
+                // Disparar evento change para actualizar menús
+                groupSelected.dispatchEvent(new Event('change'));
+            }
         }
-    }
+    });
 
     document.addEventListener('DOMContentLoaded', function () {
-        // --- User Dropdown Management ---
+        // --- Gestión de la barra lateral (colapsar/expandir) ---
+        const sidebar = document.getElementById('sidebar');
+        const sidebarToggleBtn = document.getElementById('sidebar-toggle');
+        const toggleIconMenu = document.getElementById('toggle-icon-menu');
+        const toggleIconClose = document.getElementById('toggle-icon-close');
+
+        toggleIconMenu.style.display = 'block';
+        toggleIconClose.style.display = 'none';
+
+        sidebarToggleBtn.addEventListener('click', function() {
+            sidebar.classList.toggle('sidebar-expanded');
+            sidebar.classList.toggle('sidebar-collapsed');
+
+            if (sidebar.classList.contains('sidebar-collapsed')) {
+                toggleIconMenu.style.display = 'none';
+                toggleIconClose.style.display = 'block';
+            } else {
+                toggleIconMenu.style.display = 'block';
+                toggleIconClose.style.display = 'none';
+            }
+        });
+
+        sidebar.classList.add('sidebar-expanded');
+
+
+        // --- Gestión del Dropdown de Usuario ---
         const userDropdown = document.getElementById('userDropdown');
         if (userDropdown) {
             const userDropdownMenu = document.getElementById('userDropdownMenu');
@@ -115,140 +148,92 @@
         }
 
 
-        // --- Group Selector Management ---
-        const groupSelect = document.getElementById('groupSelect');
+    
+        // --- Carga inicial (MODIFICADA para usar el valor 'selected' por Django) ---
+        const groupSelect = document.getElementById('groupSelected');
+
+    
         if (groupSelect) {
+            const initialSelectedGroupId = groupSelect.value; // Lee el valor de la opción 'selected' por Django
 
-            groupSelect.addEventListener('change', async function () {
+            if (initialSelectedGroupId) { // Si hay un grupo seleccionado (no la opción vacía)
+                confirm(`Grupo seleccionado: ${initialSelectedGroupId}`);
+                loadAndRenderMenus(initialSelectedGroupId);
+            } else {
+                // Si no hay un grupo seleccionado por Django, o la opción por defecto es vacía
+                const menuContainer = document.querySelector('#sidebar nav ul');
+                const dashboardItem = menuContainer.querySelector('li:first-child');
+                menuContainer.innerHTML = ''; // Limpia los menús existentes
+                if (dashboardItem) {
+                    menuContainer.appendChild(dashboardItem);
+                }
+                const selectGroupLi = document.createElement('li');
+                selectGroupLi.className = 'text-gray-500 py-2';
+                selectGroupLi.textContent = 'Por favor, selecciona un grupo para ver los módulos.';
+                menuContainer.appendChild(selectGroupLi);
+            }
 
+            // --- Gestión del Selector de Grupos (evento change) ---
+            groupSelect.addEventListener('change', function () {
                 const selectedGroupId = this.value;
-
-                // Mostrar indicador de carga
-                const sidebar = document.getElementById('sidebar');
-                const menuContainer = sidebar.querySelector('nav ul');
-                const originalMenuHTML = menuContainer.innerHTML;
-
-                sidebar.style.pointerEvents = 'none';
-
-                try {
-                    // Realizar petición AJAX para obtener los menús del grupo
-                    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-
-                    const requestData = {
-                        group_id: selectedGroupId
-                    };
-
-                    const response = await fetch('/security/get-group-menus/', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRFToken': csrfToken,
-                        },
-                        body: JSON.stringify(requestData)
-                    });
-
-
-
-                    if (response.ok) {
-                        const data = await response.json();
-                        if (data.success) {
-
-                            // Actualizar los menús en el sidebar
-                            updateSidebarMenus(data.menus);
-
-                            // Actualizar la URL sin recargar la página
-                            const newUrl = selectedGroupId ?
-                                `${window.location.pathname}?gpid=${selectedGroupId}` :
-                                window.location.pathname;
-                            window.history.pushState({ groupId: selectedGroupId }, '', newUrl);
-
-
-                        } else {
-
-                            menuContainer.innerHTML = originalMenuHTML;
-                        }
-
-                    } else {
-                        const errorText = await response.text();
-
-                        menuContainer.innerHTML = originalMenuHTML;
+                if (selectedGroupId) { // Solo cargar si se seleccionó un valor (no la opción vacía)
+                    loadAndRenderMenus(selectedGroupId);
+                } else {
+                    // Si el usuario selecciona la opción "Seleccionar Grupo", limpiar los menús
+                    const menuContainer = document.querySelector('#sidebar nav ul');
+                    const dashboardItem = menuContainer.querySelector('li:first-child');
+                    menuContainer.innerHTML = '';
+                    if (dashboardItem) {
+                        menuContainer.appendChild(dashboardItem);
                     }
-
-                } catch (error) {
-
-                    menuContainer.innerHTML = originalMenuHTML;
-                } finally {
-                    // Quitar indicador de carga
-                    sidebar.style.opacity = '1';
-                    sidebar.style.pointerEvents = 'auto';
-
+                    const selectGroupLi = document.createElement('li');
+                    selectGroupLi.className = 'text-gray-500 py-2';
+                    selectGroupLi.textContent = 'Por favor, selecciona un grupo para ver los módulos.';
+                    menuContainer.appendChild(selectGroupLi);
                 }
             });
         }
-
-
-
     });
 
-    // Función para actualizar los menús del sidebar 
-    function updateSidebarMenus(menus) {
-
-        const menuContainer = document.querySelector('#sidebar nav ul');
-        if (!menuContainer) {
-
-            return;
-        }
-
-        // Limpiar menús existentes (excepto Dashboard)
-        const dashboardItem = menuContainer.querySelector('li:first-child');
-
-        menuContainer.innerHTML = '';
-
-        // Mantener Dashboard como primer elemento
-        if (dashboardItem) {
-            menuContainer.appendChild(dashboardItem);
-
-        }
-
-        // Agregar nuevos menús
-        menus.forEach((menu, index) => {
-
-            const menuItem = createMenuElement(menu);
-            menuContainer.appendChild(menuItem);
-
-        });
-
-
-    }
-
-    // Función para crear elementos de menú
+    // --- Función para crear un elemento de menú con Alpine.js ---
     function createMenuElement(menu) {
         const li = document.createElement('li');
         li.className = 'mb-2';
 
-            // Botón del elemento principal del menú - ¡CORREGIDO!
-            let menuHtml = `
-                <button onclick="toggleCollapse('menu-${menu.id}')"
-                class="w-full flex items-center justify-between px-4 py-3 text-left text-primary-custom  rounded-lg menu-item transition-colors duration-200 >
-                    <div class="flex items-center">
-                        <i class="${menu.icon} mr-3 text-xl"></i>
-                        <span class="font-medium">${menu.name}</span>
-                    </div>
-                    <i class="bi bi-chevron-down transition-transform duration-200" id="chevron-menu-${menu.id}"></i>
-                </button>
-            `;
-        // Submenú (si existen módulos)
+        const menuId = `menu-${menu.id}`;
+
+        let menuHtml = `
+            <button
+                @click="$store.openMenus.includes('${menuId}') ? $store.openMenus.splice($store.openMenus.indexOf('${menuId}'), 1) : $store.openMenus.push('${menuId}')"
+                class="w-full flex items-center justify-between px-4 py-3 text-left text-primary-custom rounded-lg menu-item hover:bg-secondary-custom hover:text-white transition-colors duration-200"
+            >
+                <div class="flex items-center">
+                    <i class="${menu.icon || ''} mr-3 text-xl"></i>
+                    <span class="font-medium">${menu.name}</span>
+                </div>
+                <svg class="w-4 h-4 transition-transform duration-200"
+                    :class="{ 'transform rotate-180': $store.openMenus.includes('${menuId}') }"
+                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </button>
+        `;
+
         if (menu.modules && menu.modules.length > 0) {
             menuHtml += `
-                <div id="menu-${menu.id}" class="collapse-content ml-4 mt-2">
+                <div
+                    x-show="$store.openMenus.includes('${menuId}')"
+                    x-collapse
+                    class="ml-4 mt-2 space-y-1"
+                >
             `;
             menu.modules.forEach(module => {
                 menuHtml += `
-                    <button onclick="loadContent('${module.url}')"
-                        class="w-full flex items-center px-4 py-2 text-left text-secondary-custom  rounded-md mb-1 submenu-item transition-colors duration-200">
-                        <i class="${module.icon} mr-3 text-m"></i>
+                    <a href="${module.url}"
+                        class="w-full flex items-center px-4 py-2 text-left text-secondary-custom rounded-md mb-1 submenu-item hover:bg-tertiary-custom transition-colors duration-200">
+                        <i class="${module.icon || ''} mr-3 text-m"></i>
                         <span class="text-sm">${module.name}</span>
-                    </button>
+                    </a>
                 `;
             });
             menuHtml += `
@@ -260,6 +245,14 @@
         return li;
     }
 
-    
+    function loadContent(url) {
+        console.log(`Cargando contenido de: ${url}`);
+        window.location.href = url;
+    }
+
 </script>
+
+
+
+
 {% endblock %}

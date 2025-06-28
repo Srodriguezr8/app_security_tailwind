@@ -38,8 +38,9 @@
                     {% endif %}
                 </div>
             </main>
-
+            {% include 'includes/footer.html' %}
         </div>
+
     </div>
 
 </body>
@@ -48,34 +49,24 @@
 
 <script>
 
-    // Manejar navegación del navegador (botón atrás/adelante)
-    window.addEventListener('popstate', function (event) {
-        if (event.state && event.state.groupId !== undefined) {
-            const groupSelect = document.getElementById('groupSelect');
-            if (groupSelect) {
-                groupSelect.value = event.state.groupId || '';
-                // Disparar evento change para actualizar menús
-                groupSelect.dispatchEvent(new Event('change'));
-            }
-        }
-    });
-
-
+  
     document.addEventListener('DOMContentLoaded', function () {
 
 
         // --- Theme Toggle Management ---
         const themeToggle = document.getElementById('theme-toggle');
         const sunIcon = document.getElementById('sun-icon');
-        const moonIcon = document.getElementById('moon-icon');
+    
 
         function updateThemeIcons() {
             if (document.documentElement.classList.contains('dark')) {
-                sunIcon.style.display = 'block';
-                moonIcon.style.display = 'none';
+                sunIcon.style.class .add = 'sun';
+                sunIcon.style.classList.remove('moon');
+
             } else {
-                sunIcon.style.display = 'none';
-                moonIcon.style.display = 'block';
+                sunIcon.style.classList.add('none');
+                sunIcon.style.classList.remove('sun');
+
             }
         }
 

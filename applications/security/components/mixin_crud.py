@@ -137,3 +137,28 @@ class PermissionMixin(object):
 
         return tuple(self.permission_required) 
     
+    
+
+class SessionGroupMixin(object):
+    """
+    Mixin para agregar el ID del grupo seleccionado de la sesión al contexto.
+    
+    Asegura que 'selected_group_id' esté disponible en el contexto de la plantilla:
+    - Si el usuario no está autenticado, devuelve None.
+    - Si el usuario está autenticado, intenta obtener 'selected_group_id' de la sesión.
+      Si no está en la sesión, devuelve None.
+    """
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        selected_group_id = None
+        if self.request.user.is_authenticated:
+            # Obtener el ID del grupo de la sesión. Usar .get() para evitar KeyError.
+            selected_group_id = self.request.session.get('selected_group_id', -1)
+        
+        # Agregar el ID del grupo seleccionado al contexto
+        context['selected_group_id'] = selected_group_id
+        
+        
+        return context
+    

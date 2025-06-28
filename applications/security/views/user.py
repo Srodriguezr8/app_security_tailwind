@@ -5,7 +5,7 @@ from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.template.loader import render_to_string
 from django.urls import reverse_lazy
-from applications.security.components.mixin_crud import UpdateViewMixin, ListViewMixin, PermissionMixin
+from applications.security.components.mixin_crud import SessionGroupMixin, UpdateViewMixin, ListViewMixin, PermissionMixin
 from applications.security.forms.user import UserForm, UserStatusForm
 from applications.security.models import User
 from django.views.generic import ListView, UpdateView
@@ -15,7 +15,7 @@ from django.contrib.auth import login, logout, authenticate, get_user_model
 
 User = get_user_model()
 
-class UserListView(PermissionMixin, ListViewMixin, ListView):
+class UserListView( SessionGroupMixin, PermissionMixin, ListViewMixin, ListView):
     template_name = 'security/users/list.html'
     model = User
     context_object_name = 'users'
@@ -50,6 +50,9 @@ class UserListView(PermissionMixin, ListViewMixin, ListView):
             context['permissions'] = self.request.user.get_all_permissions()
         else:
             context['permissions'] = self.request.user.get_user_permissions() # O Default
+         
+        print("Contenido de menu_list:",context['menu_list'])
+        print("Tipo de menu_list:", type(context['menu_list']))
             
         return context
 

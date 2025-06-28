@@ -1,81 +1,120 @@
 @import "tailwindcss";
 
 /**
-  * A catch-all path to Django template files, JavaScript, and Python files
-  * that contain Tailwind CSS classes and will be scanned by Tailwind to generate the final CSS file.
-  *
-  * If your final CSS file is not being updated after code changes, you may want to broaden or narrow
-  * the scope of this path.
-  */
+ * A catch-all path to Django template files, JavaScript, and Python files
+ * that contain Tailwind CSS classes and will be scanned by Tailwind to generate the final CSS file.
+ *
+ * If your final CSS file is not being updated after code changes, you may want to broaden or narrow
+ * the scope of this path.
+ */
 @source "../../../**/*.{html,py,js}";
 
 :root {
-  --bg-primary: #f7fafc;
-  --bg-secondary: #edf2f7;
-  --bg-tertiary: #e2e8f0;
-  --text-primary: #252d3b;  
+  --bg-primary: #f9fbfc;
+  --bg-secondary: #d1d7dd;
+  --bg-tertiary: #acb4be;
+  --bg-quaternary: #9e9bbe;
+
+  --text-primary: #1d2531;
   --text-secondary: #444a55;
   --text-tertiary: #7b899d;
-  --border-primary: #cbd5e0;    
+  --text-quaternary: #A854F7;
+  --text-quinary: #c180ff;
+
+  --border-primary: #cbd5e0;
   --border-secondary: #e2e8f0;
   --border-tertiary: #edf7f7;
-  --link-primary: #3182ce;            
+  --border-cuatertiary: #a4cae6;
+
+  --link-primary: #3182ce;
   --link-secondary: #63b3ed;
   --link-tertiary: #90cdf4;
+
   --button-primary: #2b6cb0;
   --button-secondary: #3182ce;
   --button-tertiary: #63b3ed;
+  --button-cuatertiary: #90cdf4;
+
   --txt-button-primary: #2b6cb0;
   --txt-button-secondary: #90cdf4;
   --txt-button-tertiary: #bee3f8;
+  --shadow: rgba(0, 0, 0, 0.1);
 }
 
 .dark {
-  --bg-primary: #181f2e;
-  --bg-secondary: #2d3748;
-  --bg-tertiary: #4a5568;
+  --bg-primary: #050B1A;
+  --bg-secondary: #111827;
+  --bg-tertiary: #29303D;
+  --bg-quaternary: #453988;
+  --bg-quinary: #5a4da7;
+
   --text-primary: #edf2f7;
   --text-secondary: #e2e8f0;
-  --text-tertiary: #a0aec0;
+  --text-tertiary: #a78fb1;
+  --text-quaternary: #3E315C;
+
   --border-primary: #4a5568;
   --border-secondary: #718096;
   --border-tertiary: #cbd5e0;
+  --border-cuatertiary: #A854F7;
+
   --link-primary: #63b3ed;
   --link-secondary: #90cdf4;
   --link-tertiary: #bee3f8;
+
   --button-primary: #2b6cb0;
   --button-secondary: #3182ce;
   --button-tertiary: #63b3ed;
+  --button-cuatertiary: #90cdf4;
+
   --txt-button-primary: #63b3ed;
   --txt-button-secondary: #90cdf4;
   --txt-button-tertiary: #bee3f8;
+  --txt-button-cuatertiary: #bee3f8;
+
+  --shadow: rgba(0, 0, 0, 0.5);
 }
+
 .bg-primary-custom {
   background-color: var(--bg-primary);
 }
+
 .bg-secondary-custom {
   background-color: var(--bg-secondary);
 }
+
 .bg-tertiary-custom {
   background-color: var(--bg-tertiary);
+}
+
+.bg-quaternary-custom {
+  background-color: var(--bg-quaternary);
 }
 
 .text-primary-custom {
   color: var(--text-primary);
 }
+
 .text-secondary-custom {
   color: var(--text-secondary);
 }
+
 .text-tertiary-custom {
   color: var(--text-tertiary);
+}
+
+.text-quaternary-custom {
+  color: var(--text-quaternary);
 }
 
 .border-primary-custom {
   border-color: var(--border-primary);
 }
+
 .border-secondary-custom {
   border-color: var(--border-secondary);
 }
+
 .border-tertiary-custom {
   border-color: var(--border-tertiary);
 }
@@ -84,11 +123,159 @@
   background-color: var(--button-primary);
   color: var(--txt-button-primary);
 }
+
 .button-secondary-custom {
   background-color: var(--button-secondary);
   color: var(--txt-button-secondary);
 }
+
 .button-tertiary-custom {
   background-color: var(--button-tertiary);
   color: var(--txt-button-tertiary);
+}
+
+.button-cuatertiary-custom {
+  background-color: var(--button-cuatertiary);
+  color: var(--txt-button-cuatertiary);
+}
+
+
+.theme-toggle-button:hover {
+  background-color: var(--bg-secondary);
+}
+
+/* Añade esto a tu archivo CSS principal */
+.submenu {
+  transition: all 0.3s ease;
+  overflow: hidden;
+  max-height: 0;
+}
+
+.submenu.active {
+  max-height: 500px;
+}
+
+.rotate-180 {
+  transform: rotate(180deg);
+}
+
+.sidebar-transition {
+  transition: width 0.3s ease;
+}
+
+/* Estilos mejorados para el botón de toggle */
+.sidebar-toggle-btn {
+  position: absolute;
+  border-radius: 9999px;
+  top: 18px;
+  z-index: 1100;
+  width: 20px;
+  height: 40px;
+  padding: 1px;
+  border-radius: 50%;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sidebar-toggle-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+}
+
+.sidebar-toggle-btn i {
+  font-size: 0.7rem;
+  color: #4b5563;
+}
+
+/* Clases de sombra personalizada (consolidada) */
+.shadow-custom {
+  box-shadow: 0 4px 6px -1px var(--shadow), 0 2px 4px -2px var(--shadow);
+}
+
+/* Clases de borde personalizada */
+.border-custom {
+  border: 1px solid var(--border-primary);
+}
+
+
+#sidebar-toggle {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  right: -20px;
+}
+
+
+#sidebar {
+  background-color: var(--bg-secondary);
+  color: var(--text-secondary);
+}
+
+.sub-menu-item {
+  background-color: var(--bg-tertiary);
+  color: var(--text-quinary);
+  border-left: 2px solid var(--text-tertiary);
+  border-radius: 0.375rem;
+  height: 2.5rem;
+  padding: 0.5rem 1rem;
+}
+
+.sub-menu-item:hover {
+  transform: translateX(2px) !important;
+  transition: transform 0.2s ease !important;
+  color: var(--text-quinary);
+}
+
+
+/* Clases para el sidebar colapsable (Estas son las que se mantuvieron) */
+.sidebar-expanded #sidebar {
+  width: 256px; /* Ancho de la barra lateral expandida */
+}
+
+.sidebar-collapsed #sidebar {
+  width: 80px; /* Ancho de la barra lateral colapsada (ajusta según tus iconos) */
+}
+
+.sidebar-collapsed #sidebar h2,
+.sidebar-collapsed #sidebar span.transition-opacity,
+.sidebar-collapsed #sidebar .mt-auto .w-full span {
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
+  pointer-events: none; /* Deshabilita clics en texto oculto */
+}
+
+/* Se eliminaron los márgenes del main-content-wrapper */
+/* .sidebar-expanded #main-content-wrapper {
+  margin-left: 256px;
+}
+
+.sidebar-collapsed #main-content-wrapper {
+  margin-left: 80px;
+} */
+
+
+/* Esto es importante para el contenido colapsable dentro del sidebar (se mantuvo) */
+.collapse-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-out;
+}
+
+.collapse-content.show {
+  max-height: 500px; /* Suficientemente grande para contener el contenido */
+  transition: max-height 0.5s ease-in;
+}
+
+/* Para el icono de chevron (se mantuvo) */
+.bi-chevron-down {
+  transition: transform 0.3s ease-out;
+}
+
+.bi-chevron-down.rotate-180 {
+  transform: rotate(180deg);
 }

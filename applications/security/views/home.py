@@ -4,7 +4,7 @@ import json
 from django.views.generic import TemplateView
 from django.views.decorators.csrf import csrf_exempt
 from applications.security.components.menu_module import MenuModule
-from applications.security.components.mixin_crud import PermissionMixin
+from applications.security.components.mixin_crud import ListViewMixin, PermissionMixin, SessionGroupMixin
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from applications.security.models import Group, Menu, Module
@@ -32,17 +32,22 @@ class ModuloTemplateView(PermissionMixin,TemplateView):
         return context
     
     
-class StartTemplateView(TemplateView):
+class StartTemplateView(SessionGroupMixin, TemplateView):
     template_name = 'base.html'
 
     def get_context_data(self, **kwargs):
         #context = super().get_context_data(**kwargs)
-        context={}
+        context = super().get_context_data(**kwargs)
         context["title"]= "IC - Modulos"
         context["title1"]= "Modulos Disponibles"
         MenuModule(self.request).fill(context)
         
+    
         print("estoy saliendo en el modulo template view")
+        print(f"Contexto final: {context.keys()}") # Para depuración
+        print(f"Menu List en contexto: {context.get('menu_list') is not None}") # Para depuración
+        print(f"Group List en contexto: {context.get('group_list') is not None}") # Para depuración
+        print(f"Selected Group ID en contexto: {context.get('selected_group_id')}") # Para depuración
        
         return context
     
@@ -85,7 +90,16 @@ def get_group_menus(request):
         ).distinct().order_by('order', 'name')
         
         menu_list = _serialize_menus_with_modules(menus, group)
-   
+        
+        # --- GUARDAR EL ID DEL GRUPO SELECCIONADO EN LA SESIÓN ---
+        # Este es el punto clave.
+        request.session['selected_group_id'] = group_id
+        print('seleccion de grupo guardara : ',  request.session['selected_group_id'])
+        # Para que los cambios en la sesión se guarden inmediatamente:
+        # request.session.modified = True # Esto no es estrictamente necesario si solo asignas,
+                                       # pero ayuda si modificas estructuras internas de la sesión.
+
+        
         return JsonResponse({
             'success': True,
             'menus': menu_list
