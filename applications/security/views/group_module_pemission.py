@@ -25,6 +25,7 @@ class GroupModulePermissionListView(TemplateView):
         return context
 
 
+#Retorna permisos almacenados del modulo para ese grupo
 class GroupModulePermissionPermissionsView(View):
     def get(self, request, *args, **kwargs):
         try:
@@ -38,7 +39,7 @@ class GroupModulePermissionPermissionsView(View):
         except GroupModulePermission.DoesNotExist:
             return JsonResponse({'permissions': []})
     
-        
+#Retorna solos los permisos del modulo        
 class PemissionsModuleView(DetailView):
     model= Module
     def get(self, request,*args,**kargs):
@@ -49,8 +50,8 @@ class PemissionsModuleView(DetailView):
             return JsonResponse({'modules':permissions})
         except Exception:
             return JsonResponse({'error':f'No se han encontrado los permisos del modulo {obj.name}'},status = 404)
-
-
+        
+#Guarda los permisos del modulo de ese grupo
 class SaveGroupModulePermissionView(View):
     def post(self,request,*args,**kgars):
         try:
@@ -75,7 +76,9 @@ class SaveGroupModulePermissionView(View):
             return JsonResponse(response)
         except:
             return JsonResponse({'error': 'Error al guardar los permisos'})
+        
 
+#Elimina los permisos del modulo para ese grupo
 class DeleteGroupModulePermissionView(View):
     def post(self,request,*args,**kargs):
 

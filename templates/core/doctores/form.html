@@ -1,0 +1,706 @@
+{% extends 'home.html' %} 
+<title>{% block title %}{{title}}{% endblock %}</title>
+{% load static %}
+{% block content %}
+<section class="dark:bg-principal">
+    <div class="text-center" data-aos="fade" data-aos-delay="200">
+        <div class="sm:pt-28 lg:pt-4">
+             <h1 class="rounded-2xl bg-indigo-500 px-2 py-1 text-white uppercase text-4xl">
+                {{ title1 }}
+             </h1>
+        </div>
+
+        <!-- Mensajes de error del formulario (no específicos de campo) -->
+        {% if form.non_field_errors %}
+        <div class="mx-4 lg:mx-20 mb-6" data-aos="fade-up">
+            <div class="bg-red-50 dark:bg-red-900/30 border-l-4 border-red-500 p-4 rounded-lg max-w-4xl mx-auto">
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        <i class="fa-solid fa-exclamation-triangle text-red-500 text-lg"></i>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-red-800 dark:text-red-200 font-medium">
+                            Se encontraron errores en el formulario:
+                        </h3>
+                        <div class="mt-2 text-red-700 dark:text-red-300">
+                            <ul class="list-disc list-inside space-y-1">
+                                {% for error in form.non_field_errors %}
+                                <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <form method="post" class="space-y-6 py-4" enctype="multipart/form-data">
+            <div class="mx-4 lg:mx-20" data-aos="fade">
+                <!-- Contenedor principal del formulario -->
+                <div class="bg-white dark:bg-secundario rounded-3xl p-8 max-w-4xl mx-auto"
+                    data-aos="fade-up" data-aos-delay="200">
+                    {% csrf_token %}
+                
+                    <!-- Sección 1: Información básica -->
+                    <div class="mb-8">
+                        <h2 class="text-xl font-bold text-gray-800 dark:text-gray-200 mb-4 border-b pb-2">
+                            <i class="fas fa-user-md mr-2"></i>Información Básica
+                        </h2>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Nombres -->
+                            <div class="field-container {% if form.nombres.errors %}has-error{% endif %}">
+                                <label for="{{ form.nombres.id_for_label }}"
+                                    class="font-black uppercase text-sm block mb-2
+                                           {% if form.nombres.errors %}text-red-600 dark:text-red-400{% else %}dark:text-blue-300{% endif %}">
+                                    {{ form.nombres.label }}
+                                    {% if form.nombres.field.required %}<span class="text-red-500">*</span>{% endif %}
+                                </label>
+                                <div class="relative">
+                                    {{ form.nombres }}
+                                    {% if form.nombres.errors %}
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <i class="fa-solid fa-exclamation-circle text-red-500"></i>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% if form.nombres.errors %}
+                                <div class="mt-2 text-red-600 dark:text-red-400 text-sm">
+                                    {% for error in form.nombres.errors %}
+                                    <div class="flex items-center mt-1">
+                                        <i class="fa-solid fa-circle-exclamation text-xs mr-2"></i>
+                                        {{ error }}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Apellidos -->
+                            <div class="field-container {% if form.apellidos.errors %}has-error{% endif %}">
+                                <label for="{{ form.apellidos.id_for_label }}"
+                                    class="font-black uppercase text-sm block mb-2
+                                           {% if form.apellidos.errors %}text-red-600 dark:text-red-400{% else %}dark:text-blue-300{% endif %}">
+                                    {{ form.apellidos.label }}
+                                    {% if form.apellidos.field.required %}<span class="text-red-500">*</span>{% endif %}
+                                </label>
+                                <div class="relative">
+                                    {{ form.apellidos }}
+                                    {% if form.apellidos.errors %}
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <i class="fa-solid fa-exclamation-circle text-red-500"></i>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% if form.apellidos.errors %}
+                                <div class="mt-2 text-red-600 dark:text-red-400 text-sm">
+                                    {% for error in form.apellidos.errors %}
+                                    <div class="flex items-center mt-1">
+                                        <i class="fa-solid fa-circle-exclamation text-xs mr-2"></i>
+                                        {{ error }}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
+                            <!-- RUC -->
+                            <div class="field-container {% if form.ruc.errors %}has-error{% endif %}">
+                                <label for="{{ form.ruc.id_for_label }}"
+                                    class="font-black uppercase text-sm block mb-2
+                                           {% if form.ruc.errors %}text-red-600 dark:text-red-400{% else %}dark:text-blue-300{% endif %}">
+                                    {{ form.ruc.label }}
+                                    {% if form.ruc.field.required %}<span class="text-red-500">*</span>{% endif %}
+                                </label>
+                                <div class="relative">
+                                    {{ form.ruc }}
+                                    {% if form.ruc.errors %}
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <i class="fa-solid fa-exclamation-circle text-red-500"></i>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% if form.ruc.errors %}
+                                <div class="mt-2 text-red-600 dark:text-red-400 text-sm">
+                                    {% for error in form.ruc.errors %}
+                                    <div class="flex items-center mt-1">
+                                        <i class="fa-solid fa-circle-exclamation text-xs mr-2"></i>
+                                        {{ error }}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Fecha Nacimiento -->
+                            <div class="field-container {% if form.fecha_nacimiento.errors %}has-error{% endif %}">
+                                <label for="{{ form.fecha_nacimiento.id_for_label }}"
+                                    class="font-black uppercase text-sm block mb-2
+                                           {% if form.fecha_nacimiento.errors %}text-red-600 dark:text-red-400{% else %}dark:text-blue-300{% endif %}">
+                                    {{ form.fecha_nacimiento.label }}
+                                    {% if form.fecha_nacimiento.field.required %}<span class="text-red-500">*</span>{% endif %}
+                                </label>
+                                <div class="relative">
+                                    {{ form.fecha_nacimiento }}
+                                    {% if form.fecha_nacimiento.errors %}
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <i class="fa-solid fa-exclamation-circle text-red-500"></i>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% if form.fecha_nacimiento.errors %}
+                                <div class="mt-2 text-red-600 dark:text-red-400 text-sm">
+                                    {% for error in form.fecha_nacimiento.errors %}
+                                    <div class="flex items-center mt-1">
+                                        <i class="fa-solid fa-circle-exclamation text-xs mr-2"></i>
+                                        {{ error }}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Código Único -->
+                            <div class="field-container {% if form.codigo_unico_doctor.errors %}has-error{% endif %}">
+                                <label for="{{ form.codigo_unico_doctor.id_for_label }}"
+                                    class="font-black uppercase text-sm block mb-2
+                                           {% if form.codigo_unico_doctor.errors %}text-red-600 dark:text-red-400{% else %}dark:text-blue-300{% endif %}">
+                                    {{ form.codigo_unico_doctor.label }}
+                                    {% if form.codigo_unico_doctor.field.required %}<span class="text-red-500">*</span>{% endif %}
+                                </label>
+                                <div class="relative">
+                                    {{ form.codigo_unico_doctor }}
+                                    {% if form.codigo_unico_doctor.errors %}
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <i class="fa-solid fa-exclamation-circle text-red-500"></i>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% if form.codigo_unico_doctor.errors %}
+                                <div class="mt-2 text-red-600 dark:text-red-400 text-sm">
+                                    {% for error in form.codigo_unico_doctor.errors %}
+                                    <div class="flex items-center mt-1">
+                                        <i class="fa-solid fa-circle-exclamation text-xs mr-2"></i>
+                                        {{ error }}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sección 2: Información de contacto -->
+                    <div class="mb-8">
+                        <h2 class="text-xl font-bold text-gray-800 dark:text-gray-200 mb-4 border-b pb-2">
+                            <i class="fas fa-address-book mr-2"></i>Información de Contacto
+                        </h2>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Teléfono -->
+                            <div class="field-container {% if form.telefonos.errors %}has-error{% endif %}">
+                                <label for="{{ form.telefonos.id_for_label }}"
+                                    class="font-black uppercase text-sm block mb-2
+                                           {% if form.telefonos.errors %}text-red-600 dark:text-red-400{% else %}dark:text-blue-300{% endif %}">
+                                    {{ form.telefonos.label }}
+                                    {% if form.telefonos.field.required %}<span class="text-red-500">*</span>{% endif %}
+                                </label>
+                                <div class="relative">
+                                    {{ form.telefonos }}
+                                    {% if form.telefonos.errors %}
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <i class="fa-solid fa-exclamation-circle text-red-500"></i>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% if form.telefonos.errors %}
+                                <div class="mt-2 text-red-600 dark:text-red-400 text-sm">
+                                    {% for error in form.telefonos.errors %}
+                                    <div class="flex items-center mt-1">
+                                        <i class="fa-solid fa-circle-exclamation text-xs mr-2"></i>
+                                        {{ error }}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Email -->
+                            <div class="field-container {% if form.email.errors %}has-error{% endif %}">
+                                <label for="{{ form.email.id_for_label }}"
+                                    class="font-black uppercase text-sm block mb-2
+                                           {% if form.email.errors %}text-red-600 dark:text-red-400{% else %}dark:text-blue-300{% endif %}">
+                                    {{ form.email.label }}
+                                    {% if form.email.field.required %}<span class="text-red-500">*</span>{% endif %}
+                                </label>
+                                <div class="relative">
+                                    {{ form.email }}
+                                    {% if form.email.errors %}
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <i class="fa-solid fa-exclamation-circle text-red-500"></i>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% if form.email.errors %}
+                                <div class="mt-2 text-red-600 dark:text-red-400 text-sm">
+                                    {% for error in form.email.errors %}
+                                    <div class="flex items-center mt-1">
+                                        <i class="fa-solid fa-circle-exclamation text-xs mr-2"></i>
+                                        {{ error }}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Dirección -->
+                        <div class="field-container {% if form.direccion.errors %}has-error{% endif %} mt-4">
+                            <label for="{{ form.direccion.id_for_label }}"
+                                class="font-black uppercase text-sm block mb-2
+                                       {% if form.direccion.errors %}text-red-600 dark:text-red-400{% else %}dark:text-blue-300{% endif %}">
+                                {{ form.direccion.label }}
+                                {% if form.direccion.field.required %}<span class="text-red-500">*</span>{% endif %}
+                            </label>
+                            <div class="relative">
+                                {{ form.direccion }}
+                                {% if form.direccion.errors %}
+                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                    <i class="fa-solid fa-exclamation-circle text-red-500"></i>
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% if form.direccion.errors %}
+                            <div class="mt-2 text-red-600 dark:text-red-400 text-sm">
+                                {% for error in form.direccion.errors %}
+                                <div class="flex items-center mt-1">
+                                    <i class="fa-solid fa-circle-exclamation text-xs mr-2"></i>
+                                    {{ error }}
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Coordenadas -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                            <!-- Latitud -->
+                            <div class="field-container {% if form.latitud.errors %}has-error{% endif %}">
+                                <label for="{{ form.latitud.id_for_label }}"
+                                    class="font-black uppercase text-sm block mb-2
+                                           {% if form.latitud.errors %}text-red-600 dark:text-red-400{% else %}dark:text-blue-300{% endif %}">
+                                    {{ form.latitud.label }}
+                                    {% if form.latitud.field.required %}<span class="text-red-500">*</span>{% endif %}
+                                </label>
+                                <div class="relative">
+                                    {{ form.latitud }}
+                                    {% if form.latitud.errors %}
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <i class="fa-solid fa-exclamation-circle text-red-500"></i>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% if form.latitud.errors %}
+                                <div class="mt-2 text-red-600 dark:text-red-400 text-sm">
+                                    {% for error in form.latitud.errors %}
+                                    <div class="flex items-center mt-1">
+                                        <i class="fa-solid fa-circle-exclamation text-xs mr-2"></i>
+                                        {{ error }}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Longitud -->
+                            <div class="field-container {% if form.longitud.errors %}has-error{% endif %}">
+                                <label for="{{ form.longitud.id_for_label }}"
+                                    class="font-black uppercase text-sm block mb-2
+                                           {% if form.longitud.errors %}text-red-600 dark:text-red-400{% else %}dark:text-blue-300{% endif %}">
+                                    {{ form.longitud.label }}
+                                    {% if form.longitud.field.required %}<span class="text-red-500">*</span>{% endif %}
+                                </label>
+                                <div class="relative">
+                                    {{ form.longitud }}
+                                    {% if form.longitud.errors %}
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <i class="fa-solid fa-exclamation-circle text-red-500"></i>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% if form.longitud.errors %}
+                                <div class="mt-2 text-red-600 dark:text-red-400 text-sm">
+                                    {% for error in form.longitud.errors %}
+                                    <div class="flex items-center mt-1">
+                                        <i class="fa-solid fa-circle-exclamation text-xs mr-2"></i>
+                                        {{ error }}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sección 3: Información profesional -->
+                    <div class="mb-8">
+                        <h2 class="text-xl font-bold text-gray-800 dark:text-gray-200 mb-4 border-b pb-2">
+                            <i class="fas fa-briefcase-medical mr-2"></i>Información Profesional
+                        </h2>
+                        
+                        <!-- Especialidad -->
+                        <div class="field-container {% if form.especialidad.errors %}has-error{% endif %}">
+                            <label for="{{ form.especialidad.id_for_label }}"
+                                class="font-black uppercase text-sm block mb-2
+                                       {% if form.especialidad.errors %}text-red-600 dark:text-red-400{% else %}dark:text-blue-300{% endif %}">
+                                {{ form.especialidad.label }}
+                                {% if form.especialidad.field.required %}<span class="text-red-500">*</span>{% endif %}
+                            </label>
+                            <div class="relative">
+                                {{ form.especialidad }}
+                                {% if form.especialidad.errors %}
+                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                    <i class="fa-solid fa-exclamation-circle text-red-500"></i>
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% if form.especialidad.errors %}
+                            <div class="mt-2 text-red-600 dark:text-red-400 text-sm">
+                                {% for error in form.especialidad.errors %}
+                                <div class="flex items-center mt-1">
+                                    <i class="fa-solid fa-circle-exclamation text-xs mr-2"></i>
+                                    {{ error }}
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Horario Atención -->
+                        <div class="field-container {% if form.horario_atencion.errors %}has-error{% endif %} mt-4">
+                            <label for="{{ form.horario_atencion.id_for_label }}"
+                                class="font-black uppercase text-sm block mb-2
+                                       {% if form.horario_atencion.errors %}text-red-600 dark:text-red-400{% else %}dark:text-blue-300{% endif %}">
+                                {{ form.horario_atencion.label }}
+                                {% if form.horario_atencion.field.required %}<span class="text-red-500">*</span>{% endif %}
+                            </label>
+                            <div class="relative">
+                                {{ form.horario_atencion }}
+                                {% if form.horario_atencion.errors %}
+                                <div class="absolute top-2 right-2 pointer-events-none">
+                                    <i class="fa-solid fa-exclamation-circle text-red-500"></i>
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% if form.horario_atencion.errors %}
+                            <div class="mt-2 text-red-600 dark:text-red-400 text-sm">
+                                {% for error in form.horario_atencion.errors %}
+                                <div class="flex items-center mt-1">
+                                    <i class="fa-solid fa-circle-exclamation text-xs mr-2"></i>
+                                    {{ error }}
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Duración Atención -->
+                        <div class="field-container {% if form.duracion_atencion.errors %}has-error{% endif %} mt-4">
+                            <label for="{{ form.duracion_atencion.id_for_label }}"
+                                class="font-black uppercase text-sm block mb-2
+                                       {% if form.duracion_atencion.errors %}text-red-600 dark:text-red-400{% else %}dark:text-blue-300{% endif %}">
+                                {{ form.duracion_atencion.label }}
+                                {% if form.duracion_atencion.field.required %}<span class="text-red-500">*</span>{% endif %}
+                            </label>
+                            <div class="relative">
+                                {{ form.duracion_atencion }}
+                                {% if form.duracion_atencion.errors %}
+                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                    <i class="fa-solid fa-exclamation-circle text-red-500"></i>
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% if form.duracion_atencion.errors %}
+                            <div class="mt-2 text-red-600 dark:text-red-400 text-sm">
+                                {% for error in form.duracion_atencion.errors %}
+                                <div class="flex items-center mt-1">
+                                    <i class="fa-solid fa-circle-exclamation text-xs mr-2"></i>
+                                    {{ error }}
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Sección 4: Documentos y archivos -->
+                    <div class="mb-8">
+                        <h2 class="text-xl font-bold text-gray-800 dark:text-gray-200 mb-4 border-b pb-2">
+                            <i class="fas fa-file-alt mr-2"></i>Documentos y Archivos
+                        </h2>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Curriculum -->
+                            <div class="field-container {% if form.curriculum.errors %}has-error{% endif %}">
+                                <label for="{{ form.curriculum.id_for_label }}"
+                                    class="font-black uppercase text-sm block mb-2
+                                           {% if form.curriculum.errors %}text-red-600 dark:text-red-400{% else %}dark:text-blue-300{% endif %}">
+                                    {{ form.curriculum.label }}
+                                    {% if form.curriculum.field.required %}<span class="text-red-500">*</span>{% endif %}
+                                </label>
+                                <div class="relative">
+                                    {{ form.curriculum }}
+                                    {% if form.curriculum.errors %}
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <i class="fa-solid fa-exclamation-circle text-red-500"></i>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% if form.curriculum.errors %}
+                                <div class="mt-2 text-red-600 dark:text-red-400 text-sm">
+                                    {% for error in form.curriculum.errors %}
+                                    <div class="flex items-center mt-1">
+                                        <i class="fa-solid fa-circle-exclamation text-xs mr-2"></i>
+                                        {{ error }}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Firma Digital -->
+                            <div class="field-container {% if form.firma_digital.errors %}has-error{% endif %}">
+                                <label for="{{ form.firma_digital.id_for_label }}"
+                                    class="font-black uppercase text-sm block mb-2
+                                           {% if form.firma_digital.errors %}text-red-600 dark:text-red-400{% else %}dark:text-blue-300{% endif %}">
+                                    {{ form.firma_digital.label }}
+                                    {% if form.firma_digital.field.required %}<span class="text-red-500">*</span>{% endif %}
+                                </label>
+                                <div class="relative">
+                                    {{ form.firma_digital }}
+                                    {% if form.firma_digital.errors %}
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <i class="fa-solid fa-exclamation-circle text-red-500"></i>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% if form.curriculum.errors %}
+                                <div class="mt-2 text-red-600 dark:text-red-400 text-sm">
+                                    {% for error in form.curriculum.errors %}
+                                    <div class="flex items-center mt-1">
+                                        <i class="fa-solid fa-circle-exclamation text-xs mr-2"></i>
+                                        {{ error }}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                            <!-- Foto -->
+                            <div class="field-container {% if form.foto.errors %}has-error{% endif %}">
+                                <label for="{{ form.foto.id_for_label }}"
+                                    class="font-black uppercase text-sm block mb-2
+                                           {% if form.foto.errors %}text-red-600 dark:text-red-400{% else %}dark:text-blue-300{% endif %}">
+                                    {{ form.foto.label }}
+                                    {% if form.foto.field.required %}<span class="text-red-500">*</span>{% endif %}
+                                </label>
+                                <div class="relative">
+                                    {{ form.foto }}
+                                    {% if form.foto.errors %}
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <i class="fa-solid fa-exclamation-circle text-red-500"></i>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% if form.foto.errors %}
+                                <div class="mt-2 text-red-600 dark:text-red-400 text-sm">
+                                    {% for error in form.foto.errors %}
+                                    <div class="flex items-center mt-1">
+                                        <i class="fa-solid fa-circle-exclamation text-xs mr-2"></i>
+                                        {{ error }}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Imagen Receta -->
+                            <div class="field-container {% if form.imagen_receta.errors %}has-error{% endif %}">
+                                <label for="{{ form.imagen_receta.id_for_label }}"
+                                    class="font-black uppercase text-sm block mb-2
+                                           {% if form.imagen_receta.errors %}text-red-600 dark:text-red-400{% else %}dark:text-blue-300{% endif %}">
+                                    {{ form.imagen_receta.label }}
+                                    {% if form.imagen_receta.field.required %}<span class="text-red-500">*</span>{% endif %}
+                                </label>
+                                <div class="relative">
+                                    {{ form.imagen_receta }}
+                                    {% if form.imagen_receta.errors %}
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <i class="fa-solid fa-exclamation-circle text-red-500"></i>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% if form.imagen_receta.errors %}
+                                <div class="mt-2 text-red-600 dark:text-red-400 text-sm">
+                                    {% for error in form.imagen_receta.errors %}
+                                    <div class="flex items-center mt-1">
+                                        <i class="fa-solid fa-circle-exclamation text-xs mr-2"></i>
+                                        {{ error }}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sección 5: Estado -->
+                    <div class="mb-8">
+                        <h2 class="text-xl font-bold text-gray-800 dark:text-gray-200 mb-4 border-b pb-2">
+                            <i class="fas fa-toggle-on mr-2"></i>Estado
+                        </h2>
+                        
+                        <!-- Activo -->
+                        <div class="field-container {% if form.activo.errors %}has-error{% endif %}">
+                            <div class="flex items-center space-x-3 {% if form.activo.errors %}p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg{% endif %}">
+                                {{ form.activo }}
+                                <label for="{{ form.activo.id_for_label }}"
+                                    class="font-black uppercase text-sm
+                                           {% if form.activo.errors %}text-red-600 dark:text-red-400{% else %}dark:text-blue-300{% endif %}">
+                                    {{ form.activo.label }}
+                                    {% if form.activo.field.required %}<span class="text-red-500">*</span>{% endif %}
+                                </label>
+                            </div>
+                            {% if form.activo.errors %}
+                            <div class="mt-2 text-red-600 dark:text-red-400 text-sm">
+                                {% for error in form.activo.errors %}
+                                <div class="flex items-center mt-1">
+                                    <i class="fa-solid fa-circle-exclamation text-xs mr-2"></i>
+                                    {{ error }}
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Botones de acción -->
+                    <div class="flex flex-col md:flex-row justify-center items-center mt-8 space-y-3 md:space-y-0 md:space-x-8">
+                        <button type="submit"
+                            class="w-full md:w-auto bg-blue-700 hover:bg-blue-800 text-white py-3 px-8 rounded-lg flex items-center justify-center transition-all duration-300 font-medium shadow-lg hover:shadow-xl">
+                            <i class="fa-solid fa-save mr-2"></i>Guardar Doctor
+                        </button>
+                        <a class="w-full md:w-auto bg-red-700 hover:bg-red-800 text-white py-3 px-8 rounded-lg flex items-center justify-center transition-all duration-300 font-medium shadow-lg hover:shadow-xl"
+                            href="{% url 'core:doctor_list' %}">
+                            <i class="fa-solid fa-xmark mr-2"></i>Cancelar
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</section>
+
+<!-- CSS para estilos de error -->
+<style>
+/* Estilos para campos con errores */
+.field-container.has-error input,
+.field-container.has-error select,
+.field-container.has-error textarea {
+    border-color: #ef4444 !important;
+    background-color: rgba(254, 242, 242, 0.5) !important;
+    color: #991b1b !important;
+}
+
+.field-container.has-error input:focus,
+.field-container.has-error select:focus,
+.field-container.has-error textarea:focus {
+    border-color: #dc2626 !important;
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2) !important;
+    outline: none !important;
+}
+
+/* Dark mode para campos con errores */
+@media (prefers-color-scheme: dark) {
+    .field-container.has-error input,
+    .field-container.has-error select,
+    .field-container.has-error textarea {
+        background-color: rgba(153, 27, 27, 0.2) !important;
+        color: #fca5a5 !important;
+        border-color: #ef4444 !important;
+    }
+    
+    .field-container.has-error input:focus,
+    .field-container.has-error select:focus,
+    .field-container.has-error textarea:focus {
+        box-shadow: 0 0 0 2px rgba(185, 28, 28, 0.4) !important;
+    }
+}
+
+/* Estilos para checkboxes con errores */
+.field-container.has-error input[type="checkbox"] {
+    border-color: #ef4444 !important;
+    accent-color: #ef4444 !important;
+}
+
+/* Animación sutil para errores */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-2px); }
+    20%, 40%, 60%, 80% { transform: translateX(2px); }
+}
+
+.field-container.has-error {
+    animation: shake 0.5s ease-in-out;
+}
+
+/* Estilos para secciones del formulario */
+h2 {
+    position: relative;
+    padding-left: 1.5rem;
+}
+
+h2 i {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #4f46e5;
+}
+
+.dark h2 i {
+    color: #818cf8;
+}
+
+/* Mejoras para campos de archivo */
+input[type="file"]::file-selector-button {
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    background-color: #e0e7ff;
+    color: #4f46e5;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-right: 1rem;
+}
+
+input[type="file"]::file-selector-button:hover {
+    background-color: #c7d2fe;
+}
+
+.dark input[type="file"]::file-selector-button {
+    background-color: #3730a3;
+    color: #e0e7ff;
+}
+
+.dark input[type="file"]::file-selector-button:hover {
+    background-color: #4338ca;
+}
+</style>
+
+{% endblock %}

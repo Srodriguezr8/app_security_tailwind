@@ -1,0 +1,389 @@
+{% extends 'home.html' %}
+<title>{% block title %}{{title}}{% endblock %}</title>
+{% block content %}
+{% load static %}
+
+<section class="dark:bg-principal mt-2">
+    <div class="text-center" data-aos="fade-up" data-aos-delay="200">
+        <div class="sm:pt-8 lg:pt-4">
+
+            <h1 class="rounded-2xl  bg-indigo-500 px-2 py-1 text-white uppercase text-4xl">
+                {{ title1 }}
+            </h1>
+
+        </div>
+        <div class="lg:p-2 rounded-3xl" data-aos="fade-up" data-aos-delay="200">
+            <!-- Barra de búsqueda -->
+            <div class="p-4 flex justify-center">
+                <label for="table-search" class="sr-only">Search</label>
+                <div class="relative mt-1">
+                    <div class="absolute inset-y-0 rtl:inset-r-0 start-0 flex items-center ps-3 pointer-events-none">
+                        <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true"
+                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+                        </svg>
+                    </div>
+                    <form method="GET">
+                        <input type="text" name="q" id="table-search"
+                            class="text-center pl-10 shadow-sm bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 pr-12 dark:bg-principal dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"
+                            placeholder="Búsqueda sin límites" value="{{ request.GET.q }}">
+                    </form>
+                </div>
+            </div>
+            <!-- Tabla de módulos -->
+            <div class="overflow-x-auto">
+                <table class="w-full text-center text-lg">
+                    <thead class="uppercase font-Tiny5 bg-gray-50 dark:bg-secundario dark:text-blue-300">
+                        <tr>
+                            <th scope="col" class="px-6 py-3">ID</th>
+                            <th scope="col" class="px-6 py-3">Nombres</th>
+                            <th scope="col" class="px-6 py-3">Apellidos</th>
+                            <th scope="col" class="px-6 py-3">RUC</th>
+                            <th scope="col" class="px-6 py-3">Código Único</th>
+                            <th scope="col" class="px-6 py-3">Especialidad</th>
+                            <th scope="col" class="px-6 py-3">Estado</th>
+                            <th scope="col" class="px-6 py-3">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in doctores %}
+                        <tr
+                            class="dark:text-gray-400 bg-white border-b dark:bg-[#0b1121] dark:border-secundario hover:bg-gray-50 dark:hover:bg-[#121c33]">
+                            <td class="px-6 py-4">{{ item.id }}</td>
+
+                            <td class="px-6 py-4 font-semibold">{{ item.nombres }}</td>
+                            <td class="px-6 py-4 font-semibold">{{ item.apellidos }}</td>
+                            <td class="px-6 py-4 font-semibold">{{ item.ruc }}</td>
+                            <td class="px-6 py-4 font-semibold">{{ item.codigo_unico_doctor }}</td>
+                            <td class="px-6 py-4 font-semibold">
+                                {% if item.especialidad.all|length > 0 %}
+                                    <button onclick="showEspecialidades({{ item.id }}, '{{ item.nombres }} {{ item.apellidos }}')" 
+                                            class="inline-flex items-center gap-2 px-3 py-2 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors duration-200 cursor-pointer">
+                                       
+                                        <span class="bg-blue-600 dark:bg-blue-400 text-white dark:text-blue-900 text-xs font-bold px-2 py-1 rounded-full min-w-[20px] h-5 flex items-center justify-center">
+                                            {{ item.especialidad.all|length }}
+                                        </span>
+                                         <span>Especialidades</span>
+                                    </button>
+                                {% else %}
+                                    <span class="text-gray-500 dark:text-gray-400">Sin especialidad</span>
+                                {% endif %}
+                            </td>
+
+                            <td class="px-6 py-4">
+                                {% if item.activo %}
+                                <span
+                                    class="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 px-2 py-1 rounded-full text-sm">
+                                    <i class="fa-solid fa-check mr-1"></i>Activo
+                                </span>
+                                {% else %}
+                                <span
+                                    class="bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 px-2 py-1 rounded-full text-sm">
+                                    <i class="fa-solid fa-times mr-1"></i>Inactivo
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4">
+                                {% if permissions.change_doctor %}
+                                <a href="{% url 'core:doctor_update' item.id %}"
+                                    class="text-blue-600 dark:text-blue-500 hover:text-blue-800 mx-1">
+                                    <i class="fa-solid fa-edit text-lg"></i>
+                                </a>
+                                {% endif%}
+                                {% if permissions.delete_doctor %}
+                                <a href="#" class="text-red-600 dark:text-red-500 hover:text-red-800 mx-1"
+                                    onclick="openDeleteModal('{{ item.id }}', '{{ item.name }}')">
+                                    <i class="fa-solid fa-trash text-lg"></i>
+                                </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Paginación -->
+            <div class="flex justify-center mt-4">
+                <nav aria-label="Page navigation example">
+                    <ul class="inline-flex -space-x-px">
+                        {% if page_obj.has_previous %}
+                        <li>
+                            <a href="?page=1{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}"
+                                class="flex items-center justify-center px-3 h-8 ms-0 leading-tight text-gray-500 bg-white border border-e-0 border-gray-300 rounded-s-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-[#0b1121] dark:border-secundario dark:text-gray-400 dark:hover:bg-[#121c33] dark:hover:text-white">Anterior</a>
+                        </li>
+                        {% endif %}
+                        {% for num in page_obj.paginator.page_range %}
+                        <li>
+                            <a href="?page={{ num }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}"
+                                class="flex items-center justify-center px-3 h-8 leading-tight {% if num == page_obj.number %}text-blue-600 bg-blue-50 border border-gray-300 hover:bg-blue-100 hover:text-blue-700 dark:bg-secundario dark:border-principal dark:text-blue-300{% else %}text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-[#0b1121] dark:border-secundario dark:text-gray-400 dark:hover:bg-[#121c33] dark:hover:text-white{% endif %}">
+                                {{ num }}
+                            </a>
+                        </li>
+                        {% endfor %}
+                        {% if page_obj.has_next %}
+                        <li>
+                            <a href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}"
+                                class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 rounded-e-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-[#0b1121] dark:border-secundario dark:text-gray-400 dark:hover:bg-[#121c33] dark:hover:text-white">Siguiente</a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+
+            <!-- Enlaces adicionales -->
+            <div class="flex flex-col md:flex-row justify-center form-group text-center p-4">
+                {% if permissions.add_doctor %}
+                <a class="bg-blue-700 hover:bg-blue-800 text-white py-2 px-4 rounded-full mr-0 md:mr-2 mb-2 md:mb-0 flex items-center justify-center transition-colors duration-300"
+                    href="{% url 'core:doctor_create' %}">
+                    <i class="fa-solid fa-plus mr-2"></i> Nuevo Doctor
+                </a>
+                {% endif %}
+                <a class="bg-blue-700 hover:bg-blue-800 text-white py-2 px-4 rounded-full flex items-center justify-center transition-colors duration-300"
+                    href="{% url 'security:home' %}">
+                    <i class="fa-solid fa-house"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Modal de Especialidades -->
+<div id="especialidadesModal" class="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-opacity-50 hidden">
+    <div class="bg-white dark:bg-[#0b1121] rounded-2xl shadow-2xl max-w-md w-full mx-4 transform transition-all duration-300 scale-95 opacity-0" id="modalContent">
+        <!-- Header del Modal -->
+        <div class="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-4 rounded-t-2xl">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-white bg-opacity-20 p-2 rounded-full">
+                        <i class="fa-solid fa-user-doctor text-white text-lg"></i>
+                    </div>
+                    <h3 class="text-white font-semibold text-lg">Especialidades</h3>
+                </div>
+                <button onclick="closeEspecialidadesModal()" 
+                        class="text-white hover:bg-white hover:bg-opacity-20 p-1 rounded-full transition-colors duration-200">
+                    <i class="fa-solid fa-times text-lg"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Contenido del Modal -->
+        <div class="p-6">
+            <!-- Información del Doctor -->
+            <div class="mb-6 text-center">
+                <h4 id="doctorName" class="text-xl font-bold text-gray-800 dark:text-gray-200 mb-2"></h4>
+                <div class="flex items-center justify-center space-x-2">
+                    <span class="text-gray-600 dark:text-gray-400">Total de especialidades:</span>
+                    <span id="totalEspecialidades" class="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-3 py-1 rounded-full font-semibold"></span>
+                </div>
+            </div>
+
+            <!-- Loading State -->
+            <div id="loadingEspecialidades" class="text-center py-8">
+                <div class="inline-flex items-center space-x-2">
+                    <i class="fa-solid fa-spinner fa-spin text-blue-600 text-xl"></i>
+                    <span class="text-gray-600 dark:text-gray-400">Cargando especialidades...</span>
+                </div>
+            </div>
+
+            <!-- Lista de Especialidades -->
+            <div id="especialidadesList" class="space-y-3 hidden">
+                <!-- Las especialidades se cargarán dinámicamente aquí -->
+            </div>
+
+            <!-- Error State -->
+            <div id="errorEspecialidades" class="text-center py-8 hidden">
+                <div class="bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-700 rounded-lg p-4">
+                    <i class="fa-solid fa-exclamation-triangle text-red-600 dark:text-red-400 text-xl mb-2"></i>
+                    <p class="text-red-800 dark:text-red-200">Error al cargar las especialidades</p>
+                    <button onclick="retryLoadEspecialidades()" 
+                            class="mt-2 text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-200 underline">
+                        Intentar nuevamente
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer del Modal -->
+        <div class="border-t border-gray-200 dark:border-gray-700 px-6 py-4 bg-gray-50 dark:bg-[#121c33] rounded-b-2xl">
+            <button onclick="closeEspecialidadesModal()" 
+                    class="w-full bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-lg transition-colors duration-200">
+                <i class="fa-solid fa-times mr-2"></i>Cerrar
+            </button>
+        </div>
+    </div>
+</div>
+
+{% include 'fragments/delete.html' %}
+
+<script>
+    let currentDoctorId = null;
+
+    function openDeleteModal(id, name) {
+        const deleteForm = document.getElementById('deleteForm');
+        deleteForm.action = `{% url 'core:doctor_delete' 0 %}`.replace('0', id);
+        document.getElementById('Description').textContent = `ID: ${id} - ${name}`;
+        document.getElementById('deleteModal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+        document.getElementById('deleteModal').classList.add('hidden');
+    }
+
+    // Función para mostrar especialidades
+    function showEspecialidades(doctorId, doctorName) {
+        currentDoctorId = doctorId;
+        
+        // Mostrar modal
+        const modal = document.getElementById('especialidadesModal');
+        const modalContent = document.getElementById('modalContent');
+        
+        modal.classList.remove('hidden');
+        
+        // Animación de entrada
+        setTimeout(() => {
+            modalContent.classList.remove('scale-95', 'opacity-0');
+            modalContent.classList.add('scale-100', 'opacity-100');
+        }, 10);
+
+        // Configurar información del doctor
+        document.getElementById('doctorName').textContent = doctorName;
+        
+        // Mostrar loading y ocultar otros estados
+        document.getElementById('loadingEspecialidades').classList.remove('hidden');
+        document.getElementById('especialidadesList').classList.add('hidden');
+        document.getElementById('errorEspecialidades').classList.add('hidden');
+
+        // Cargar especialidades
+        loadEspecialidades(doctorId);
+    }
+
+    // Función para cargar especialidades via AJAX
+    function loadEspecialidades(doctorId) {
+        fetch(`/core/doctor/${doctorId}/especialidades/`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.message === 'OK') {
+                    displayEspecialidades(data.especialidades);
+                } else {
+                    showError();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showError();
+            });
+    }
+
+    // Función para mostrar las especialidades
+    function displayEspecialidades(especialidades) {
+        const loadingElement = document.getElementById('loadingEspecialidades');
+        const listElement = document.getElementById('especialidadesList');
+        const totalElement = document.getElementById('totalEspecialidades');
+
+        // Ocultar loading
+        loadingElement.classList.add('hidden');
+        
+        // Mostrar total
+        totalElement.textContent = especialidades.length;
+
+        // Limpiar lista anterior
+        listElement.innerHTML = '';
+
+        if (especialidades.length === 0) {
+            listElement.innerHTML = `
+                <div class="text-center py-4">
+                    <i class="fa-solid fa-info-circle text-gray-400 text-2xl mb-2"></i>
+                    <p class="text-gray-600 dark:text-gray-600">Este doctor no tiene especialidades asignadas</p>
+                </div>
+            `;
+        } else {
+            // Crear elementos para cada especialidad
+            especialidades.forEach((especialidad, index) => {
+                const especialidadElement = document.createElement('div');
+                especialidadElement.className = 'flex items-center space-x-3 p-3 bg-gray-50 dark:bg-[#121c33] rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-[#1a2642] transition-colors duration-200';
+                
+                especialidadElement.innerHTML = `
+                    <div class="flex-shrink-0">
+                        <div class="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 w-8 h-8 rounded-full flex items-center justify-center font-semibold text-sm">
+                            ${index + 1}
+                        </div>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-gray-800 dark:text-gray-600 font-medium">${especialidad}</p>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <i class="fa-solid fa-stethoscope text-blue-600 dark:text-blue-400"></i>
+                    </div>
+                `;
+                
+                listElement.appendChild(especialidadElement);
+            });
+        }
+
+        // Mostrar lista
+        listElement.classList.remove('hidden');
+    }
+
+    // Función para mostrar error
+    function showError() {
+        document.getElementById('loadingEspecialidades').classList.add('hidden');
+        document.getElementById('errorEspecialidades').classList.remove('hidden');
+        document.getElementById('totalEspecialidades').textContent = '0';
+    }
+
+    // Función para reintentar carga
+    function retryLoadEspecialidades() {
+        if (currentDoctorId) {
+            document.getElementById('errorEspecialidades').classList.add('hidden');
+            document.getElementById('loadingEspecialidades').classList.remove('hidden');
+            loadEspecialidades(currentDoctorId);
+        }
+    }
+
+    // Función para cerrar modal de especialidades
+    function closeEspecialidadesModal() {
+        const modal = document.getElementById('especialidadesModal');
+        const modalContent = document.getElementById('modalContent');
+        
+        // Animación de salida
+        modalContent.classList.add('scale-95', 'opacity-0');
+        modalContent.classList.remove('scale-100', 'opacity-100');
+        
+        setTimeout(() => {
+            modal.classList.add('hidden');
+            currentDoctorId = null;
+        }, 200);
+    }
+
+    // Cerrar modal al hacer clic fuera de él
+    document.getElementById('especialidadesModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeEspecialidadesModal();
+        }
+    });
+
+    // Cerrar modal con la tecla Escape
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && !document.getElementById('especialidadesModal').classList.contains('hidden')) {
+            closeEspecialidadesModal();
+        }
+    });
+
+    // Código original del modal de eliminación
+    document.addEventListener('DOMContentLoaded', function () {
+        const deleteForm = document.getElementById('deleteForm');
+
+        if (deleteForm) {
+            deleteForm.addEventListener('submit', function (e) {
+                const submitBtn = deleteForm.querySelector('button[type="submit"]');
+                if (submitBtn) {
+                    submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Eliminando...';
+                    submitBtn.disabled = true;
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}
