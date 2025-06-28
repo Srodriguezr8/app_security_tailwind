@@ -16,7 +16,7 @@ from django.contrib.auth import login, logout, authenticate, get_user_model
 User = get_user_model()
 
 class UserListView(PermissionMixin, ListViewMixin, ListView):
-    template_name = 'security/users/user_list_partial.html'
+    template_name = 'security/users/list.html'
     model = User
     context_object_name = 'users'
     permission_required = 'view_user'

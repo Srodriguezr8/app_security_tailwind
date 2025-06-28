@@ -1,8 +1,10 @@
 {% extends 'home.html' %}
-{% block title %}{{ title }}{% endblock %}
-{% block content %}
 {% load static %}
 
+<title>{% block title %}Permisos de Grupo-Módulo{% endblock %}</title>
+
+{% block content %}
+   
 
 <section class="dark:bg-principal mt-2">
     <div class="text-center" data-aos="fade-up" data-aos-delay="200">
@@ -150,9 +152,7 @@
 
 </section>
 
-{% endblock %}
 
-{% block js %}
 <script>
     // Abrir modal de cambio de estado
     function openStatusModal(userId) {
@@ -210,6 +210,5 @@
     });
 
   
-
 </script>
 {% endblock %}
