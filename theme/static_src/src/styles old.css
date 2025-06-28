@@ -1,0 +1,94 @@
+@import "tailwindcss";
+
+/**
+  * A catch-all path to Django template files, JavaScript, and Python files
+  * that contain Tailwind CSS classes and will be scanned by Tailwind to generate the final CSS file.
+  *
+  * If your final CSS file is not being updated after code changes, you may want to broaden or narrow
+  * the scope of this path.
+  */
+@source "../../../**/*.{html,py,js}";
+
+:root {
+  --bg-primary: #f7fafc;
+  --bg-secondary: #edf2f7;
+  --bg-tertiary: #e2e8f0;
+  --text-primary: #252d3b;  
+  --text-secondary: #444a55;
+  --text-tertiary: #7b899d;
+  --border-primary: #cbd5e0;    
+  --border-secondary: #e2e8f0;
+  --border-tertiary: #edf7f7;
+  --link-primary: #3182ce;            
+  --link-secondary: #63b3ed;
+  --link-tertiary: #90cdf4;
+  --button-primary: #2b6cb0;
+  --button-secondary: #3182ce;
+  --button-tertiary: #63b3ed;
+  --txt-button-primary: #2b6cb0;
+  --txt-button-secondary: #90cdf4;
+  --txt-button-tertiary: #bee3f8;
+}
+
+.dark {
+  --bg-primary: #181f2e;
+  --bg-secondary: #2d3748;
+  --bg-tertiary: #4a5568;
+  --text-primary: #edf2f7;
+  --text-secondary: #e2e8f0;
+  --text-tertiary: #a0aec0;
+  --border-primary: #4a5568;
+  --border-secondary: #718096;
+  --border-tertiary: #cbd5e0;
+  --link-primary: #63b3ed;
+  --link-secondary: #90cdf4;
+  --link-tertiary: #bee3f8;
+  --button-primary: #2b6cb0;
+  --button-secondary: #3182ce;
+  --button-tertiary: #63b3ed;
+  --txt-button-primary: #63b3ed;
+  --txt-button-secondary: #90cdf4;
+  --txt-button-tertiary: #bee3f8;
+}
+.bg-primary-custom {
+  background-color: var(--bg-primary);
+}
+.bg-secondary-custom {
+  background-color: var(--bg-secondary);
+}
+.bg-tertiary-custom {
+  background-color: var(--bg-tertiary);
+}
+
+.text-primary-custom {
+  color: var(--text-primary);
+}
+.text-secondary-custom {
+  color: var(--text-secondary);
+}
+.text-tertiary-custom {
+  color: var(--text-tertiary);
+}
+
+.border-primary-custom {
+  border-color: var(--border-primary);
+}
+.border-secondary-custom {
+  border-color: var(--border-secondary);
+}
+.border-tertiary-custom {
+  border-color: var(--border-tertiary);
+}
+
+.button-primary-custom {
+  background-color: var(--button-primary);
+  color: var(--txt-button-primary);
+}
+.button-secondary-custom {
+  background-color: var(--button-secondary);
+  color: var(--txt-button-secondary);
+}
+.button-tertiary-custom {
+  background-color: var(--button-tertiary);
+  color: var(--txt-button-tertiary);
+}
