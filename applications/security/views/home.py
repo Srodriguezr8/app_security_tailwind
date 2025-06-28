@@ -41,14 +41,6 @@ class StartTemplateView(SessionGroupMixin, TemplateView):
         context["title"]= "IC - Modulos"
         context["title1"]= "Modulos Disponibles"
         MenuModule(self.request).fill(context)
-        
-    
-        print("estoy saliendo en el modulo template view")
-        print(f"Contexto final: {context.keys()}") # Para depuración
-        print(f"Menu List en contexto: {context.get('menu_list') is not None}") # Para depuración
-        print(f"Group List en contexto: {context.get('group_list') is not None}") # Para depuración
-        print(f"Selected Group ID en contexto: {context.get('selected_group_id')}") # Para depuración
-       
         return context
     
     
