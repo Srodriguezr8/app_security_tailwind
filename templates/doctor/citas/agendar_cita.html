@@ -1,0 +1,2074 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Calendario Médico - {{ block.super }}{% endblock %}
+
+{% block content %}
+
+<style>
+/* Modal con altura fija */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    padding: 1rem;
+}
+
+.modal-overlay.hidden {
+    display: none;
+}
+
+.modal-container {
+    background-color: white;
+    border-radius: 1rem;
+    width: 100%;
+    max-width: 90rem;
+    height: 85vh;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.dark .modal-container {
+    background-color: #1f2937;
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.5rem;
+    border-bottom: 1px solid #e5e7eb;
+    flex-shrink: 0;
+}
+
+.dark .modal-header {
+    border-bottom-color: #4b5563;
+}
+
+.modal-content {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
+/* Panel de Horarios */
+.schedule-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    transition: transform 1s ease-in-out;
+}
+
+.schedule-panel.slide-left {
+    transform: translateX(-100%);
+}
+
+.schedule-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.5rem;
+}
+
+.schedule-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0.75rem;
+}
+
+.schedule-footer {
+    padding: 1.5rem;
+    border-top: 1px solid #e5e7eb;
+    flex-shrink: 0;
+}
+
+.dark .schedule-footer {
+    border-top-color: #4b5563;
+}
+
+.save-button {
+    width: 100%;
+    background-color: #059669;
+    color: white;
+    font-weight: 600;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border: none;
+    cursor: pointer;
+}
+
+.save-button:hover {
+    background-color: #047857;
+}
+
+.save-button:disabled {
+    background-color: #9ca3af;
+    cursor: not-allowed;
+}
+
+/* Panel de Agregar Paciente - MODIFICADO PARA ESTAR OCULTO INICIALMENTE */
+.add-patient-panel {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 20rem;
+    bottom: 0;
+    background-color: white;
+    display: flex;
+    flex-direction: column;
+    transform: translateX(100%);
+    transition: transform 1s ease-in-out;
+    z-index: 10;
+}
+
+.dark .add-patient-panel {
+    background-color: #1f2937;
+}
+
+.add-patient-panel.show {
+    transform: translateX(0);
+}
+
+.add-patient-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.5rem;
+}
+
+.add-patient-header {
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.dark .add-patient-header {
+    border-bottom-color: #4b5563;
+}
+
+.add-patient-form {
+    space-y: 2rem;
+}
+
+.form-section {
+    background-color: #f9fafb;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    border: 1px solid #e5e7eb;
+}
+
+.dark .form-section {
+    background-color: #374151;
+    border-color: #4b5563;
+}
+
+.form-section-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+}
+
+.dark .form-section-title {
+    color: #f9fafb;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group-full {
+    grid-column: span 2;
+}
+
+.form-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 0.5rem;
+}
+
+.dark .form-label {
+    color: #d1d5db;
+}
+
+.form-input, .form-textarea {
+    padding: 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    background-color: white;
+    color: #1f2937;
+}
+
+.dark .form-input, .dark .form-textarea {
+    background-color: #4b5563;
+    border-color: #6b7280;
+    color: #f9fafb;
+}
+
+.form-input:focus, .form-textarea:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.form-textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.form-help {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin-top: 0.25rem;
+}
+
+.dark .form-help {
+    color: #9ca3af;
+}
+
+.form-error {
+    font-size: 0.75rem;
+    color: #dc2626;
+    margin-top: 0.25rem;
+    min-height: 1rem;
+}
+
+.form-input.error, .form-textarea.error {
+    border-color: #dc2626;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+}
+
+.add-patient-footer {
+    padding: 1.5rem;
+    border-top: 1px solid #e5e7eb;
+    flex-shrink: 0;
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+}
+
+.dark .add-patient-footer {
+    border-top-color: #4b5563;
+}
+
+.cancel-button {
+    padding: 0.75rem 1.5rem;
+    background-color: #6b7280;
+    color: white;
+    border: none;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+}
+
+.cancel-button:hover {
+    background-color: #4b5563;
+}
+
+.save-patient-button {
+    padding: 0.75rem 1.5rem;
+    background-color: #059669;
+    color: white;
+    border: none;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+}
+
+.save-patient-button:hover {
+    background-color: #047857;
+}
+
+.save-patient-button:disabled {
+    background-color: #9ca3af;
+    cursor: not-allowed;
+}
+
+/* Panel de Pacientes */
+.patients-panel {
+    width: 20rem;
+    background-color: #f9fafb;
+    border-left: 1px solid #e5e7eb;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    position: relative;
+    z-index: 5;
+}
+
+.dark .patients-panel {
+    background-color: #374151;
+    border-left-color: #4b5563;
+}
+
+.patients-search {
+    padding: 1rem;
+    border-bottom: 1px solid #e5e7eb;
+    flex-shrink: 0;
+}
+
+.dark .patients-search {
+    border-bottom-color: #4b5563;
+}
+
+.patients-title {
+    padding: 1rem 1rem 0.5rem;
+    flex-shrink: 0;
+}
+
+.patients-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 1rem 1rem;
+}
+
+/* Resto de estilos permanecen igual... */
+.calendar-day.inactive {
+    opacity: 0.4;
+    background-color: #f3f4f6;
+    cursor: not-allowed;
+}
+
+.dark .calendar-day.inactive {
+    background-color: #374151;
+    opacity: 0.3;
+}
+
+.calendar-day.inactive:hover {
+    background-color: #f3f4f6 !important;
+}
+
+.dark .calendar-day.inactive:hover {
+    background-color: #374151 !important;
+}
+
+.modal-notification {
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    animation: slideInRight 0.3s ease-out;
+    max-width: 300px;
+}
+
+.modal-notification.success {
+    background-color: #dcfce7;
+    color: #166534;
+    border: 1px solid #bbf7d0;
+}
+
+.modal-notification.error {
+    background-color: #fef2f2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+}
+
+.modal-notification.info {
+    background-color: #dbeafe;
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
+}
+
+.modal-notification.warning {
+    background-color: #fef3c7;
+    color: #d97706;
+    border: 1px solid #fde68a;
+}
+
+.dark .modal-notification.success {
+    background-color: #14532d;
+    color: #bbf7d0;
+    border-color: #166534;
+}
+
+.dark .modal-notification.error {
+    background-color: #7f1d1d;
+    color: #fecaca;
+    border-color: #dc2626;
+}
+
+.dark .modal-notification.info {
+    background-color: #1e3a8a;
+    color: #bfdbfe;
+    border-color: #1d4ed8;
+}
+
+.dark .modal-notification.warning {
+    background-color: #92400e;
+    color: #fde68a;
+    border-color: #d97706;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+.patient-card {
+    cursor: grab;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.patient-card:active {
+    cursor: grabbing;
+}
+
+.patient-card.dragging {
+    opacity: 0.5;
+    transform: rotate(5deg);
+}
+
+.time-slot {
+    transition: all 0.2s ease;
+    min-height: 100px;
+    border: 2px dashed #d1d5db;
+    border-radius: 0.5rem;
+    padding: 0.75rem;
+    text-align: center;
+}
+
+.dark .time-slot {
+    border-color: #4b5563;
+}
+
+.time-slot.drag-over {
+    background-color: #dbeafe !important;
+    border-color: #3b82f6 !important;
+    transform: scale(1.02);
+}
+
+.dark .time-slot.drag-over {
+    background-color: #1e3a8a !important;
+}
+
+.time-slot.occupied {
+    background-color: #fef3c7;
+    border-color: #f59e0b;
+    border-style: solid;
+}
+
+.dark .time-slot.occupied {
+    background-color: #451a03;
+    border-color: #d97706;
+}
+
+.time-slot.pending {
+    background-color: #fef3c7;
+    border-color: #f59e0b;
+    border-style: solid;
+}
+
+.dark .time-slot.pending {
+    background-color: #451a03;
+    border-color: #d97706;
+}
+
+.calendar-day {
+    min-height: 140px;
+    transition: all 0.2s ease;
+}
+
+.calendar-day:hover {
+    background-color: #f8fafc;
+}
+
+.calendar-day.dark:hover {
+    background-color: #1e293b;
+}
+
+.calendar-day.today {
+    background-color: #eff6ff;
+    border: 2px solid #3b82f6;
+}
+
+.calendar-day.today.dark {
+    background-color: #1e3a8a;
+    border-color: #60a5fa;
+}
+
+.appointment-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 4px;
+}
+
+.appointment-indicator.urgent {
+    background-color: #ef4444;
+}
+
+.appointment-indicator.normal {
+    background-color: #10b981;
+}
+
+.appointment-indicator.follow-up {
+    background-color: #f59e0b;
+}
+
+.progress-bar {
+    height: 4px;
+    background-color: #e5e7eb;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    transition: width 0.3s ease;
+    border-radius: 2px;
+}
+
+.progress-fill.low {
+    background-color: #10b981;
+}
+
+.progress-fill.medium {
+    background-color: #f59e0b;
+}
+
+.progress-fill.high {
+    background-color: #ef4444;
+}
+
+.patients-list::-webkit-scrollbar,
+.schedule-content::-webkit-scrollbar,
+.add-patient-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.patients-list::-webkit-scrollbar-track,
+.schedule-content::-webkit-scrollbar-track,
+.add-patient-content::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 3px;
+}
+
+.patients-list::-webkit-scrollbar-thumb,
+.schedule-content::-webkit-scrollbar-thumb,
+.add-patient-content::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+}
+
+.patients-list::-webkit-scrollbar-thumb:hover,
+.schedule-content::-webkit-scrollbar-thumb:hover,
+.add-patient-content::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+.dark .patients-list::-webkit-scrollbar-track,
+.dark .schedule-content::-webkit-scrollbar-track,
+.dark .add-patient-content::-webkit-scrollbar-track {
+    background: #374151;
+}
+
+.dark .patients-list::-webkit-scrollbar-thumb,
+.dark .schedule-content::-webkit-scrollbar-thumb,
+.dark .add-patient-content::-webkit-scrollbar-thumb {
+    background: #6b7280;
+}
+
+.dark .patients-list::-webkit-scrollbar-thumb:hover,
+.dark .schedule-content::-webkit-scrollbar-thumb:hover,
+.dark .add-patient-content::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af;
+}
+
+.remove-appointment {
+    background-color: #ef4444;
+    color: white;
+    border: none;
+    border-radius: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    margin-top: 0.5rem;
+}
+
+.remove-appointment:hover {
+    background-color: #dc2626;
+}
+
+@media (max-width: 768px) {
+    .modal-container {
+        height: 95vh;
+        max-height: 95vh;
+    }
+    
+    .patients-panel {
+        width: 16rem;
+    }
+    
+    .schedule-grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    }
+    
+    .modal-notification {
+        max-width: 250px;
+        font-size: 0.8rem;
+    }
+    
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-group-full {
+        grid-column: span 1;
+    }
+}
+</style>
+
+<!-- Modal de Horarios - INICIALMENTE OCULTO -->
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+    <!-- Header del Calendario -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-6">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                    <i class="fas fa-calendar-alt text-blue-600 mr-3"></i>
+                    Calendario Médico
+                </h1>
+                <p class="text-gray-600 dark:text-gray-300">Gestiona citas y horarios médicos</p>
+            </div>
+            
+            <!-- Controles de navegación -->
+            <div class="flex items-center gap-4">
+                <div class="flex items-center bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
+                    <button id="prevMonth" class="p-2 hover:bg-white dark:hover:bg-gray-600 rounded-md transition-colors">
+                        <i class="fas fa-chevron-left text-gray-600 dark:text-gray-300"></i>
+                    </button>
+                    <span id="currentMonth" class="px-4 py-2 font-semibold text-gray-900 dark:text-white min-w-[200px] text-center">
+                        <!-- Se llena con JavaScript -->
+                    </span>
+                    <button id="nextMonth" class="p-2 hover:bg-white dark:hover:bg-gray-600 rounded-md transition-colors">
+                        <i class="fas fa-chevron-right text-gray-600 dark:text-gray-300"></i>
+                    </button>
+                </div>
+                
+                <button id="todayBtn" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
+                    <i class="fas fa-calendar-day mr-2"></i>Hoy
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Calendario Principal -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+        <!-- Días de la semana (empezando por lunes) -->
+        <div class="grid grid-cols-7 bg-gray-50 dark:bg-gray-700">
+            <div class="p-4 text-center font-semibold text-gray-700 dark:text-gray-300 border-r border-gray-200 dark:border-gray-600">Lunes</div>
+            <div class="p-4 text-center font-semibold text-gray-700 dark:text-gray-300 border-r border-gray-200 dark:border-gray-600">Martes</div>
+            <div class="p-4 text-center font-semibold text-gray-700 dark:text-gray-300 border-r border-gray-200 dark:border-gray-600">Miércoles</div>
+            <div class="p-4 text-center font-semibold text-gray-700 dark:text-gray-300 border-r border-gray-200 dark:border-gray-600">Jueves</div>
+            <div class="p-4 text-center font-semibold text-gray-700 dark:text-gray-300 border-r border-gray-200 dark:border-gray-600">Viernes</div>
+            <div class="p-4 text-center font-semibold text-gray-700 dark:text-gray-300 border-r border-gray-200 dark:border-gray-600">Sábado</div>
+            <div class="p-4 text-center font-semibold text-gray-700 dark:text-gray-300">Domingo</div>
+        </div>
+        
+        <!-- Grid del calendario -->
+        <div id="calendarGrid" class="grid grid-cols-7 min-h-[600px]">
+            <!-- Las celdas se generan dinámicamente -->
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Horarios - INICIALMENTE OCULTO -->
+<div id="scheduleModal" class="modal-overlay hidden">
+    <div class="modal-container">
+        <!-- Header del Modal - FIJO -->
+        <div class="modal-header">
+            <h2 class="text-2xl font-bold text-secondary-custom">
+                <i class="fas fa-clock text-secondary-custom mr-2"></i>
+                Horarios - <span id="modalDate"></span>
+            </h2>
+            <button id="closeModal" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                <i class="fas fa-times text-gray-500 dark:text-gray-400"></i>
+            </button>
+        </div>
+
+        <!-- Contenido del Modal - FLEXIBLE -->
+        <div class="modal-content">
+            <!-- Panel de Horarios (Izquierda) - SCROLLABLE -->
+            <div id="schedulePanel" class="schedule-panel">
+                <div class="schedule-content">
+                    <!-- Indicador de carga -->
+                    <div id="loadingSchedule" class="text-center py-8 hidden">
+                        <div class="inline-flex items-center">
+                            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mr-3"></div>
+                            <span class="text-gray-600 dark:text-gray-300">Cargando horarios...</span>
+                        </div>
+                    </div>
+
+                    <!-- Mensaje cuando no hay horarios disponibles -->
+                    <div id="noScheduleMessage" class="text-center py-8 hidden">
+                        <div class="text-gray-500 dark:text-gray-400">
+                            <i class="fas fa-calendar-times text-4xl mb-4"></i>
+                            <p class="text-lg font-medium">No hay horarios disponibles</p>
+                            <p class="text-sm">Este día no está habilitado para citas médicas</p>
+                        </div>
+                    </div>
+
+                    <!-- Horarios de Mañana -->
+                    <div id="morningSchedule" class="mb-8">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-secondary-custom flex items-center">
+                                <i class="fas fa-sun text-tertiary-custom mr-2"></i>
+                                Horarios de Mañana
+                            </h3>
+                            <!-- Contenedor para notificaciones -->
+                            <div id="notificationContainer" class="flex-1 ml-4">
+                                <!-- Las notificaciones aparecerán aquí -->
+                            </div>
+                        </div>
+                        <div id="morningGrid" class="schedule-grid">
+                            <!-- Los horarios de mañana se cargan dinámicamente -->
+                        </div>
+                    </div>
+
+                    <!-- Horarios de Tarde -->
+                    <div id="afternoonSchedule">
+                        <h3 class="text-lg font-semibold text-secondary-custom mb-4 flex items-center">
+                            <i class="fas fa-moon text-tertiary-custom mr-2"></i>
+                            Horarios de Tarde
+                        </h3>
+                        <div id="afternoonGrid" class="schedule-grid">
+                            <!-- Los horarios de tarde se cargan dinámicamente -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botón Guardar - FIJO AL FONDO -->
+                <div class="schedule-footer">
+                    <button id="saveSchedule" class="save-button">
+                        <i class="fas fa-save"></i>
+                        Guardar Cambios
+                    </button>
+                </div>
+            </div>
+
+            <!-- Panel de Agregar Paciente - INICIALMENTE OCULTO -->
+            <div id="addPatientPanel" class="add-patient-panel">
+                <div class="add-patient-content">
+                    <div class="add-patient-header">
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-white flex items-center">
+                            <i class="fas fa-user-plus text-blue-600 mr-2"></i>
+                            Agregar Nuevo Paciente
+                        </h3>
+                        <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">Complete los datos obligatorios del paciente</p>
+                    </div>
+
+                    <form id="addPatientForm" class="add-patient-form">
+                        <!-- Información Personal -->
+                        <div class="form-section">
+                            <h4 class="form-section-title">
+                                <i class="fas fa-user mr-2"></i>
+                                Información Personal
+                            </h4>
+                            
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="nombres" class="form-label">Nombres *</label>
+                                    <input type="text" id="nombres" name="nombres" class="form-input" required maxlength="100">
+                                    <div class="form-error" id="nombres-error"></div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="apellidos" class="form-label">Apellidos *</label>
+                                    <input type="text" id="apellidos" name="apellidos" class="form-input" required maxlength="100">
+                                    <div class="form-error" id="apellidos-error"></div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="cedula_ecuatoriana" class="form-label">Cédula Ecuatoriana *</label>
+                                    <input type="text" id="cedula_ecuatoriana" name="cedula_ecuatoriana" class="form-input" required maxlength="10" pattern="[0-9]{10}">
+                                    <div class="form-help">Ingrese el número de cédula sin espacios ni guiones</div>
+                                    <div class="form-error" id="cedula_ecuatoriana-error"></div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="fecha_nacimiento" class="form-label">Fecha de Nacimiento *</label>
+                                    <input type="date" id="fecha_nacimiento" name="fecha_nacimiento" class="form-input" required>
+                                    <div class="form-error" id="fecha_nacimiento-error"></div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="telefono" class="form-label">Teléfono(s) *</label>
+                                    <input type="text" id="telefono" name="telefono" class="form-input" required maxlength="50">
+                                    <div class="form-help">Puede ingresar uno o más números separados por coma</div>
+                                    <div class="form-error" id="telefono-error"></div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="email" class="form-label">Correo Electrónico</label>
+                                    <input type="email" id="email" name="email" class="form-input">
+                                    <div class="form-help">Correo electrónico del paciente (opcional)</div>
+                                    <div class="form-error" id="email-error"></div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="estado_civil" class="form-label">Estado Civil *</label>
+                                    <select id="estado_civil" name="estado_civil" class="form-input" required>
+                                        <option value="">Seleccione...</option>
+                                        <option value="soltero">Soltero/a</option>
+                                        <option value="casado">Casado/a</option>
+                                        <option value="divorciado">Divorciado/a</option>
+                                        <option value="viudo">Viudo/a</option>
+                                        <option value="union_libre">Unión Libre</option>
+                                    </select>
+                                    <div class="form-error" id="estado_civil-error"></div>
+                                </div>
+
+                                <div class="form-group form-group-full">
+                                    <label for="direccion" class="form-label">Dirección Domiciliaria *</label>
+                                    <input type="text" id="direccion" name="direccion" class="form-input" required maxlength="255">
+                                    <div class="form-error" id="direccion-error"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Información Médica Opcional -->
+                        <div class="form-section">
+                            <h4 class="form-section-title">
+                                <i class="fas fa-heartbeat mr-2"></i>
+                                Información Médica (Opcional)
+                            </h4>
+                            
+                            <div class="form-grid">
+                                <div class="form-group form-group-full">
+                                    <label for="antecedentes_personales" class="form-label">Antecedentes Personales</label>
+                                    <textarea id="antecedentes_personales" name="antecedentes_personales" class="form-textarea" rows="3" placeholder="Ej.: Diabetes tipo 2, hipertensión, asma, etc."></textarea>
+                                </div>
+
+                                <div class="form-group form-group-full">
+                                    <label for="alergias" class="form-label">Alergias</label>
+                                    <textarea id="alergias" name="alergias" class="form-textarea" rows="2" placeholder="Ej.: Penicilina, mariscos, polvo, etc."></textarea>
+                                </div>
+
+                                <div class="form-group form-group-full">
+                                    <label for="medicamentos_actuales" class="form-label">Medicamentos Actuales</label>
+                                    <textarea id="medicamentos_actuales" name="medicamentos_actuales" class="form-textarea" rows="2" placeholder="Nombre, dosis y frecuencia. Ej.: Losartán 50mg diario"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Botones de Acción - FIJOS AL FONDO -->
+                <div class="add-patient-footer">
+                    <button type="button" id="cancelAddPatient" class="cancel-button">
+                        <i class="fas fa-times mr-2"></i>
+                        Cancelar
+                    </button>
+                    <button type="submit" form="addPatientForm" id="savePatient" class="save-patient-button">
+                        <i class="fas fa-save mr-2"></i>
+                        Guardar Paciente
+                    </button>
+                </div>
+            </div>
+
+            <!-- Panel de Pacientes (Derecha) - ALTURA FIJA CON SCROLL -->
+            <div class="patients-panel">
+                <!-- Buscador de Pacientes y Botón Agregar - FIJO -->
+                <div class="patients-search sticky top-0 bg-white dark:bg-gray-900 z-10 p-2 border-b border-gray-200 dark:border-gray-700">
+                    <div class="flex items-center gap-2">
+                        <!-- Botón Agregar Paciente (a la izquierda) -->
+                        <button id="addPatientBtn" 
+                                class="flex items-center justify-center w-10 h-10 text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition"
+                                title="Agregar Paciente">
+                            <i class="fas fa-user-plus"></i>
+                        </button>
+
+                        <!-- Cuadro de Búsqueda -->
+                        <div class="relative flex-1">
+                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-search text-gray-400"></i>
+                            </span>
+                            <input type="text" id="patientSearch" placeholder="Buscar pacientes..." 
+                                class="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Título - FIJO -->
+                <div class="patients-title">
+                    <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
+                        Pacientes Disponibles
+                    </h3>
+                </div>
+
+                <!-- Lista de Pacientes - SCROLLABLE -->
+                <div class="patients-list">
+                    <div id="patientsList" class="space-y-3">
+                        <!-- Los pacientes se cargan dinámicamente -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}
+
+{% block js %}
+<script>
+// Variables globales
+let currentDate = new Date();
+let selectedDate = null;
+let draggedPatient = null;
+let scheduleData = {};
+let patientsData = [];
+let filteredPatients = [];
+let pendingAppointments = {};
+let isAddingPatient = false; // AGREGADO: Control del estado del panel
+
+// Configuración de horarios
+const weeklyScheduleConfig = [
+    { dia_semana: 'Lunes', hora_inicio: '08:00', hora_fin: '12:00', intervalo_desde: '14:00', intervalo_hasta: '18:00', activo: true },
+    { dia_semana: 'Martes', hora_inicio: '08:00', hora_fin: '12:00', intervalo_desde: '14:00', intervalo_hasta: '18:00', activo: true },
+    { dia_semana: 'Miércoles', hora_inicio: '08:00', hora_fin: '12:00', intervalo_desde: '14:00', intervalo_hasta: '18:00', activo: true },
+    { dia_semana: 'Jueves', hora_inicio: '08:00', hora_fin: '12:00', intervalo_desde: '14:00', intervalo_hasta: '18:00', activo: true },
+    { dia_semana: 'Viernes', hora_inicio: '08:00', hora_fin: '12:00', intervalo_desde: '14:00', intervalo_hasta: '18:00', activo: true },
+    { dia_semana: 'Sábado', hora_inicio: '08:00', hora_fin: '12:00', intervalo_desde: '00:00', intervalo_hasta: '00:00', activo: true },
+    { dia_semana: 'Domingo', hora_inicio: '00:00', hora_fin: '00:00', intervalo_desde: '00:00', intervalo_hasta: '00:00', activo: false }
+];
+
+const scheduleConfig = {
+    tiempo_atencion: 30,
+    limit_cita_dia: 16,
+    medico_id: 1,
+    especialidad_id: 2
+};
+
+const dayNames = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+const dailyLimits = {};
+
+// Datos simulados de pacientes
+const mockPatients = [
+    { id: 1, name: 'María García', age: 45, condition: 'Hipertensión', priority: 'normal', phone: '555-0101' },
+    { id: 2, name: 'Juan Pérez', age: 32, condition: 'Diabetes', priority: 'urgent', phone: '555-0102' },
+    { id: 3, name: 'Ana López', age: 28, condition: 'Control rutinario', priority: 'normal', phone: '555-0103' },
+    { id: 4, name: 'Carlos Ruiz', age: 55, condition: 'Cardiología', priority: 'urgent', phone: '555-0104' },
+    { id: 5, name: 'Elena Martín', age: 38, condition: 'Seguimiento', priority: 'follow-up', phone: '555-0105' },
+    { id: 6, name: 'Roberto Silva', age: 42, condition: 'Neurología', priority: 'normal', phone: '555-0106' },
+    { id: 7, name: 'Carmen Vega', age: 29, condition: 'Ginecología', priority: 'normal', phone: '555-0107' },
+    { id: 8, name: 'Miguel Torres', age: 51, condition: 'Ortopedia', priority: 'urgent', phone: '555-0108' },
+    { id: 9, name: 'Laura Jiménez', age: 35, condition: 'Dermatología', priority: 'normal', phone: '555-0109' },
+    { id: 10, name: 'Pedro Morales', age: 48, condition: 'Oftalmología', priority: 'follow-up', phone: '555-0110' }
+];
+
+// Validación de cédula ecuatoriana
+function validarCedulaEcuatoriana(cedula) {
+    if (!/^\d{10}$/.test(cedula)) {
+        return false;
+    }
+    
+    const provincia = parseInt(cedula.substring(0, 2));
+    if (provincia < 1 || provincia > 24) {
+        return false;
+    }
+    
+    const tercerDigito = parseInt(cedula.charAt(2));
+    if (tercerDigito > 6) {
+        return false;
+    }
+    
+    const coeficientes = [2, 1, 2, 1, 2, 1, 2, 1, 2];
+    let suma = 0;
+    
+    for (let i = 0; i < 9; i++) {
+        let valor = parseInt(cedula.charAt(i)) * coeficientes[i];
+        if (valor >= 10) {
+            valor = valor - 9;
+        }
+        suma += valor;
+    }
+    
+    const digitoVerificador = parseInt(cedula.charAt(9));
+    const modulo = suma % 10;
+    const resultado = modulo === 0 ? 0 : 10 - modulo;
+    
+    return resultado === digitoVerificador;
+}
+
+// Funciones de utilidad
+function getDayScheduleConfig(date) {
+    const dayOfWeek = dayNames[date.getDay()];
+    return weeklyScheduleConfig.find(config => config.dia_semana === dayOfWeek);
+}
+
+function isDayActive(date) {
+    const config = getDayScheduleConfig(date);
+    return config && config.activo;
+}
+
+function generateTimeSlotsForDay(date) {
+    const config = getDayScheduleConfig(date);
+    
+    if (!config || !config.activo) {
+        return { all: [], morning: [], afternoon: [] };
+    }
+    
+    const slots = [];
+    const morningSlots = [];
+    const afternoonSlots = [];
+    
+    if (config.hora_inicio !== '00:00' && config.hora_fin !== '00:00') {
+        let currentTime = parseTime(config.hora_inicio);
+        const endMorning = parseTime(config.hora_fin);
+        
+        while (currentTime < endMorning) {
+            const timeString = formatTime(currentTime);
+            slots.push(timeString);
+            morningSlots.push(timeString);
+            currentTime += scheduleConfig.tiempo_atencion;
+        }
+    }
+    
+    if (config.intervalo_desde !== '00:00' && config.intervalo_hasta !== '00:00') {
+        let currentTime = parseTime(config.intervalo_desde);
+        const endAfternoon = parseTime(config.intervalo_hasta);
+        
+        while (currentTime < endAfternoon) {
+            const timeString = formatTime(currentTime);
+            slots.push(timeString);
+            afternoonSlots.push(timeString);
+            currentTime += scheduleConfig.tiempo_atencion;
+        }
+    }
+    
+    return { all: slots, morning: morningSlots, afternoon: afternoonSlots };
+}
+
+function parseTime(timeString) {
+    const [hours, minutes] = timeString.split(':').map(Number);
+    return hours * 60 + minutes;
+}
+
+function formatTime(minutes) {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+}
+
+// MODIFICADO: Inicialización - Modal oculto por defecto
+document.addEventListener('DOMContentLoaded', function() {
+    initializeCalendar();
+    loadPatients();
+    setupEventListeners();
+    
+    // IMPORTANTE: Modal inicialmente oculto
+    document.getElementById('scheduleModal').classList.add('hidden');
+    
+    setTimeout(() => {
+        generateMockScheduleData();
+        generateDailyLimits();
+        renderCalendar();
+    }, 500);
+});
+
+function initializeCalendar() {
+    updateMonthDisplay();
+    renderCalendar();
+}
+
+function loadPatients() {
+    setTimeout(() => {
+        patientsData = [...mockPatients];
+        filteredPatients = [...patientsData];
+        // No renderizar pacientes hasta que se abra el modal
+    }, 800);
+}
+
+function renderPatients() {
+    const patientsList = document.getElementById('patientsList');
+    if (!patientsList) return;
+    
+    patientsList.innerHTML = '';
+    
+    if (filteredPatients.length === 0) {
+        patientsList.innerHTML = '<div class="text-center text-gray-500 py-4">No se encontraron pacientes</div>';
+        return;
+    }
+    
+    const dateKey = selectedDate ? selectedDate.toISOString().split('T')[0] : null;
+    const daySchedule = dateKey ? (scheduleData[dateKey] || []) : [];
+    const pendingForDay = dateKey ? (pendingAppointments[dateKey] || []) : [];
+    
+    const scheduledPatientIds = new Set([
+        ...daySchedule.map(apt => apt.patientId),
+        ...pendingForDay.map(apt => apt.patientId)
+    ]);
+    
+    const availablePatients = filteredPatients.filter(patient => !scheduledPatientIds.has(patient.id));
+    
+    if (availablePatients.length === 0) {
+        patientsList.innerHTML = '<div class="text-center text-gray-500 py-4">Todos los pacientes ya están agendados para este día</div>';
+        return;
+    }
+    
+    availablePatients.forEach(patient => {
+        const patientCard = document.createElement('div');
+        patientCard.className = `patient-card bg-white dark:bg-gray-600 border border-gray-200 dark:border-gray-500 rounded-lg p-3 shadow-sm hover:shadow-md transition-all`;
+        patientCard.draggable = true;
+        patientCard.dataset.patientId = patient.id;
+        
+        const priorityColor = {
+            'urgent': 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+            'normal': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+            'follow-up': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+        };
+        
+        const priorityText = {
+            'urgent': 'Urgente',
+            'normal': 'Normal',
+            'follow-up': 'Seguimiento'
+        };
+        
+        patientCard.innerHTML = `
+            <div class="flex items-start gap-3">
+                <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-semibold text-sm flex-shrink-0">
+                    ${patient.name.split(' ').map(n => n[0]).join('')}
+                </div>
+                <div class="flex-1 min-w-0">
+                    <h4 class="font-semibold text-gray-900 dark:text-white text-sm truncate">${patient.name}</h4>
+                    <p class="text-xs text-gray-600 dark:text-gray-300 truncate">${patient.condition}</p>
+                    <div class="flex items-center justify-between mt-2">
+                        <span class="text-xs text-gray-500">${patient.age} años</span>
+                        <span class="px-2 py-1 text-xs rounded-full ${priorityColor[patient.priority]}">
+                            ${priorityText[patient.priority]}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        patientCard.addEventListener('dragstart', handleDragStart);
+        patientCard.addEventListener('dragend', handleDragEnd);
+        
+        patientsList.appendChild(patientCard);
+    });
+}
+
+function updateMonthDisplay() {
+    const monthNames = [
+        'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+        'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+    ];
+    
+    const currentMonthElement = document.getElementById('currentMonth');
+    currentMonthElement.textContent = `${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
+}
+
+function renderCalendar() {
+    const calendarGrid = document.getElementById('calendarGrid');
+    calendarGrid.innerHTML = '';
+    
+    const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+    const startDate = new Date(firstDay);
+    const dayOfWeek = firstDay.getDay();
+    const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+    startDate.setDate(firstDay.getDate() - daysToSubtract);
+    
+    const today = new Date();
+    
+    for (let i = 0; i < 42; i++) {
+        const cellDate = new Date(startDate);
+        cellDate.setDate(startDate.getDate() + i);
+        
+        const dayCell = document.createElement('div');
+        dayCell.className = `calendar-day border border-gray-200 dark:border-gray-600 p-3`;
+        
+        const isCurrentMonth = cellDate.getMonth() === currentDate.getMonth();
+        const isToday = cellDate.toDateString() === today.toDateString();
+        const isActive = isDayActive(cellDate);
+        
+        if (!isCurrentMonth) {
+            dayCell.classList.add('text-gray-400', 'dark:text-gray-600');
+        }
+        
+        if (isToday) {
+            dayCell.classList.add('today');
+        }
+        
+        if (!isActive) {
+            dayCell.classList.add('inactive');
+        } else {
+            dayCell.classList.add('cursor-pointer');
+        }
+        
+        const dateKey = cellDate.toISOString().split('T')[0];
+        const daySchedule = scheduleData[dateKey] || [];
+        const dayLimit = dailyLimits[dateKey] || { limit_cita_dia: scheduleConfig.limit_cita_dia, num_citas_dia: daySchedule.length };
+        
+        const occupancyPercentage = dayLimit.limit_cita_dia > 0 ? (daySchedule.length / dayLimit.limit_cita_dia) * 100 : 0;
+        let progressClass = 'low';
+        if (occupancyPercentage >= 80) progressClass = 'high';
+        else if (occupancyPercentage >= 50) progressClass = 'medium';
+        
+        let dayContent = `
+            <div class="flex justify-between items-start mb-2">
+                <span class="font-semibold ${isCurrentMonth ? 'text-gray-900 dark:text-white' : ''}">${cellDate.getDate()}</span>
+                ${daySchedule.length > 0 ? `<span class="text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded-full">${daySchedule.length}</span>` : ''}
+            </div>
+        `;
+        
+        if (isActive) {
+            dayContent += `
+                <div class="mb-3">
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="text-xs text-gray-500">${daySchedule.length}/${dayLimit.limit_cita_dia} citas</span>
+                        <span class="text-xs text-gray-500">${Math.round(occupancyPercentage)}%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill ${progressClass}" style="width: ${Math.min(occupancyPercentage, 100)}%"></div>
+                    </div>
+                </div>
+                
+                <div class="space-y-1">
+                    ${daySchedule.slice(0, 2).map(appointment => `
+                        <div class="text-xs p-1 rounded bg-blue-50 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 truncate">
+                            <span class="appointment-indicator ${appointment.priority}"></span>
+                            ${appointment.time} - ${appointment.patientName}
+                        </div>
+                    `).join('')}
+                    ${daySchedule.length > 2 ? `<div class="text-xs text-gray-500">+${daySchedule.length - 2} más...</div>` : ''}
+                </div>
+            `;
+        } else {
+            dayContent += `
+                <div class="text-center text-xs text-gray-400 mt-4">
+                    <i class="fas fa-ban mb-1"></i>
+                    <div>No disponible</div>
+                </div>
+            `;
+        }
+        
+        dayCell.innerHTML = dayContent;
+        
+        // MODIFICADO: Solo agregar evento click si el día está activo
+        if (isActive) {
+            dayCell.addEventListener('click', () => openScheduleModal(cellDate));
+        }
+        
+        calendarGrid.appendChild(dayCell);
+    }
+}
+
+// MODIFICADO: Función para abrir modal solo cuando se hace clic en un día
+function openScheduleModal(date) {
+    if (!isDayActive(date)) return;
+    
+    selectedDate = date;
+    const modal = document.getElementById('scheduleModal');
+    const modalDate = document.getElementById('modalDate');
+    const loadingSchedule = document.getElementById('loadingSchedule');
+    const noScheduleMessage = document.getElementById('noScheduleMessage');
+    
+    modalDate.textContent = date.toLocaleDateString('es-ES', { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+    });
+    
+    // IMPORTANTE: Mostrar modal
+    modal.classList.remove('hidden');
+    
+    // IMPORTANTE: Asegurar que el panel de agregar paciente esté oculto
+    hideAddPatientPanel();
+    
+    if (!isDayActive(date)) {
+        loadingSchedule.classList.add('hidden');
+        noScheduleMessage.classList.remove('hidden');
+        document.getElementById('morningSchedule').style.display = 'none';
+        document.getElementById('afternoonSchedule').style.display = 'none';
+        return;
+    }
+    
+    loadingSchedule.classList.remove('hidden');
+    noScheduleMessage.classList.add('hidden');
+    document.getElementById('morningSchedule').style.display = 'block';
+    document.getElementById('afternoonSchedule').style.display = 'block';
+    
+    document.getElementById('morningGrid').innerHTML = '';
+    document.getElementById('afternoonGrid').innerHTML = '';
+    
+    clearModalNotifications();
+    
+    const dateKey = date.toISOString().split('T')[0];
+    if (!pendingAppointments[dateKey]) {
+        pendingAppointments[dateKey] = [];
+    }
+    
+    setTimeout(() => {
+        loadingSchedule.classList.add('hidden');
+        renderScheduleGrid(date);
+        renderPatients(); // Renderizar pacientes cuando se abre el modal
+    }, 1000);
+}
+
+function renderScheduleGrid(date) {
+    const dateKey = date.toISOString().split('T')[0];
+    const daySchedule = scheduleData[dateKey] || [];
+    const pendingForDay = pendingAppointments[dateKey] || [];
+    const timeSlots = generateTimeSlotsForDay(date);
+    
+    const morningSection = document.getElementById('morningSchedule');
+    const afternoonSection = document.getElementById('afternoonSchedule');
+    
+    if (timeSlots.morning.length === 0) {
+        morningSection.style.display = 'none';
+    } else {
+        morningSection.style.display = 'block';
+        renderTimeSlots('morningGrid', timeSlots.morning, daySchedule, pendingForDay, dateKey);
+    }
+    
+    if (timeSlots.afternoon.length === 0) {
+        afternoonSection.style.display = 'none';
+    } else {
+        afternoonSection.style.display = 'block';
+        renderTimeSlots('afternoonGrid', timeSlots.afternoon, daySchedule, pendingForDay, dateKey);
+    }
+}
+
+function renderTimeSlots(gridId, slots, daySchedule, pendingForDay, dateKey) {
+    const grid = document.getElementById(gridId);
+    grid.innerHTML = '';
+    
+    if (slots.length === 0) {
+        grid.innerHTML = '<div class="text-center text-gray-500 py-4 col-span-full">No hay horarios configurados para este período</div>';
+        return;
+    }
+    
+    slots.forEach(time => {
+        const existingAppointment = daySchedule.find(apt => apt.time === time);
+        const pendingAppointment = pendingForDay.find(apt => apt.hora_cita === time);
+        
+        const timeSlot = document.createElement('div');
+        timeSlot.className = `time-slot`;
+        timeSlot.dataset.time = time;
+        timeSlot.dataset.date = dateKey;
+        
+        if (existingAppointment) {
+            timeSlot.classList.add('occupied');
+            timeSlot.innerHTML = `
+                <div class="font-semibold text-gray-900 dark:text-white mb-2 text-sm">${time}</div>
+                <div class="bg-white dark:bg-gray-700 rounded-lg p-2 shadow-sm">
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="appointment-indicator ${existingAppointment.priority}"></span>
+                        <span class="font-medium text-gray-900 dark:text-white text-sm">${existingAppointment.patientName}</span>
+                    </div>
+                    <div class="text-xs text-gray-600 dark:text-gray-300">${existingAppointment.condition}</div>
+                    <div class="text-xs text-green-600 dark:text-green-400 mt-1">✓ Guardado</div>
+                    <button onclick="removeExistingAppointment('${dateKey}', '${time}')" class="remove-appointment">
+                        <i class="fas fa-trash mr-1"></i>Eliminar
+                    </button>
+                </div>
+            `;
+        } else if (pendingAppointment) {
+            timeSlot.classList.add('pending');
+            timeSlot.innerHTML = `
+                <div class="font-semibold text-gray-900 dark:text-white mb-2 text-sm">${time}</div>
+                <div class="bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-700 rounded-lg p-2 shadow-sm">
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="appointment-indicator ${pendingAppointment.tipo_cita}"></span>
+                        <span class="font-medium text-gray-900 dark:text-white text-sm">${pendingAppointment.patientName}</span>
+                    </div>
+                    <div class="text-xs text-gray-600 dark:text-gray-300">${pendingAppointment.condition}</div>
+                    <div class="text-xs text-yellow-600 dark:text-yellow-400 mt-1">⏳ Pendiente</div>
+                    <button onclick="removePendingAppointment('${dateKey}', '${time}')" class="remove-appointment">
+                        <i class="fas fa-trash mr-1"></i>Quitar
+                    </button>
+                </div>
+            `;
+        } else {
+            timeSlot.innerHTML = `
+                <div class="font-semibold text-gray-700 dark:text-gray-300 mb-2 text-sm">${time}</div>
+                <div class="text-gray-500 dark:text-gray-400 text-xs">Disponible</div>
+                <div class="mt-2 text-xs text-gray-400">Arrastra un paciente aquí</div>
+            `;
+            
+            timeSlot.addEventListener('dragover', handleDragOver);
+            timeSlot.addEventListener('drop', handleDrop);
+            timeSlot.addEventListener('dragleave', handleDragLeave);
+        }
+        
+        grid.appendChild(timeSlot);
+    });
+}
+
+function setupEventListeners() {
+    // Navegación del calendario
+    document.getElementById('prevMonth').addEventListener('click', () => {
+        currentDate.setMonth(currentDate.getMonth() - 1);
+        updateMonthDisplay();
+        renderCalendar();
+    });
+    
+    document.getElementById('nextMonth').addEventListener('click', () => {
+        currentDate.setMonth(currentDate.getMonth() + 1);
+        updateMonthDisplay();
+        renderCalendar();
+    });
+    
+    document.getElementById('todayBtn').addEventListener('click', () => {
+        currentDate = new Date();
+        updateMonthDisplay();
+        renderCalendar();
+    });
+    
+    // MODIFICADO: Modal de horarios - cerrar y resetear estado
+    document.getElementById('closeModal').addEventListener('click', () => {
+        document.getElementById('scheduleModal').classList.add('hidden');
+        clearModalNotifications();
+        hideAddPatientPanel(); // Asegurar que el panel esté oculto
+    });
+    
+    // Buscador de pacientes
+    document.getElementById('patientSearch').addEventListener('input', function(e) {
+        const searchTerm = e.target.value.toLowerCase();
+        filteredPatients = patientsData.filter(patient => 
+            patient.name.toLowerCase().includes(searchTerm) ||
+            patient.condition.toLowerCase().includes(searchTerm)
+        );
+        renderPatients();
+    });
+    
+    // Botón guardar
+    document.getElementById('saveSchedule').addEventListener('click', saveAllAppointments);
+    
+    // MODIFICADO: Botón agregar paciente
+    document.getElementById('addPatientBtn').addEventListener('click', showAddPatientPanel);
+    
+    // MODIFICADO: Botón cancelar agregar paciente
+    document.getElementById('cancelAddPatient').addEventListener('click', hideAddPatientPanel);
+    
+    // Formulario de agregar paciente
+    document.getElementById('addPatientForm').addEventListener('submit', handleAddPatientSubmit);
+    
+    // Validación en tiempo real
+    setupFormValidation();
+}
+
+// MODIFICADO: Función para mostrar panel de agregar paciente
+function showAddPatientPanel() {
+    if (isAddingPatient) return;
+    
+    isAddingPatient = true;
+    const schedulePanel = document.getElementById('schedulePanel');
+    const addPatientPanel = document.getElementById('addPatientPanel');
+    
+    // Animar transición
+    schedulePanel.classList.add('slide-left');
+    addPatientPanel.classList.add('show');
+    
+    // Limpiar formulario
+    document.getElementById('addPatientForm').reset();
+    clearFormErrors();
+    
+    // Enfocar primer campo
+    setTimeout(() => {
+        document.getElementById('nombres').focus();
+    }, 100);
+}
+
+// MODIFICADO: Función para ocultar panel de agregar paciente
+function hideAddPatientPanel() {
+    if (!isAddingPatient) return;
+    
+    const schedulePanel = document.getElementById('schedulePanel');
+    const addPatientPanel = document.getElementById('addPatientPanel');
+    
+    // Animar transición de vuelta
+    schedulePanel.classList.remove('slide-left');
+    addPatientPanel.classList.remove('show');
+    
+    // Resetear estado después de la animación
+    setTimeout(() => {
+        isAddingPatient = false;
+    }, 1000);
+}
+
+function setupFormValidation() {
+    const form = document.getElementById('addPatientForm');
+    const inputs = form.querySelectorAll('input, select, textarea');
+    
+    inputs.forEach(input => {
+        input.addEventListener('blur', () => validateField(input));
+        input.addEventListener('input', () => clearFieldError(input));
+    });
+    
+    // Validación especial para cédula
+    document.getElementById('cedula_ecuatoriana').addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, '');
+        if (value.length > 10) {
+            value = value.substring(0, 10);
+        }
+        e.target.value = value;
+    });
+}
+
+function validateField(field) {
+    const fieldName = field.name;
+    const value = field.value.trim();
+    let isValid = true;
+    let errorMessage = '';
+    
+    // Validaciones por campo
+    switch (fieldName) {
+        case 'nombres':
+        case 'apellidos':
+            if (!value) {
+                isValid = false;
+                errorMessage = 'Este campo es obligatorio';
+            } else if (value.length < 2) {
+                isValid = false;
+                errorMessage = 'Debe tener al menos 2 caracteres';
+            }
+            break;
+            
+        case 'cedula_ecuatoriana':
+            if (!value) {
+                isValid = false;
+                errorMessage = 'La cédula es obligatoria';
+            } else if (!/^\d{10}$/.test(value)) {
+                isValid = false;
+                errorMessage = 'La cédula debe tener 10 dígitos';
+            } else if (!validarCedulaEcuatoriana(value)) {
+                isValid = false;
+                errorMessage = 'Cédula ecuatoriana inválida';
+            }
+            break;
+            
+        case 'fecha_nacimiento':
+            if (!value) {
+                isValid = false;
+                errorMessage = 'La fecha de nacimiento es obligatoria';
+            } else {
+                const birthDate = new Date(value);
+                const today = new Date();
+                const age = today.getFullYear() - birthDate.getFullYear();
+                if (age < 0 || age > 120) {
+                    isValid = false;
+                    errorMessage = 'Fecha de nacimiento inválida';
+                }
+            }
+            break;
+            
+        case 'telefono':
+            if (!value) {
+                isValid = false;
+                errorMessage = 'El teléfono es obligatorio';
+            } else if (!/^[\d\s,+-]+$/.test(value)) {
+                isValid = false;
+                errorMessage = 'Formato de teléfono inválido';
+            }
+            break;
+            
+        case 'email':
+            if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+                isValid = false;
+                errorMessage = 'Formato de email inválido';
+            }
+            break;
+            
+        case 'estado_civil':
+        case 'direccion':
+            if (!value) {
+                isValid = false;
+                errorMessage = 'Este campo es obligatorio';
+            }
+            break;
+    }
+    
+    // Mostrar/ocultar error
+    if (!isValid) {
+        showFieldError(field, errorMessage);
+    } else {
+        clearFieldError(field);
+    }
+    
+    return isValid;
+}
+
+function showFieldError(field, message) {
+    field.classList.add('error');
+    const errorElement = document.getElementById(`${field.name}-error`);
+    if (errorElement) {
+        errorElement.textContent = message;
+    }
+}
+
+function clearFieldError(field) {
+    field.classList.remove('error');
+    const errorElement = document.getElementById(`${field.name}-error`);
+    if (errorElement) {
+        errorElement.textContent = '';
+    }
+}
+
+function clearFormErrors() {
+    const form = document.getElementById('addPatientForm');
+    const inputs = form.querySelectorAll('input, select, textarea');
+    inputs.forEach(input => clearFieldError(input));
+}
+
+function validateForm() {
+    const form = document.getElementById('addPatientForm');
+    const requiredFields = ['nombres', 'apellidos', 'cedula_ecuatoriana', 'fecha_nacimiento', 'telefono', 'estado_civil', 'direccion'];
+    let isValid = true;
+    
+    requiredFields.forEach(fieldName => {
+        const field = form.querySelector(`[name="${fieldName}"]`);
+        if (field && !validateField(field)) {
+            isValid = false;
+        }
+    });
+    
+    return isValid;
+}
+
+function handleAddPatientSubmit(e) {
+    e.preventDefault();
+    
+    if (!validateForm()) {
+        showModalNotification('Por favor, corrija los errores en el formulario', 'error');
+        return;
+    }
+    
+    const saveButton = document.getElementById('savePatient');
+    saveButton.disabled = true;
+    saveButton.innerHTML = `
+        <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+        Guardando...
+    `;
+    
+    // Simular envío al backend
+    showModalNotification('Enviando datos al servidor...', 'info');
+    
+    setTimeout(() => {
+        // Simular respuesta exitosa
+        const formData = new FormData(e.target);
+        const patientData = {
+            id: Date.now(), // ID temporal
+            name: `${formData.get('apellidos')}, ${formData.get('nombres')}`,
+            age: calculateAge(formData.get('fecha_nacimiento')),
+            condition: 'Nuevo paciente',
+            priority: 'normal',
+            phone: formData.get('telefono'),
+            // Datos adicionales del formulario
+            nombres: formData.get('nombres'),
+            apellidos: formData.get('apellidos'),
+            cedula_ecuatoriana: formData.get('cedula_ecuatoriana'),
+            fecha_nacimiento: formData.get('fecha_nacimiento'),
+            email: formData.get('email'),
+            estado_civil: formData.get('estado_civil'),
+            direccion: formData.get('direccion'),
+            antecedentes_personales: formData.get('antecedentes_personales'),
+            alergias: formData.get('alergias'),
+            medicamentos_actuales: formData.get('medicamentos_actuales')
+        };
+        
+        // Agregar al inicio de la lista
+        patientsData.unshift(patientData);
+        filteredPatients = [...patientsData];
+        
+        showModalNotification(`Paciente ${patientData.name} agregado exitosamente`, 'success');
+        
+        // Restaurar botón
+        saveButton.disabled = false;
+        saveButton.innerHTML = `
+            <i class="fas fa-save mr-2"></i>
+            Guardar Paciente
+        `;
+        
+        // Ocultar panel y actualizar lista
+        setTimeout(() => {
+            hideAddPatientPanel();
+            renderPatients();
+        }, 1000);
+        
+    }, 2000);
+}
+
+function calculateAge(birthDate) {
+    const today = new Date();
+    const birth = new Date(birthDate);
+    let age = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+    
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+        age--;
+    }
+    
+    return age;
+}
+
+// Funciones de drag and drop
+function handleDragStart(e) {
+    draggedPatient = {
+        id: e.target.dataset.patientId,
+        data: patientsData.find(p => p.id == e.target.dataset.patientId)
+    };
+    e.target.classList.add('dragging');
+}
+
+function handleDragEnd(e) {
+    e.target.classList.remove('dragging');
+    draggedPatient = null;
+}
+
+function handleDragOver(e) {
+    e.preventDefault();
+    e.currentTarget.classList.add('drag-over');
+}
+
+function handleDragLeave(e) {
+    e.currentTarget.classList.remove('drag-over');
+}
+
+function handleDrop(e) {
+    e.preventDefault();
+    e.currentTarget.classList.remove('drag-over');
+    
+    if (!draggedPatient) return;
+    
+    const time = e.currentTarget.dataset.time;
+    const date = e.currentTarget.dataset.date;
+    
+    const daySchedule = scheduleData[date] || [];
+    const pendingForDay = pendingAppointments[date] || [];
+    const totalAppointments = daySchedule.length + pendingForDay.length;
+    const dayLimit = dailyLimits[date] || { limit_cita_dia: scheduleConfig.limit_cita_dia };
+    
+    if (totalAppointments >= dayLimit.limit_cita_dia) {
+        showModalNotification('No se pueden agregar más citas. Límite diario alcanzado.', 'warning');
+        return;
+    }
+    
+    addAppointmentDirectly(draggedPatient.data, date, time);
+}
+
+function addAppointmentDirectly(patient, date, time) {
+    if (!pendingAppointments[date]) {
+        pendingAppointments[date] = [];
+    }
+    
+    const timeSlots = generateTimeSlotsForDay(selectedDate);
+    const orden = timeSlots.all.indexOf(time) + 1;
+    
+    const appointmentData = {
+        orden: orden,
+        hora_cita: time,
+        paciente_id: patient.id,
+        patientName: patient.name,
+        condition: patient.condition,
+        fecha_atencion: date,
+        tipo_cita: patient.priority === 'urgent' ? 'urgente' : patient.priority === 'follow-up' ? 'seguimiento' : 'normal',
+        medico_id: scheduleConfig.medico_id,
+        especialidad_id: scheduleConfig.especialidad_id
+    };
+    
+    pendingAppointments[date].push(appointmentData);
+    
+    if (selectedDate && selectedDate.toISOString().split('T')[0] === date) {
+        renderScheduleGrid(selectedDate);
+        renderPatients();
+    }
+    
+    showModalNotification(`${patient.name} agendado para las ${time}`, 'success');
+}
+
+function removePendingAppointment(date, time) {
+    if (pendingAppointments[date]) {
+        const removedAppointment = pendingAppointments[date].find(apt => apt.hora_cita === time);
+        pendingAppointments[date] = pendingAppointments[date].filter(apt => apt.hora_cita !== time);
+        if (pendingAppointments[date].length === 0) {
+            delete pendingAppointments[date];
+        }
+        
+        if (removedAppointment) {
+            showModalNotification(`${removedAppointment.patientName} removido del horario`, 'info');
+        }
+    }
+    
+    if (selectedDate && selectedDate.toISOString().split('T')[0] === date) {
+        renderScheduleGrid(selectedDate);
+        renderPatients();
+    }
+}
+
+function removeExistingAppointment(date, time) {
+    if (scheduleData[date]) {
+        const removedAppointment = scheduleData[date].find(apt => apt.time === time);
+        scheduleData[date] = scheduleData[date].filter(apt => apt.time !== time);
+        
+        if (scheduleData[date].length === 0) {
+            delete scheduleData[date];
+        }
+        
+        if (dailyLimits[date]) {
+            dailyLimits[date].num_citas_dia = scheduleData[date] ? scheduleData[date].length : 0;
+        }
+        
+        renderCalendar();
+        if (selectedDate && selectedDate.toISOString().split('T')[0] === date) {
+            renderScheduleGrid(selectedDate);
+            renderPatients();
+        }
+        
+        showModalNotification(`Cita de ${removedAppointment ? removedAppointment.patientName : 'paciente'} eliminada`, 'info');
+    }
+}
+
+function saveAllAppointments() {
+    const dateKey = selectedDate.toISOString().split('T')[0];
+    const pendingForDay = pendingAppointments[dateKey] || [];
+    
+    if (pendingForDay.length === 0) {
+        showModalNotification('No hay cambios pendientes para guardar', 'info');
+        return;
+    }
+    
+    const saveButton = document.getElementById('saveSchedule');
+    saveButton.disabled = true;
+    saveButton.innerHTML = `
+        <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+        Guardando...
+    `;
+    
+    showModalNotification('Enviando datos al servidor...', 'info');
+    
+    setTimeout(() => {
+        console.log('Datos enviados al servidor:', pendingForDay);
+        
+        const serverResponse = {
+            success: true,
+            message: 'Citas guardadas exitosamente',
+            saved_appointments: pendingForDay.length
+        };
+        
+        if (serverResponse.success) {
+            if (!scheduleData[dateKey]) {
+                scheduleData[dateKey] = [];
+            }
+            
+            pendingForDay.forEach(appointment => {
+                scheduleData[dateKey].push({
+                    id: Date.now() + Math.random(),
+                    patientId: appointment.paciente_id,
+                    patientName: appointment.patientName,
+                    condition: appointment.condition,
+                    time: appointment.hora_cita,
+                    priority: appointment.tipo_cita === 'urgente' ? 'urgent' : appointment.tipo_cita === 'seguimiento' ? 'follow-up' : 'normal',
+                    date: dateKey
+                });
+            });
+            
+            delete pendingAppointments[dateKey];
+            
+            if (!dailyLimits[dateKey]) {
+                dailyLimits[dateKey] = { limit_cita_dia: scheduleConfig.limit_cita_dia, num_citas_dia: 0 };
+            }
+            dailyLimits[dateKey].num_citas_dia = scheduleData[dateKey].length;
+            
+            renderCalendar();
+            renderScheduleGrid(selectedDate);
+            renderPatients();
+            
+            showModalNotification(`${pendingForDay.length} cita(s) guardada(s) exitosamente`, 'success');
+            
+            setTimeout(() => {
+                document.getElementById('scheduleModal').classList.add('hidden');
+                clearModalNotifications();
+                hideAddPatientPanel();
+            }, 2000);
+            
+        } else {
+            showModalNotification('Error al guardar las citas. Intenta nuevamente.', 'error');
+        }
+        
+        saveButton.disabled = false;
+        saveButton.innerHTML = `
+            <i class="fas fa-save"></i>
+            Guardar Cambios
+        `;
+        
+    }, 2000);
+}
+
+function showModalNotification(message, type = 'info') {
+    const container = document.getElementById('notificationContainer');
+    
+    const notification = document.createElement('div');
+    notification.className = `modal-notification ${type}`;
+    
+    const icons = {
+        success: 'fas fa-check-circle',
+        error: 'fas fa-times-circle',
+        info: 'fas fa-info-circle',
+        warning: 'fas fa-exclamation-triangle'
+    };
+    
+    notification.innerHTML = `
+        <i class="${icons[type]}"></i>
+        <span>${message}</span>
+    `;
+    
+    container.appendChild(notification);
+    
+    // Remover después de 3 segundos
+    setTimeout(() => {
+        if (container.contains(notification)) {
+            notification.style.animation = 'slideOutRight 0.3s ease-out forwards';
+            setTimeout(() => {
+                if (container.contains(notification)) {
+                    container.removeChild(notification);
+                }
+            }, 300);
+        }
+    }, 3000);
+}
+
+function clearModalNotifications() {
+    const container = document.getElementById('notificationContainer');
+    if (container) {
+        container.innerHTML = '';
+    }
+}
+
+function generateDailyLimits() {
+    const today = new Date();
+    
+    for (let i = 0; i < 60; i++) {
+        const date = new Date(today);
+        date.setDate(today.getDate() + i);
+        const dateKey = date.toISOString().split('T')[0];
+        
+        const dayConfig = getDayScheduleConfig(date);
+        if (!dayConfig || !dayConfig.activo) {
+            continue;
+        }
+        
+        const timeSlots = generateTimeSlotsForDay(date);
+        const dayLimit = timeSlots.all.length;
+        
+        const currentCitas = scheduleData[dateKey] ? scheduleData[dateKey].length : 0;
+        
+        dailyLimits[dateKey] = {
+            limit_cita_dia: dayLimit,
+            num_citas_dia: currentCitas
+        };
+    }
+}
+
+function generateMockScheduleData() {
+    const today = new Date();
+    const dates = [];
+    
+    for (let i = 0; i < 30; i++) {
+        const date = new Date(today);
+        date.setDate(today.getDate() + i);
+        
+        if (isDayActive(date)) {
+            dates.push(date.toISOString().split('T')[0]);
+        }
+    }
+    
+    dates.forEach(date => {
+        if (Math.random() > 0.6) {
+            const dateObj = new Date(date);
+            const timeSlots = generateTimeSlotsForDay(dateObj);
+            
+            if (timeSlots.all.length === 0) return;
+            
+            const maxAppointments = Math.min(
+                Math.floor(Math.random() * 8) + 2,
+                timeSlots.all.length
+            );
+            
+            scheduleData[date] = [];
+            
+            const usedTimes = new Set();
+            
+            for (let i = 0; i < maxAppointments && usedTimes.size < timeSlots.all.length; i++) {
+                let randomTime;
+                do {
+                    randomTime = timeSlots.all[Math.floor(Math.random() * timeSlots.all.length)];
+                } while (usedTimes.has(randomTime));
+                
+                usedTimes.add(randomTime);
+                
+                const randomPatient = mockPatients[Math.floor(Math.random() * mockPatients.length)];
+                
+                scheduleData[date].push({
+                    id: Date.now() + Math.random(),
+                    patientId: randomPatient.id,
+                    patientName: randomPatient.name,
+                    condition: randomPatient.condition,
+                    time: randomTime,
+                    priority: randomPatient.priority,
+                    date: date
+                });
+            }
+            
+            scheduleData[date].sort((a, b) => a.time.localeCompare(b.time));
+        }
+    });
+}
+</script>
+{% endblock %}
