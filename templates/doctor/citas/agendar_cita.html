@@ -791,10 +791,14 @@
                 </div>
 
                 <!-- Botón Guardar - FIJO AL FONDO -->
-                <div class="schedule-footer">
+             <div class="schedule-footer flex justify-end gap-3">
                     <button id="saveSchedule" class="save-button">
                         <i class="fas fa-save"></i>
                         Guardar Cambios
+                    </button>
+                    <button id="cancelSchedule" class="cancel-button">
+                        <i class="fas fa-times"></i>
+                        Cancelar
                     </button>
                 </div>
             </div>
@@ -908,14 +912,15 @@
 
                 <!-- Botones de Acción - FIJOS AL FONDO -->
                 <div class="add-patient-footer">
-                    <button type="button" id="cancelAddPatient" class="cancel-button">
-                        <i class="fas fa-times mr-2"></i>
-                        Cancelar
-                    </button>
                     <button type="submit" form="addPatientForm" id="savePatient" class="save-patient-button">
                         <i class="fas fa-save mr-2"></i>
                         Guardar Paciente
                     </button>
+                    <button type="button" id="cancelAddPatient" class="cancel-button">
+                        <i class="fas fa-times mr-2"></i>
+                        Cancelar
+                    </button>
+                
                 </div>
             </div>
 
@@ -1262,7 +1267,7 @@ function renderCalendar() {
         let dayContent = `
             <div class="flex justify-between items-start mb-2">
                 <span class="font-semibold ${isCurrentMonth ? 'text-gray-900 dark:text-white' : ''}">${cellDate.getDate()}</span>
-                ${daySchedule.length > 0 ? `<span class="text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded-full">${daySchedule.length}</span>` : ''}
+                 ${daySchedule.length > 0 ? `<span class="text-xs bg-blue-600 dark:bg-blue-800 text-white px-2 py-1 rounded-full">${daySchedule.length}</span>` : ''}
             </div>
         `;
         
@@ -1472,11 +1477,16 @@ function setupEventListeners() {
     });
     
     // MODIFICADO: Modal de horarios - cerrar y resetear estado
-    document.getElementById('closeModal').addEventListener('click', () => {
+    // Función reutilizable
+    function closeModalAndReset() {
         document.getElementById('scheduleModal').classList.add('hidden');
         clearModalNotifications();
-        hideAddPatientPanel(); // Asegurar que el panel esté oculto
-    });
+        hideAddPatientPanel();
+    }
+    // Aplicar a múltiples elementos
+    document.getElementById('closeModal').addEventListener('click', closeModalAndReset);
+    document.getElementById('cancelSchedule').addEventListener('click', closeModalAndReset);
+    
     
     // Buscador de pacientes
     document.getElementById('patientSearch').addEventListener('input', function(e) {
@@ -1936,7 +1946,7 @@ function saveAllAppointments() {
                 document.getElementById('scheduleModal').classList.add('hidden');
                 clearModalNotifications();
                 hideAddPatientPanel();
-            }, 2000);
+            }, 1000);
             
         } else {
             showModalNotification('Error al guardar las citas. Intenta nuevamente.', 'error');
@@ -1948,7 +1958,7 @@ function saveAllAppointments() {
             Guardar Cambios
         `;
         
-    }, 2000);
+    }, 1000);
 }
 
 function showModalNotification(message, type = 'info') {
@@ -1981,7 +1991,7 @@ function showModalNotification(message, type = 'info') {
                 }
             }, 300);
         }
-    }, 3000);
+    }, 1000);
 }
 
 function clearModalNotifications() {
