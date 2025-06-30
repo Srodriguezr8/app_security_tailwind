@@ -3,673 +3,11 @@
 
 {% block title %}Calendario Médico - {{ block.super }}{% endblock %}
 
+{% block styles %}
+<link rel="stylesheet" href="{% static 'css/dist/appointment_calendar.css' %}">
+{% endblock %}
+
 {% block content %}
-
-<style>
-/* Modal con altura fija */
-.modal-overlay {
-    position: fixed;
-    inset: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 50;
-    padding: 1rem;
-}
-
-.modal-overlay.hidden {
-    display: none;
-}
-
-.modal-container {
-    background-color: white;
-    border-radius: 1rem;
-    width: 100%;
-    max-width: 90rem;
-    height: 85vh;
-    max-height: 85vh;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-}
-
-.dark .modal-container {
-    background-color: #1f2937;
-}
-
-.modal-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 1.5rem;
-    border-bottom: 1px solid #e5e7eb;
-    flex-shrink: 0;
-}
-
-.dark .modal-header {
-    border-bottom-color: #4b5563;
-}
-
-.modal-content {
-    display: flex;
-    flex: 1;
-    min-height: 0;
-    overflow: hidden;
-}
-
-/* Panel de Horarios */
-.schedule-panel {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-    transition: transform 1s ease-in-out;
-}
-
-.schedule-panel.slide-left {
-    transform: translateX(-100%);
-}
-
-.schedule-content {
-    flex: 1;
-    overflow-y: auto;
-    padding: 1.5rem;
-}
-
-.schedule-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 0.75rem;
-}
-
-.schedule-footer {
-    padding: 1.5rem;
-    border-top: 1px solid #e5e7eb;
-    flex-shrink: 0;
-}
-
-.dark .schedule-footer {
-    border-top-color: #4b5563;
-}
-
-.save-button {
-    width: 100%;
-    background-color: #059669;
-    color: white;
-    font-weight: 600;
-    padding: 0.75rem 1.5rem;
-    border-radius: 0.5rem;
-    transition: background-color 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    border: none;
-    cursor: pointer;
-}
-
-.save-button:hover {
-    background-color: #047857;
-}
-
-.save-button:disabled {
-    background-color: #9ca3af;
-    cursor: not-allowed;
-}
-
-/* Panel de Agregar Paciente - MODIFICADO PARA ESTAR OCULTO INICIALMENTE */
-.add-patient-panel {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 20rem;
-    bottom: 0;
-    background-color: white;
-    display: flex;
-    flex-direction: column;
-    transform: translateX(100%);
-    transition: transform 1s ease-in-out;
-    z-index: 10;
-}
-
-.dark .add-patient-panel {
-    background-color: #1f2937;
-}
-
-.add-patient-panel.show {
-    transform: translateX(0);
-}
-
-.add-patient-content {
-    flex: 1;
-    overflow-y: auto;
-    padding: 1.5rem;
-}
-
-.add-patient-header {
-    margin-bottom: 2rem;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid #e5e7eb;
-}
-
-.dark .add-patient-header {
-    border-bottom-color: #4b5563;
-}
-
-.add-patient-form {
-    space-y: 2rem;
-}
-
-.form-section {
-    background-color: #f9fafb;
-    border-radius: 0.75rem;
-    padding: 1.5rem;
-    border: 1px solid #e5e7eb;
-}
-
-.dark .form-section {
-    background-color: #374151;
-    border-color: #4b5563;
-}
-
-.form-section-title {
-    font-size: 1.125rem;
-    font-weight: 600;
-    color: #1f2937;
-    margin-bottom: 1rem;
-    display: flex;
-    align-items: center;
-}
-
-.dark .form-section-title {
-    color: #f9fafb;
-}
-
-.form-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
-}
-
-.form-group {
-    display: flex;
-    flex-direction: column;
-}
-
-.form-group-full {
-    grid-column: span 2;
-}
-
-.form-label {
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: #374151;
-    margin-bottom: 0.5rem;
-}
-
-.dark .form-label {
-    color: #d1d5db;
-}
-
-.form-input, .form-textarea {
-    padding: 0.75rem;
-    border: 1px solid #d1d5db;
-    border-radius: 0.5rem;
-    font-size: 0.875rem;
-    transition: border-color 0.2s, box-shadow 0.2s;
-    background-color: white;
-    color: #1f2937;
-}
-
-.dark .form-input, .dark .form-textarea {
-    background-color: #4b5563;
-    border-color: #6b7280;
-    color: #f9fafb;
-}
-
-.form-input:focus, .form-textarea:focus {
-    outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
-.form-textarea {
-    resize: vertical;
-    min-height: 80px;
-}
-
-.form-help {
-    font-size: 0.75rem;
-    color: #6b7280;
-    margin-top: 0.25rem;
-}
-
-.dark .form-help {
-    color: #9ca3af;
-}
-
-.form-error {
-    font-size: 0.75rem;
-    color: #dc2626;
-    margin-top: 0.25rem;
-    min-height: 1rem;
-}
-
-.form-input.error, .form-textarea.error {
-    border-color: #dc2626;
-    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
-}
-
-.add-patient-footer {
-    padding: 1.5rem;
-    border-top: 1px solid #e5e7eb;
-    flex-shrink: 0;
-    display: flex;
-    gap: 1rem;
-    justify-content: flex-end;
-}
-
-.dark .add-patient-footer {
-    border-top-color: #4b5563;
-}
-
-.cancel-button {
-    padding: 0.75rem 1.5rem;
-    background-color: #6b7280;
-    color: white;
-    border: none;
-    border-radius: 0.5rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background-color 0.2s;
-    display: flex;
-    align-items: center;
-}
-
-.cancel-button:hover {
-    background-color: #4b5563;
-}
-
-.save-patient-button {
-    padding: 0.75rem 1.5rem;
-    background-color: #059669;
-    color: white;
-    border: none;
-    border-radius: 0.5rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background-color 0.2s;
-    display: flex;
-    align-items: center;
-}
-
-.save-patient-button:hover {
-    background-color: #047857;
-}
-
-.save-patient-button:disabled {
-    background-color: #9ca3af;
-    cursor: not-allowed;
-}
-
-/* Panel de Pacientes */
-.patients-panel {
-    width: 20rem;
-    background-color: #f9fafb;
-    border-left: 1px solid #e5e7eb;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    position: relative;
-    z-index: 5;
-}
-
-.dark .patients-panel {
-    background-color: #374151;
-    border-left-color: #4b5563;
-}
-
-.patients-search {
-    padding: 1rem;
-    border-bottom: 1px solid #e5e7eb;
-    flex-shrink: 0;
-}
-
-.dark .patients-search {
-    border-bottom-color: #4b5563;
-}
-
-.patients-title {
-    padding: 1rem 1rem 0.5rem;
-    flex-shrink: 0;
-}
-
-.patients-list {
-    flex: 1;
-    overflow-y: auto;
-    padding: 0 1rem 1rem;
-}
-
-/* Resto de estilos permanecen igual... */
-.calendar-day.inactive {
-    opacity: 0.4;
-    background-color: #f3f4f6;
-    cursor: not-allowed;
-}
-
-.dark .calendar-day.inactive {
-    background-color: #374151;
-    opacity: 0.3;
-}
-
-.calendar-day.inactive:hover {
-    background-color: #f3f4f6 !important;
-}
-
-.dark .calendar-day.inactive:hover {
-    background-color: #374151 !important;
-}
-
-.modal-notification {
-    padding: 0.5rem 1rem;
-    border-radius: 0.5rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 0.5rem;
-    animation: slideInRight 0.3s ease-out;
-    max-width: 300px;
-}
-
-.modal-notification.success {
-    background-color: #dcfce7;
-    color: #166534;
-    border: 1px solid #bbf7d0;
-}
-
-.modal-notification.error {
-    background-color: #fef2f2;
-    color: #dc2626;
-    border: 1px solid #fecaca;
-}
-
-.modal-notification.info {
-    background-color: #dbeafe;
-    color: #1d4ed8;
-    border: 1px solid #bfdbfe;
-}
-
-.modal-notification.warning {
-    background-color: #fef3c7;
-    color: #d97706;
-    border: 1px solid #fde68a;
-}
-
-.dark .modal-notification.success {
-    background-color: #14532d;
-    color: #bbf7d0;
-    border-color: #166534;
-}
-
-.dark .modal-notification.error {
-    background-color: #7f1d1d;
-    color: #fecaca;
-    border-color: #dc2626;
-}
-
-.dark .modal-notification.info {
-    background-color: #1e3a8a;
-    color: #bfdbfe;
-    border-color: #1d4ed8;
-}
-
-.dark .modal-notification.warning {
-    background-color: #92400e;
-    color: #fde68a;
-    border-color: #d97706;
-}
-
-@keyframes slideInRight {
-    from {
-        transform: translateX(100%);
-        opacity: 0;
-    }
-    to {
-        transform: translateX(0);
-        opacity: 1;
-    }
-}
-
-@keyframes slideOutRight {
-    from {
-        transform: translateX(0);
-        opacity: 1;
-    }
-    to {
-        transform: translateX(100%);
-        opacity: 0;
-    }
-}
-
-.patient-card {
-    cursor: grab;
-    transition: all 0.2s ease;
-    user-select: none;
-}
-
-.patient-card:active {
-    cursor: grabbing;
-}
-
-.patient-card.dragging {
-    opacity: 0.5;
-    transform: rotate(5deg);
-}
-
-.time-slot {
-    transition: all 0.2s ease;
-    min-height: 100px;
-    border: 2px dashed #d1d5db;
-    border-radius: 0.5rem;
-    padding: 0.75rem;
-    text-align: center;
-}
-
-.dark .time-slot {
-    border-color: #4b5563;
-}
-
-.time-slot.drag-over {
-    background-color: #dbeafe !important;
-    border-color: #3b82f6 !important;
-    transform: scale(1.02);
-}
-
-.dark .time-slot.drag-over {
-    background-color: #1e3a8a !important;
-}
-
-.time-slot.occupied {
-    background-color: #fef3c7;
-    border-color: #f59e0b;
-    border-style: solid;
-}
-
-.dark .time-slot.occupied {
-    background-color: #451a03;
-    border-color: #d97706;
-}
-
-.time-slot.pending {
-    background-color: #fef3c7;
-    border-color: #f59e0b;
-    border-style: solid;
-}
-
-.dark .time-slot.pending {
-    background-color: #451a03;
-    border-color: #d97706;
-}
-
-.calendar-day {
-    min-height: 140px;
-    transition: all 0.2s ease;
-}
-
-.calendar-day:hover {
-    background-color: #f8fafc;
-}
-
-.calendar-day.dark:hover {
-    background-color: #1e293b;
-}
-
-.calendar-day.today {
-    background-color: #eff6ff;
-    border: 2px solid #3b82f6;
-}
-
-.calendar-day.today.dark {
-    background-color: #1e3a8a;
-    border-color: #60a5fa;
-}
-
-.appointment-indicator {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    display: inline-block;
-    margin-right: 4px;
-}
-
-.appointment-indicator.urgent {
-    background-color: #ef4444;
-}
-
-.appointment-indicator.normal {
-    background-color: #10b981;
-}
-
-.appointment-indicator.follow-up {
-    background-color: #f59e0b;
-}
-
-.progress-bar {
-    height: 4px;
-    background-color: #e5e7eb;
-    border-radius: 2px;
-    overflow: hidden;
-}
-
-.progress-fill {
-    height: 100%;
-    transition: width 0.3s ease;
-    border-radius: 2px;
-}
-
-.progress-fill.low {
-    background-color: #10b981;
-}
-
-.progress-fill.medium {
-    background-color: #f59e0b;
-}
-
-.progress-fill.high {
-    background-color: #ef4444;
-}
-
-.patients-list::-webkit-scrollbar,
-.schedule-content::-webkit-scrollbar,
-.add-patient-content::-webkit-scrollbar {
-    width: 6px;
-}
-
-.patients-list::-webkit-scrollbar-track,
-.schedule-content::-webkit-scrollbar-track,
-.add-patient-content::-webkit-scrollbar-track {
-    background: #f1f5f9;
-    border-radius: 3px;
-}
-
-.patients-list::-webkit-scrollbar-thumb,
-.schedule-content::-webkit-scrollbar-thumb,
-.add-patient-content::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-    border-radius: 3px;
-}
-
-.patients-list::-webkit-scrollbar-thumb:hover,
-.schedule-content::-webkit-scrollbar-thumb:hover,
-.add-patient-content::-webkit-scrollbar-thumb:hover {
-    background: #94a3b8;
-}
-
-.dark .patients-list::-webkit-scrollbar-track,
-.dark .schedule-content::-webkit-scrollbar-track,
-.dark .add-patient-content::-webkit-scrollbar-track {
-    background: #374151;
-}
-
-.dark .patients-list::-webkit-scrollbar-thumb,
-.dark .schedule-content::-webkit-scrollbar-thumb,
-.dark .add-patient-content::-webkit-scrollbar-thumb {
-    background: #6b7280;
-}
-
-.dark .patients-list::-webkit-scrollbar-thumb:hover,
-.dark .schedule-content::-webkit-scrollbar-thumb:hover,
-.dark .add-patient-content::-webkit-scrollbar-thumb:hover {
-    background: #9ca3af;
-}
-
-.remove-appointment {
-    background-color: #ef4444;
-    color: white;
-    border: none;
-    border-radius: 0.25rem;
-    padding: 0.25rem 0.5rem;
-    font-size: 0.75rem;
-    cursor: pointer;
-    transition: background-color 0.2s;
-    margin-top: 0.5rem;
-}
-
-.remove-appointment:hover {
-    background-color: #dc2626;
-}
-
-@media (max-width: 768px) {
-    .modal-container {
-        height: 95vh;
-        max-height: 95vh;
-    }
-    
-    .patients-panel {
-        width: 16rem;
-    }
-    
-    .schedule-grid {
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    }
-    
-    .modal-notification {
-        max-width: 250px;
-        font-size: 0.8rem;
-    }
-    
-    .form-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .form-group-full {
-        grid-column: span 1;
-    }
-}
-</style>
 
 <!-- Modal de Horarios - INICIALMENTE OCULTO -->
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
@@ -739,11 +77,18 @@
             </button>
         </div>
 
+        <!-- Contenedor para notificaciones -->
+        <div id="notificationContainer" class="w-full hidden">
+            <!-- Las notificaciones aparecerán aquí -->
+        </div>
+            
+
         <!-- Contenido del Modal - FLEXIBLE -->
         <div class="modal-content">
             <!-- Panel de Horarios (Izquierda) - SCROLLABLE -->
             <div id="schedulePanel" class="schedule-panel">
-                <div class="schedule-content">
+                <div id ="scheduleContent" class="schedule-content">
+
                     <!-- Indicador de carga -->
                     <div id="loadingSchedule" class="text-center py-8 hidden">
                         <div class="inline-flex items-center">
@@ -768,10 +113,7 @@
                                 <i class="fas fa-sun text-tertiary-custom mr-2"></i>
                                 Horarios de Mañana
                             </h3>
-                            <!-- Contenedor para notificaciones -->
-                            <div id="notificationContainer" class="flex-1 ml-4">
-                                <!-- Las notificaciones aparecerán aquí -->
-                            </div>
+
                         </div>
                         <div id="morningGrid" class="schedule-grid">
                             <!-- Los horarios de mañana se cargan dinámicamente -->
@@ -788,10 +130,11 @@
                             <!-- Los horarios de tarde se cargan dinámicamente -->
                         </div>
                     </div>
+
                 </div>
 
                 <!-- Botón Guardar - FIJO AL FONDO -->
-             <div class="schedule-footer flex justify-end gap-3">
+                <div class="schedule-footer flex justify-end gap-3">
                     <button id="saveSchedule" class="save-button">
                         <i class="fas fa-save"></i>
                         Guardar Cambios
@@ -801,128 +144,131 @@
                         Cancelar
                     </button>
                 </div>
-            </div>
 
-            <!-- Panel de Agregar Paciente - INICIALMENTE OCULTO -->
-            <div id="addPatientPanel" class="add-patient-panel">
-                <div class="add-patient-content">
-                    <div class="add-patient-header">
-                        <h3 class="text-xl font-bold text-gray-900 dark:text-white flex items-center">
-                            <i class="fas fa-user-plus text-blue-600 mr-2"></i>
-                            Agregar Nuevo Paciente
-                        </h3>
-                        <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">Complete los datos obligatorios del paciente</p>
+                <!-- Panel de Agregar Paciente - INICIALMENTE OCULTO -->
+                <div id="addPatientPanel" class="add-patient-panel hidden">
+                    <div class="add-patient-content">
+                        <div class="add-patient-header">
+                            <h3 class="text-xl font-bold text-gray-900 dark:text-white flex items-center">
+                                <i class="fas fa-user-plus text-blue-600 mr-2"></i>
+                                Agregar Nuevo Paciente
+                            </h3>
+                            <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">Complete los datos obligatorios del paciente</p>
+                        </div>
+
+                        <form id="addPatientForm" class="add-patient-form">
+                            {% csrf_token %}
+                            <!-- Información Personal -->
+                            <div class="form-section">
+                                <h4 class="form-section-title">
+                                    <i class="fas fa-user mr-2"></i>
+                                    Información Personal
+                                </h4>
+                                
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label for="nombres" class="form-label">Nombres *</label>
+                                        <input type="text" id="nombres" name="nombres" class="form-input" required maxlength="100">
+                                        <div class="form-error" id="nombres-error"></div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="apellidos" class="form-label">Apellidos *</label>
+                                        <input type="text" id="apellidos" name="apellidos" class="form-input" required maxlength="100">
+                                        <div class="form-error" id="apellidos-error"></div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="cedula_ecuatoriana" class="form-label">Cédula Ecuatoriana *</label>
+                                        <input type="text" id="cedula_ecuatoriana" name="cedula_ecuatoriana" class="form-input" required maxlength="10" pattern="[0-9]{10}">
+                                        <div class="form-help">Ingrese el número de cédula sin espacios ni guiones</div>
+                                        <div class="form-error" id="cedula_ecuatoriana-error"></div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="fecha_nacimiento" class="form-label">Fecha de Nacimiento *</label>
+                                        <input type="date" id="fecha_nacimiento" name="fecha_nacimiento" class="form-input" required>
+                                        <div class="form-error" id="fecha_nacimiento-error"></div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="telefono" class="form-label">Teléfono(s) *</label>
+                                        <input type="text" id="telefono" name="telefono" class="form-input" required maxlength="50">
+                                        <div class="form-help">Puede ingresar uno o más números separados por coma</div>
+                                        <div class="form-error" id="telefono-error"></div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="email" class="form-label">Correo Electrónico</label>
+                                        <input type="email" id="email" name="email" class="form-input">
+                                        <div class="form-help">Correo electrónico del paciente (opcional)</div>
+                                        <div class="form-error" id="email-error"></div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="estado_civil" class="form-label">Estado Civil *</label>
+                                        <select id="estado_civil" name="estado_civil" class="form-input" required>
+                                            <option value="">Seleccione...</option>
+                                            <option value="soltero">Soltero/a</option>
+                                            <option value="casado">Casado/a</option>
+                                            <option value="divorciado">Divorciado/a</option>
+                                            <option value="viudo">Viudo/a</option>
+                                            <option value="union_libre">Unión Libre</option>
+                                        </select>
+                                        <div class="form-error" id="estado_civil-error"></div>
+                                    </div>
+
+                                    <div class="form-group form-group-full">
+                                        <label for="direccion" class="form-label">Dirección Domiciliaria *</label>
+                                        <input type="text" id="direccion" name="direccion" class="form-input" required maxlength="255">
+                                        <div class="form-error" id="direccion-error"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Información Médica Opcional -->
+                            <div class="form-section">
+                                <h4 class="form-section-title">
+                                    <i class="fas fa-heartbeat mr-2"></i>
+                                    Información Médica (Opcional)
+                                </h4>
+                                
+                                <div class="form-grid">
+                                    <div class="form-group form-group-full">
+                                        <label for="antecedentes_personales" class="form-label">Antecedentes Personales</label>
+                                        <textarea id="antecedentes_personales" name="antecedentes_personales" class="form-textarea" rows="3" placeholder="Ej.: Diabetes tipo 2, hipertensión, asma, etc."></textarea>
+                                    </div>
+
+                                    <div class="form-group form-group-full">
+                                        <label for="alergias" class="form-label">Alergias</label>
+                                        <textarea id="alergias" name="alergias" class="form-textarea" rows="2" placeholder="Ej.: Penicilina, mariscos, polvo, etc."></textarea>
+                                    </div>
+
+                                    <div class="form-group form-group-full">
+                                        <label for="medicamentos_actuales" class="form-label">Medicamentos Actuales</label>
+                                        <textarea id="medicamentos_actuales" name="medicamentos_actuales" class="form-textarea" rows="2" placeholder="Nombre, dosis y frecuencia. Ej.: Losartán 50mg diario"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
                     </div>
 
-                    <form id="addPatientForm" class="add-patient-form">
-                        <!-- Información Personal -->
-                        <div class="form-section">
-                            <h4 class="form-section-title">
-                                <i class="fas fa-user mr-2"></i>
-                                Información Personal
-                            </h4>
-                            
-                            <div class="form-grid">
-                                <div class="form-group">
-                                    <label for="nombres" class="form-label">Nombres *</label>
-                                    <input type="text" id="nombres" name="nombres" class="form-input" required maxlength="100">
-                                    <div class="form-error" id="nombres-error"></div>
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="apellidos" class="form-label">Apellidos *</label>
-                                    <input type="text" id="apellidos" name="apellidos" class="form-input" required maxlength="100">
-                                    <div class="form-error" id="apellidos-error"></div>
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="cedula_ecuatoriana" class="form-label">Cédula Ecuatoriana *</label>
-                                    <input type="text" id="cedula_ecuatoriana" name="cedula_ecuatoriana" class="form-input" required maxlength="10" pattern="[0-9]{10}">
-                                    <div class="form-help">Ingrese el número de cédula sin espacios ni guiones</div>
-                                    <div class="form-error" id="cedula_ecuatoriana-error"></div>
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="fecha_nacimiento" class="form-label">Fecha de Nacimiento *</label>
-                                    <input type="date" id="fecha_nacimiento" name="fecha_nacimiento" class="form-input" required>
-                                    <div class="form-error" id="fecha_nacimiento-error"></div>
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="telefono" class="form-label">Teléfono(s) *</label>
-                                    <input type="text" id="telefono" name="telefono" class="form-input" required maxlength="50">
-                                    <div class="form-help">Puede ingresar uno o más números separados por coma</div>
-                                    <div class="form-error" id="telefono-error"></div>
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="email" class="form-label">Correo Electrónico</label>
-                                    <input type="email" id="email" name="email" class="form-input">
-                                    <div class="form-help">Correo electrónico del paciente (opcional)</div>
-                                    <div class="form-error" id="email-error"></div>
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="estado_civil" class="form-label">Estado Civil *</label>
-                                    <select id="estado_civil" name="estado_civil" class="form-input" required>
-                                        <option value="">Seleccione...</option>
-                                        <option value="soltero">Soltero/a</option>
-                                        <option value="casado">Casado/a</option>
-                                        <option value="divorciado">Divorciado/a</option>
-                                        <option value="viudo">Viudo/a</option>
-                                        <option value="union_libre">Unión Libre</option>
-                                    </select>
-                                    <div class="form-error" id="estado_civil-error"></div>
-                                </div>
-
-                                <div class="form-group form-group-full">
-                                    <label for="direccion" class="form-label">Dirección Domiciliaria *</label>
-                                    <input type="text" id="direccion" name="direccion" class="form-input" required maxlength="255">
-                                    <div class="form-error" id="direccion-error"></div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Información Médica Opcional -->
-                        <div class="form-section">
-                            <h4 class="form-section-title">
-                                <i class="fas fa-heartbeat mr-2"></i>
-                                Información Médica (Opcional)
-                            </h4>
-                            
-                            <div class="form-grid">
-                                <div class="form-group form-group-full">
-                                    <label for="antecedentes_personales" class="form-label">Antecedentes Personales</label>
-                                    <textarea id="antecedentes_personales" name="antecedentes_personales" class="form-textarea" rows="3" placeholder="Ej.: Diabetes tipo 2, hipertensión, asma, etc."></textarea>
-                                </div>
-
-                                <div class="form-group form-group-full">
-                                    <label for="alergias" class="form-label">Alergias</label>
-                                    <textarea id="alergias" name="alergias" class="form-textarea" rows="2" placeholder="Ej.: Penicilina, mariscos, polvo, etc."></textarea>
-                                </div>
-
-                                <div class="form-group form-group-full">
-                                    <label for="medicamentos_actuales" class="form-label">Medicamentos Actuales</label>
-                                    <textarea id="medicamentos_actuales" name="medicamentos_actuales" class="form-textarea" rows="2" placeholder="Nombre, dosis y frecuencia. Ej.: Losartán 50mg diario"></textarea>
-                                </div>
-                            </div>
-                        </div>
-                    </form>
+                    <!-- Botones de Acción - FIJOS AL FONDO -->
+                    <div class="add-patient-footer">
+                        <button type="submit" form="addPatientForm" id="savePatient" class="save-patient-button">
+                            <i class="fas fa-save mr-2"></i>
+                            Guardar Paciente
+                        </button>
+                        <button type="button" id="cancelAddPatient" class="cancel-button">
+                            <i class="fas fa-times mr-2"></i>
+                            Cancelar
+                        </button>
+                    
+                    </div>
                 </div>
 
-                <!-- Botones de Acción - FIJOS AL FONDO -->
-                <div class="add-patient-footer">
-                    <button type="submit" form="addPatientForm" id="savePatient" class="save-patient-button">
-                        <i class="fas fa-save mr-2"></i>
-                        Guardar Paciente
-                    </button>
-                    <button type="button" id="cancelAddPatient" class="cancel-button">
-                        <i class="fas fa-times mr-2"></i>
-                        Cancelar
-                    </button>
-                
-                </div>
             </div>
+
 
             <!-- Panel de Pacientes (Derecha) - ALTURA FIJA CON SCROLL -->
             <div class="patients-panel">
@@ -931,7 +277,7 @@
                     <div class="flex items-center gap-2">
                         <!-- Botón Agregar Paciente (a la izquierda) -->
                         <button id="addPatientBtn" 
-                                class="flex items-center justify-center w-10 h-10 text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition"
+                                class="flex items-center justify-center w-10 h-10 text-white bg-green-600 hover:bg-green-700 rounded-lg transition"
                                 title="Agregar Paciente">
                             <i class="fas fa-user-plus"></i>
                         </button>
@@ -969,6 +315,7 @@
 {% endblock %}
 
 {% block js %}
+<script src="{% static 'js/doctor/save_patient.js' %}"></script>
 <script>
 // Variables globales
 let currentDate = new Date();
@@ -1524,6 +871,7 @@ function showAddPatientPanel() {
     
     // Animar transición
     schedulePanel.classList.add('slide-left');
+    addPatientPanel.classList.remove('hidden');
     addPatientPanel.classList.add('show');
     
     // Limpiar formulario
@@ -1546,10 +894,12 @@ function hideAddPatientPanel() {
     // Animar transición de vuelta
     schedulePanel.classList.remove('slide-left');
     addPatientPanel.classList.remove('show');
+ 
     
     // Resetear estado después de la animación
     setTimeout(() => {
         isAddingPatient = false;
+        addPatientPanel.classList.add('hidden');
     }, 1000);
 }
 
@@ -1692,68 +1042,147 @@ function validateForm() {
     return isValid;
 }
 
-function handleAddPatientSubmit(e) {
+
+async function handleAddPatientSubmit(e) {
     e.preventDefault();
     
+    // 1. Validar formulario
     if (!validateForm()) {
         showModalNotification('Por favor, corrija los errores en el formulario', 'error');
         return;
     }
     
     const saveButton = document.getElementById('savePatient');
-    saveButton.disabled = true;
-    saveButton.innerHTML = `
-        <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-        Guardando...
-    `;
+    const originalButtonContent = saveButton.innerHTML;
     
-    // Simular envío al backend
-    showModalNotification('Enviando datos al servidor...', 'info');
-    
-    setTimeout(() => {
-        // Simular respuesta exitosa
+    try {
+        // 2. Mostrar estado de carga
+        setLoadingState(saveButton, true);
+        showModalNotification('Enviando datos al servidor...', 'info');
+        
+        // 3. Preparar datos del formulario
         const formData = new FormData(e.target);
-        const patientData = {
-            id: Date.now(), // ID temporal
-            name: `${formData.get('apellidos')}, ${formData.get('nombres')}`,
-            age: calculateAge(formData.get('fecha_nacimiento')),
-            condition: 'Nuevo paciente',
-            priority: 'normal',
-            phone: formData.get('telefono'),
-            // Datos adicionales del formulario
-            nombres: formData.get('nombres'),
-            apellidos: formData.get('apellidos'),
-            cedula_ecuatoriana: formData.get('cedula_ecuatoriana'),
-            fecha_nacimiento: formData.get('fecha_nacimiento'),
-            email: formData.get('email'),
-            estado_civil: formData.get('estado_civil'),
-            direccion: formData.get('direccion'),
-            antecedentes_personales: formData.get('antecedentes_personales'),
-            alergias: formData.get('alergias'),
-            medicamentos_actuales: formData.get('medicamentos_actuales')
-        };
+        const patientPayload = preparePatientPayload(formData);
         
-        // Agregar al inicio de la lista
-        patientsData.unshift(patientData);
-        filteredPatients = [...patientsData];
+        // 4. Obtener token CSRF y API endpoint
+        const csrfToken = getCSRFToken();
+        const api = '/doctor/patient_create_api/'; // Endpoint correcto para pacientes
         
-        showModalNotification(`Paciente ${patientData.name} agregado exitosamente`, 'success');
+        // 5. Enviar al servidor
+        const result = await addPatientService(csrfToken, patientPayload, api);
         
-        // Restaurar botón
-        saveButton.disabled = false;
-        saveButton.innerHTML = `
+        if (result.success) {
+            // 6. Manejar éxito
+            await handleSuccess(result, patientPayload);
+        } else {
+            // 7. Manejar error del servicio
+            await handleError(result.message, 5000);
+        }
+        
+    } catch (error) {
+        // 8. Manejar errores inesperados
+        console.error('Error inesperado:', error);
+        await handleError('Error inesperado al procesar la solicitud', 5000);
+    } finally {
+        // 9. Restaurar botón siempre
+        setLoadingState(saveButton, false, originalButtonContent);
+    }
+}
+
+function preparePatientPayload(formData) {
+    return {
+        // Datos para el servidor (sin campos calculados)
+        nombres: formData.get('nombres'),
+        apellidos: formData.get('apellidos'),
+        cedula_ecuatoriana: formData.get('cedula_ecuatoriana'),
+        fecha_nacimiento: formData.get('fecha_nacimiento'),
+        email: formData.get('email'),
+        telefono: formData.get('telefono'),
+        estado_civil: formData.get('estado_civil'),
+        direccion: formData.get('direccion'),
+        antecedentes_personales: formData.get('antecedentes_personales'),
+        alergias: formData.get('alergias'),
+        medicamentos_actuales: formData.get('medicamentos_actuales')
+    };
+}
+
+function createPatientDisplayData(serverResponse, patientPayload) {
+    console.log('ID del nuevo serverResponse:', serverResponse);   
+    const patientId = serverResponse.data ? serverResponse.data.id : 0; 
+    console.log('ID del nuevo paciente:', patientId);   
+    return {
+        // ID real del servidor
+        id: patientId,
+
+        // Datos calculados para la UI
+        name: `${patientPayload.apellidos}, ${patientPayload.nombres}`,
+        age: 25,// calculateAge(patientPayload.fecha_nacimiento),
+        condition: 'Nuevo paciente',
+        priority: 'normal',
+        phone: patientPayload.telefono,
+        
+        // // Datos originales del formulario
+        ...patientPayload,
+        
+        // // Cualquier dato adicional del servidor
+        ...serverResponse
+    };
+}
+
+function setLoadingState(button, isLoading, originalContent = null) {
+    if (isLoading) {
+        button.disabled = true;
+        button.innerHTML = `
+            <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+            Guardando...
+        `;
+    } else {
+        button.disabled = false;
+        button.innerHTML = originalContent || `
             <i class="fas fa-save mr-2"></i>
             Guardar Paciente
         `;
-        
-        // Ocultar panel y actualizar lista
-        setTimeout(() => {
-            hideAddPatientPanel();
-            renderPatients();
-        }, 1000);
-        
-    }, 2000);
+    }
 }
+
+async function handleSuccess(result, patientPayload) {
+    // Crear objeto paciente completo para la UI
+    const patientData = createPatientDisplayData(result.data, patientPayload);
+    console.log('Datos del paciente creado:', patientData);
+    // Actualizar lista local
+    if (window.patientsData) {
+        window.patientsData.unshift(patientData);
+        window.filteredPatients = [...window.patientsData];
+    }
+    
+    showModalNotification(`Paciente ${patientData.name} agregado exitosamente`, 'success');
+    
+    // Ocultar panel y actualizar lista después de un breve delay
+    setTimeout(() => {
+        if (typeof hideAddPatientPanel === 'function') {
+            hideAddPatientPanel();
+        }
+        if (typeof renderPatients === 'function') {
+            renderPatients();
+        }
+    }, 1000);
+}
+
+async function handleError(errorMessage, duration = 5000) {
+    await showModalNotification(`Error al agregar paciente: ${errorMessage}`, 'error', duration);
+}
+
+function getCSRFToken() {
+    const tokenElement = document.querySelector('[name=csrfmiddlewaretoken]');
+    if (!tokenElement) {
+        console.warn('Token CSRF no encontrado');
+        return '';
+    }
+    return tokenElement.value;
+}
+
+
+
 
 function calculateAge(birthDate) {
     const today = new Date();
@@ -1961,39 +1390,55 @@ function saveAllAppointments() {
     }, 1000);
 }
 
-function showModalNotification(message, type = 'info') {
-    const container = document.getElementById('notificationContainer');
-    
-    const notification = document.createElement('div');
-    notification.className = `modal-notification ${type}`;
-    
-    const icons = {
-        success: 'fas fa-check-circle',
-        error: 'fas fa-times-circle',
-        info: 'fas fa-info-circle',
-        warning: 'fas fa-exclamation-triangle'
-    };
-    
-    notification.innerHTML = `
-        <i class="${icons[type]}"></i>
-        <span>${message}</span>
-    `;
-    
-    container.appendChild(notification);
-    
-    // Remover después de 3 segundos
-    setTimeout(() => {
-        if (container.contains(notification)) {
-            notification.style.animation = 'slideOutRight 0.3s ease-out forwards';
-            setTimeout(() => {
-                if (container.contains(notification)) {
-                    container.removeChild(notification);
-                }
-            }, 300);
-        }
-    }, 1000);
-}
 
+function showModalNotification(message, type = 'info', duration = 3000) {
+
+    return new Promise(resolve => {
+        const container = document.getElementById('notificationContainer');
+
+        container.classList.remove('hidden'); 
+        
+        const notification = document.createElement('div');
+        notification.className = `modal-notification ${type}`;
+        notification.classList.remove('hidden'); 
+        
+        const icons = {
+            success: 'fas fa-check-circle',
+            error: 'fas fa-times-circle',
+            info: 'fas fa-info-circle',
+            warning: 'fas fa-exclamation-triangle'
+        };
+        
+        notification.innerHTML = `
+            <i class="${icons[type]}"></i>
+            <span>${message}</span>
+        `;
+        
+        container.appendChild(notification);
+
+        setTimeout(() => {
+
+            if (container.contains(notification)) {
+
+                notification.style.animation = 'slideOutRight 0.3s ease-out forwards';
+
+                setTimeout(() => {
+                    if (container.contains(notification)) {
+                        container.removeChild(notification);
+                    }
+
+                    if (container.children.length === 0) {
+                        container.classList.add('hidden');
+                    }
+ 
+                    resolve(); 
+                }, 300); 
+            } else {
+                resolve(); 
+            }
+        }, duration);
+    });
+}
 function clearModalNotifications() {
     const container = document.getElementById('notificationContainer');
     if (container) {

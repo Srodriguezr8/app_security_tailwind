@@ -227,7 +227,7 @@
                 const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
                 const requestData = { group_id: groupId };
 
-                const response = await fetch('/security/get-group-menus/', {
+                const response = await fetch('/security/get_group_menus/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
