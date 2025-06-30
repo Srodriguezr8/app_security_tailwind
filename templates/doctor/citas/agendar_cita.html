@@ -1107,16 +1107,19 @@ function preparePatientPayload(formData) {
 }
 
 function createPatientDisplayData(serverResponse, patientPayload) {
-    console.log('ID del nuevo serverResponse:', serverResponse);   
     const patientId = serverResponse.data ? serverResponse.data.id : 0; 
-    console.log('ID del nuevo paciente:', patientId);   
-    return {
-        // ID real del servidor
-        id: patientId,
+    const nombresArray = patientPayload.nombres.split(' ');
+    const apellidosArray = patientPayload.apellidos.split(' ');
 
-        // Datos calculados para la UI
-        name: `${patientPayload.apellidos}, ${patientPayload.nombres}`,
-        age: 25,// calculateAge(patientPayload.fecha_nacimiento),
+    const nombreCapitalizado = capitalizeFirstLetter(nombresArray[0]);
+    const apellidoCapitalizado = capitalizeFirstLetter(apellidosArray[0]);
+
+    return {
+         id: patientId,
+
+        // Datos calculados para la UI, primera letra con mayuscula 
+        name: `${nombreCapitalizado} ${apellidoCapitalizado}`,
+        age: calculateAge(patientPayload.fecha_nacimiento),
         condition: 'Nuevo paciente',
         priority: 'normal',
         phone: patientPayload.telefono,
@@ -1127,6 +1130,13 @@ function createPatientDisplayData(serverResponse, patientPayload) {
         // // Cualquier dato adicional del servidor
         ...serverResponse
     };
+}
+
+function capitalizeFirstLetter(string) {
+    if (typeof string !== 'string' || string.length === 0) {
+        return ''; // Manejar casos de entrada no válida o vacía
+    }
+    return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
 }
 
 function setLoadingState(button, isLoading, originalContent = null) {
@@ -1150,9 +1160,9 @@ async function handleSuccess(result, patientPayload) {
     const patientData = createPatientDisplayData(result.data, patientPayload);
     console.log('Datos del paciente creado:', patientData);
     // Actualizar lista local
-    if (window.patientsData) {
-        window.patientsData.unshift(patientData);
-        window.filteredPatients = [...window.patientsData];
+    if (patientsData) {
+        patientsData.unshift(patientData);
+        filteredPatients = [...patientsData];
     }
     
     showModalNotification(`Paciente ${patientData.name} agregado exitosamente`, 'success');
