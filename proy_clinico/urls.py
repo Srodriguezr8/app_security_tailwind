@@ -29,5 +29,4 @@ urlpatterns = [
     path('doctor/', include('applications.doctor.urls', namespace='doctor')),
     path('core/', include('applications.core.urls', namespace='core')),
     path("__reload__/", include("django_browser_reload.urls")),
-    path('doctor/', include('applications.doctor.urls', namespace='doctor')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
