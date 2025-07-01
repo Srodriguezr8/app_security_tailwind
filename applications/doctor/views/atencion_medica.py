@@ -11,14 +11,14 @@ from applications.core.models import Paciente, Medicamento, Diagnostico
 from applications.doctor.forms.atencion import AtencionForm
 from applications.doctor.models import Atencion, DetalleAtencion
 from applications.security.components.mixin_crud import CreateViewMixin, DeleteViewMixin, ListViewMixin, \
-    PermissionMixin, UpdateViewMixin
+    PermissionMixin, SessionGroupMixin, UpdateViewMixin
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.db.models import Q
 
 from proy_clinico.util import save_audit
 
 
-class AtencionListView(PermissionMixin, ListViewMixin, ListView):
+class AtencionListView(SessionGroupMixin,PermissionMixin, ListViewMixin, ListView):
     template_name = 'doctor/atenciones/list.html'
     model = Atencion
     context_object_name = 'atenciones'
@@ -37,11 +37,12 @@ class AtencionListView(PermissionMixin, ListViewMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['create_url'] = reverse_lazy('doctor:atencion_create')
+       
 
         return context
 
 
-class AtencionCreateView(PermissionMixin, CreateViewMixin, CreateView):
+class AtencionCreateView(SessionGroupMixin,PermissionMixin, CreateViewMixin, CreateView):
     model = Atencion
     template_name = 'doctor/atenciones/form.html'
     form_class = AtencionForm
@@ -151,7 +152,7 @@ class AtencionCreateView(PermissionMixin, CreateViewMixin, CreateView):
             }, status=500)
 
 
-class AtencionUpdateView(PermissionMixin, UpdateViewMixin, UpdateView):
+class AtencionUpdateView(SessionGroupMixin,PermissionMixin, UpdateViewMixin, UpdateView):
     model = Atencion
     template_name = 'doctor/atenciones/form.html'
     form_class = AtencionForm
@@ -296,7 +297,7 @@ class AtencionUpdateView(PermissionMixin, UpdateViewMixin, UpdateView):
                 "msg": f"Error al actualizar la atención médica: {str(e)}"
             }, status=500)
 
-class AtencionDeleteView(PermissionMixin, DeleteViewMixin, DeleteView):
+class AtencionDeleteView(SessionGroupMixin,PermissionMixin, DeleteViewMixin, DeleteView):
     model = Atencion
     template_name = 'core/delete.html'
     success_url = reverse_lazy('doctor:atencion_list')

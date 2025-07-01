@@ -1,8 +1,7 @@
-{% extends 'home.html' %}
+{% extends 'base.html' %}
 <title>{% block title %}{{title}}{% endblock %}</title>
 {% block content %}
-    {% load static %}
-    {% include 'fragments/messages.html' %}
+
     <section class="dark:bg-principal mt-2">
         <div class="text-center" data-aos="fade-up" data-aos-delay="200">
             <div class="sm:pt-8 lg:pt-4">
@@ -218,10 +217,7 @@
                         <i class="fa-solid fa-users mr-2"></i> Ver Pacientes
                     </a>
 
-                    <a class="bg-blue-600 hover:bg-blue-700 text-black py-3 px-4 rounded-full flex items-center justify-center transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
-                        href="{% url 'home' %}">
-                        <i class="fa-solid fa-house"></i>
-                    </a>
+       
                 </div>
 
                 <!-- Statistics Summary -->

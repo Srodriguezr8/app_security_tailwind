@@ -2,6 +2,8 @@ from decimal import Decimal
 
 from django.utils import timezone
 from django.db import models
+from applications.core.models import Doctor, Especialidad
+from applications.core.utils.paciente import CondicionPacienteChoices, TipoCitaChoices
 from applications.doctor.utils.cita_medica import EstadoCitaChoices
 from applications.doctor.utils.doctor import DiaSemanaChoices
 from applications.doctor.utils.pago import MetodoPagoChoices, EstadoPagoChoices
@@ -50,6 +52,43 @@ class CitaMedica(models.Model):
 
     observaciones = models.TextField(verbose_name="Observaciones", blank=True, null=True)
 
+    # --- Nuevas Propiedades ---
+
+    # Condición del paciente para esta cita
+    # Nota: Si las "condiciones" son enfermedades o dolencias específicas,
+    # y quieres una lista extensible sin modificar el código,
+    # considera crear un modelo `Condicion` y un ForeignKey aquí.
+    # Por ahora, usamos un CharField con choices como lo pediste.
+    condicion = models.CharField(
+        max_length=50, # Ajusta la longitud máxima según tus necesidades
+        choices=CondicionPacienteChoices.choices,
+        blank=True, # Puede ser opcional, dependiendo de tu lógica
+        null=True, # Permite valores nulos en la BD
+        verbose_name="Condición o Motivo de la Cita",
+        help_text="Motivo principal o condición del paciente para esta cita."
+    )
+
+    # Relación con el modelo Doctor
+    medico = models.ForeignKey(Doctor, on_delete=models.SET_NULL, null=True, blank=True,
+                               verbose_name="Médico Asignado", related_name="citas_agendadas")
+    
+    # Relación con el modelo Especialidad
+    # NOTA IMPORTANTE: Si un médico puede tener varias especialidades, esta especialidad aquí
+    # debe ser una de las especialidades que el 'medico' asignado atiende.
+    # Esta relación es crucial para filtrar médicos por especialidad al agendar.
+    especialidad = models.ForeignKey(Especialidad, on_delete=models.SET_NULL, null=True, blank=True,
+                                     verbose_name="Especialidad de la Cita", related_name="citas_por_especialidad")
+
+    # Tipo de cita (Urgente, Normal, Seguimiento)
+    tipo_cita = models.CharField(
+        max_length=15, # 'seguimiento' es el más largo
+        choices=TipoCitaChoices.choices,
+        default=TipoCitaChoices.NORMAL, # Valor por defecto
+        verbose_name="Tipo de Cita",
+        help_text="Clasificación de la prioridad o propósito de la cita."
+    )
+
+
     def __str__(self):
         return f"{self.paciente.nombre_completo} - {self.fecha} {self.hora_cita}"
 
@@ -57,10 +96,18 @@ class CitaMedica(models.Model):
         ordering = ['fecha', 'hora_cita']
         indexes = [
             models.Index(fields=['fecha', 'hora_cita'], name='idx_fecha_hora'),
+            # Nuevos índices para mejorar el rendimiento en búsquedas comunes
+            models.Index(fields=['medico', 'fecha', 'hora_cita'], name='idx_medico_fecha_hora'),
+            models.Index(fields=['especialidad'], name='idx_especialidad'),
+            models.Index(fields=['tipo_cita'], name='idx_tipo_cita'),
+            models.Index(fields=['estado'], name='idx_estado_cita'),
         ]
         verbose_name = "Cita Médica"
         verbose_name_plural = "Citas Médicas"
-        unique_together = ('fecha', 'hora_cita')  # Previene duplicidad
+        unique_together = ('fecha', 'hora_cita', 'medico') # Añadido 'medico' para permitir que un médico solo tenga una cita a la vez
+
+
+
 
 class Atencion(models.Model):
     # Paciente que recibe esta atención médica

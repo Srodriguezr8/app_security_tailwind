@@ -153,8 +153,7 @@
             // Dispara un "reloj" (setTimeout) para dar tiempo al navegador
             setTimeout(() => {
                 const groupSelect = document.getElementById('groupSelected');
-                console.log('Intento de obtener groupSelected después de 500ms en DOMContentLoaded:', groupSelect);
-
+              
                 if (groupSelect) {
 
                     const djangoSelectedGroupId = "{{ selected_group_id|default:'' }}";
@@ -167,7 +166,6 @@
                             if (groupSelect.options[i].value == djangoSelectedGroupId) {
                                 groupSelect.value = djangoSelectedGroupId; // Establece el valor del select
                                 foundAndSelected = true;
-                                console.log('Grupo seleccionado por JavaScript basado en ID de Django:', djangoSelectedGroupId);
                                 break;
                             }
                         }
@@ -180,10 +178,8 @@
 
                     // Ahora, lee el valor REALMENTE seleccionado por el DOM después de cualquier ajuste
                     const finalSelectedGroupId = groupSelect.value;
-                    console.log('Valor de grupo seleccionado leído del DOM (groupSelect.value FINAL):', finalSelectedGroupId);
 
                     if (finalSelectedGroupId) { // Si hay un grupo seleccionado (no la opción vacía)
-                        console.log('Cargando y renderizando menús para el grupo seleccionado:', finalSelectedGroupId);
                         loadAndRenderMenus(finalSelectedGroupId);
                     } else {
                         console.warn('No hay un grupo seleccionado final, o la opción por defecto es vacía.');
@@ -227,7 +223,7 @@
                 const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
                 const requestData = { group_id: groupId };
 
-                const response = await fetch('/security/get-group-menus/', {
+                const response = await fetch('/security/get_group_menus/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

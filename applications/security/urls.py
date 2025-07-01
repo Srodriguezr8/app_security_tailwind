@@ -48,11 +48,11 @@ urlpatterns = [
 
 
   # list menus by grupos
-  path('get-group-menus/', get_group_menus, name='get_group_menus'),
-  path('test-group-menus/', test_group_menus, name='test_group_menus'),
+  path('get_group_menus/', get_group_menus, name='get_group_menus'),
 
-  # rutas de autenticacion
+  
+   # rutas de autenticacion
   path('logout/', signout, name='signout'),
   path('signin/', signin, name='signin'),
-  #path('signup/', signup, name='signup'),
+  
 ]
