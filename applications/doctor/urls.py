@@ -1,6 +1,6 @@
 from django.urls import path
 
-from applications.doctor.views.agenda_cita import AgendaCitaMedicaListView, add_patient_api
+from applications.doctor.views.agenda_cita import AgendaCitaMedicaListView, add_patient_api, patients_search_api
 from applications.doctor.views.atencion_medica import AtencionListView, AtencionCreateView, AtencionUpdateView, \
     AtencionDeleteView
 
@@ -15,4 +15,5 @@ urlpatterns = [
   # Citas
     path('agenda_cita/', AgendaCitaMedicaListView.as_view(), name="agenda_cita"),
     path('patient_create_api/', add_patient_api, name="patient_create_api"),
+    path('patients_search_api/', patients_search_api, name="patients_search_api"),
 ]

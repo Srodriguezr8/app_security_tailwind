@@ -23,8 +23,7 @@ class ListViewMixin(object):
     def get_context_data(self, **kwargs):
         request = self.request
         user = request.user  # 👈 Ahora sí defines 'user'
-        print("---------------------------------- get_context_data", user.is_superuser )
-        
+      
         
         context = super().get_context_data(**kwargs)
         context['title'] = f'{self.model._meta.verbose_name_plural}'
@@ -94,7 +93,6 @@ class PermissionMixin(object):
             if 'group_id' not in request.session:
                 return redirect('security:home')
             
-            print("********************************", user.is_superuser)
             if user.is_superuser:
                 return super().get(request, *args, **kwargs)
 

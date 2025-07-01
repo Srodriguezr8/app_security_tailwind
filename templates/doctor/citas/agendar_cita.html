@@ -326,6 +326,7 @@ let patientsData = [];
 let filteredPatients = [];
 let pendingAppointments = {};
 let isAddingPatient = false; // AGREGADO: Control del estado del panel
+let isLoadingPatients = false; // Cargando pacientes desde el servicio
 
 // Configuración de horarios
 const weeklyScheduleConfig = [
@@ -459,7 +460,11 @@ function formatTime(minutes) {
 // MODIFICADO: Inicialización - Modal oculto por defecto
 document.addEventListener('DOMContentLoaded', function() {
     initializeCalendar();
-    loadPatients();
+    // cargar pacientes después de un breve retraso para simular una llamada a la API
+    setTimeout(() => {
+          loadPatients();
+    }, 2000);
+
     setupEventListeners();
     
     // IMPORTANTE: Modal inicialmente oculto
@@ -477,12 +482,32 @@ function initializeCalendar() {
     renderCalendar();
 }
 
-function loadPatients() {
-    setTimeout(() => {
-        patientsData = [...mockPatients];
-        filteredPatients = [...patientsData];
-        // No renderizar pacientes hasta que se abra el modal
-    }, 800);
+// Carga de pacientes por defecto
+async function loadPatients() {
+    if (isLoadingPatients)  return; // Evitar múltiples cargas simultáneas
+    try {
+       
+        const params = {
+            limit: 50, 
+            order_by: '-id' 
+        };
+        csrfToken  = getCSRFToken();
+        const url = '/doctor/patients_search_api/'; 
+        isLoadingPatients = true;
+
+        result = await getPatientsService(csrfToken, params, url, 'GET');
+        if (result.success) {
+           filteredPatients = processPatientsData(result.data);
+        } else {
+            console.error('Error al cargar pacientes:', result.message);
+            filteredPatients = [];
+        }
+
+    } catch (error) {
+        console.error('Error al cargar pacientes:', error);
+    } finally {
+        isLoadingPatients = false;
+    }   
 }
 
 function renderPatients() {
@@ -835,8 +860,9 @@ function setupEventListeners() {
     document.getElementById('cancelSchedule').addEventListener('click', closeModalAndReset);
     
     
-    // Buscador de pacientes
+    // Buscador de pacientes de la lista local
     document.getElementById('patientSearch').addEventListener('input', function(e) {
+        return; // Evitar que se ejecute si el panel de agregar paciente está visible
         const searchTerm = e.target.value.toLowerCase();
         filteredPatients = patientsData.filter(patient => 
             patient.name.toLowerCase().includes(searchTerm) ||
@@ -844,7 +870,45 @@ function setupEventListeners() {
         );
         renderPatients();
     });
+
+      // Buscador de pacientes de la lista remota
+    document.getElementById('patientSearch').addEventListener('keyup', async function(e) {
+        if (e.key !== 'Enter') return;
+        if (isAddingPatient || isLoadingPatients) return;
+
+        const searchTerm = (e.target.value || '').toLowerCase().trim();
+        if (searchTerm.length < 3) {
+            showModalNotification('Por favor ingresa al menos 3 caracteres para buscar.', 'info');
+            return;
+        }
+
+
+        setLoadingState(e, true);
+        isLoadingPatients = true;
+        const url = '/doctor/patients_search_api/'; // URL del servicio de búsqueda
+        const csrfToken = getCSRFToken();
+
+        try {
+            searchData = { search: searchTerm };
+                 result = await getPatientsService(csrfToken, searchData, url, 'GET');
+
+            if (!result.success) {
+                throw new Error(result.message || 'Error al buscar pacientes');
+            }
+
+            filteredPatients = processPatientsData(result.data);
+            renderPatients(); 
+
+        } catch (error) {
+            await handleError('[ERR:884]Error al consultar pacientes: ' + error.message, 7000);
+        } finally {
+            setLoadingState(e, false);
+            isLoadingPatients = false; 
+        }
+
+    });
     
+
     // Botón guardar
     document.getElementById('saveSchedule').addEventListener('click', saveAllAppointments);
     
@@ -859,6 +923,29 @@ function setupEventListeners() {
     
     // Validación en tiempo real
     setupFormValidation();
+}
+
+  // convierte los datos crudos de pacientes en un formato más manejable
+function processPatientsData(rawPatients) {
+    if (!Array.isArray(rawPatients)) {
+        console.warn('processPatientsData recibió un tipo de dato no array:', rawPatients);
+        return []; // Retorna un array vacío si no es un array válido
+    }
+
+    return rawPatients.map(patient => {
+        // Asegúrate de que capitalizeFirstLetter y calculateAge estén definidas globalmente o importadas
+        const nombreCapitalizado = patient.nombres ? capitalizeFirstLetter(patient.nombres.split(' ')[0]) : '';
+        const apellidoCapitalizado = patient.apellidos ? capitalizeFirstLetter(patient.apellidos.split(' ')[0]) : '';
+        const fullName = `${nombreCapitalizado} ${apellidoCapitalizado}`.trim();
+
+        const age = calculateAge(patient.fecha_nacimiento);
+        
+        return {
+            ...patient, // Copia todas las propiedades originales
+            name: fullName, // Añade la propiedad 'name' formateada
+            age: age // Añade la propiedad 'age' calculada
+        };
+    });
 }
 
 // MODIFICADO: Función para mostrar panel de agregar paciente
@@ -1042,7 +1129,6 @@ function validateForm() {
     return isValid;
 }
 
-
 async function handleAddPatientSubmit(e) {
     e.preventDefault();
     
@@ -1057,6 +1143,8 @@ async function handleAddPatientSubmit(e) {
     
     try {
         // 2. Mostrar estado de carga
+        isAddingPatient = true;
+        clearFormErrors();
         setLoadingState(saveButton, true);
         showModalNotification('Enviando datos al servidor...', 'info');
         
@@ -1066,11 +1154,11 @@ async function handleAddPatientSubmit(e) {
         
         // 4. Obtener token CSRF y API endpoint
         const csrfToken = getCSRFToken();
-        const api = '/doctor/patient_create_api/'; // Endpoint correcto para pacientes
+        const api = '/doctor/patient_create_api/';
         
         // 5. Enviar al servidor
-        const result = await addPatientService(csrfToken, patientPayload, api);
-        
+        const result = await savePatientService(csrfToken, patientPayload, api, 'POST');
+
         if (result.success) {
             // 6. Manejar éxito
             await handleSuccess(result, patientPayload);
@@ -1081,11 +1169,11 @@ async function handleAddPatientSubmit(e) {
         
     } catch (error) {
         // 8. Manejar errores inesperados
-        console.error('Error inesperado:', error);
-        await handleError('Error inesperado al procesar la solicitud', 5000);
+        await handleError('[ERR:1129]Error inesperado al procesar la solicitud' + error, 7000);
     } finally {
         // 9. Restaurar botón siempre
         setLoadingState(saveButton, false, originalButtonContent);
+        isAddingPatient = false; // Restaurar estado
     }
 }
 
@@ -1158,7 +1246,6 @@ function setLoadingState(button, isLoading, originalContent = null) {
 async function handleSuccess(result, patientPayload) {
     // Crear objeto paciente completo para la UI
     const patientData = createPatientDisplayData(result.data, patientPayload);
-    console.log('Datos del paciente creado:', patientData);
     // Actualizar lista local
     if (patientsData) {
         patientsData.unshift(patientData);
@@ -1179,7 +1266,7 @@ async function handleSuccess(result, patientPayload) {
 }
 
 async function handleError(errorMessage, duration = 5000) {
-    await showModalNotification(`Error al agregar paciente: ${errorMessage}`, 'error', duration);
+    await showModalNotification(`${errorMessage}`, 'error', duration);
 }
 
 function getCSRFToken() {
@@ -1190,9 +1277,6 @@ function getCSRFToken() {
     }
     return tokenElement.value;
 }
-
-
-
 
 function calculateAge(birthDate) {
     const today = new Date();
@@ -1207,11 +1291,13 @@ function calculateAge(birthDate) {
     return age;
 }
 
+
+
 // Funciones de drag and drop
 function handleDragStart(e) {
     draggedPatient = {
         id: e.target.dataset.patientId,
-        data: patientsData.find(p => p.id == e.target.dataset.patientId)
+        data: filteredPatients.find(p => p.id == e.target.dataset.patientId)
     };
     e.target.classList.add('dragging');
 }
@@ -1252,7 +1338,13 @@ function handleDrop(e) {
     addAppointmentDirectly(draggedPatient.data, date, time);
 }
 
+
+
+
+
 function addAppointmentDirectly(patient, date, time) {
+    
+
     if (!pendingAppointments[date]) {
         pendingAppointments[date] = [];
     }
@@ -1273,7 +1365,8 @@ function addAppointmentDirectly(patient, date, time) {
     };
     
     pendingAppointments[date].push(appointmentData);
-    
+
+    console.log('Agregando cita directamente:', appointmentData);
     if (selectedDate && selectedDate.toISOString().split('T')[0] === date) {
         renderScheduleGrid(selectedDate);
         renderPatients();
@@ -1535,5 +1628,7 @@ function generateMockScheduleData() {
         }
     });
 }
+
+
 </script>
 {% endblock %}
