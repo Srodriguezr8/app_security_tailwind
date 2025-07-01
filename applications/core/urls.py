@@ -3,6 +3,7 @@ from applications.core.views.cargo import CargoCreateView, CargoDeleteView, Carg
 from applications.core.views.diagnostico import DiagnosticoCreateView, DiagnosticoDeleteView, DiagnosticoListView, DiagnosticoUpdateView
 from applications.core.views.doctor import DoctorCreateView, DoctorDeleteView, DoctorListView, DoctorUpdateView, EspecialidadDoctorView
 from applications.core.views.paciente import paciente_find
+from applications.core.views.pagos import PagosPendientesListView, RealizarPagoView
 
 app_name='core' # define un espacio de nombre para la aplicacion
 urlpatterns = [
@@ -28,5 +29,11 @@ urlpatterns = [
     path('doctor_delete/<int:pk>/', DoctorDeleteView.as_view(),name='doctor_delete'),
     path('doctor/<int:pk>/especialidades/', EspecialidadDoctorView.as_view(),name='doctor_especialidades'),
 
-
+    #Pagos
+    path('pagos/', PagosPendientesListView.as_view(), name='pagos_pendientes'),
+    path('realizar/<int:pk>/', RealizarPagoView.as_view(), name='realizar_pago'),
 ]
+
+
+
+

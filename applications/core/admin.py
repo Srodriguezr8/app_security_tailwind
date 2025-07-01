@@ -5,7 +5,7 @@ from django.utils.html import format_html
 from applications.core.models import (
     TipoSangre, Paciente, Especialidad, Doctor, Cargo, Empleado,
     TipoMedicamento, MarcaMedicamento, Medicamento,
-    Diagnostico, TipoGasto, GastoMensual, FotoPaciente
+    Diagnostico, TipoGasto, GastoMensual, FotoPaciente,PagoPendiente
 )
 
 @admin.register(TipoSangre)
@@ -103,3 +103,10 @@ class FotoPacienteAdmin(admin.ModelAdmin):
     list_display = ('paciente', 'fecha_subida', 'descripcion')
     search_fields = ('paciente__nombres', 'paciente__apellidos')
     list_filter = ('fecha_subida', 'paciente')
+
+#Pagos
+@admin.register(PagoPendiente)
+class PagoPendienteAdmin(admin.ModelAdmin):
+    list_display = ('usuario', 'descripcion', 'monto', 'pagado', 'fecha')
+    list_filter = ('pagado',)
+    search_fields = ('usuario__username', 'descripcion')

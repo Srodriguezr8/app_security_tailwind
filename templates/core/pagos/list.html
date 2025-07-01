@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card p-4 mx-auto mt-10 w-3/5">
+    <h2 class="text-2xl mb-4 font-bold">Pagos Pendientes</h2>
+    <table class="min-w-full">
+        <thead>
+            <tr>
+                <th class="font-bold">Descripción</th>
+                <th class="font-bold">Monto</th>
+                <th class="font-bold text-right">Acción</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for pago in pagos %}
+            <tr>
+                <td>{{ pago.descripcion }}</td>
+                <td>${{ pago.monto|floatformat:2 }}</td>
+                <td class="text-right">
+                    <div id="paypal-button-container-{{ pago.id }}"></div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="3">No tienes pagos pendientes.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- SDK de PayPal Sandbox (tu Client ID de sandbox) -->
+<script src="https://www.paypal.com/sdk/js?client-id=Ab3m2dl65qkfOzQsbPZ3ZDSbT2gpwo2Lb__V3V7CrbSsVnUmtUu7l60zD1JRiJbMqeWP9yB5C-CYDOM7&currency=USD&enable-funding=card"></script>
+<script>
+    {% for pago in pagos %}
+    paypal.Buttons({
+        style: {
+            color: 'blue',
+            shape: 'pill',
+            label: 'pay',
+            tagline: false,
+            layout: 'vertical',
+            height: 40
+        },
+        createOrder: function(data, actions) {
+            return actions.order.create({
+                purchase_units: [{
+                    amount: {
+                        value: '{{ pago.monto|floatformat:2 }}'
+                    },
+                    description: '{{ pago.descripcion }}'
+                }]
+            });
+        },
+        onApprove: function(data, actions) {
+            return actions.order.capture().then(function(details) {
+                // Marca como pagado en el backend solo si la transacción fue exitosa
+                return fetch("{% url 'core:realizar_pago' pago.id %}", {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if(data.ok){
+                        document.getElementById('paypal-button-container-{{ pago.id }}').innerHTML = "Pagado ✅";
+                    } else {
+                        alert('Ocurrió un error al marcar el pago como pagado');
+                    }
+                });
+            });
+        }
+    }).render('#paypal-button-container-{{ pago.id }}');
+    {% endfor %}
+</script>
+{% endblock %}

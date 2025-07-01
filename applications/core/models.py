@@ -6,6 +6,7 @@ from applications.core.utils.medicamento import ViaAdministracion
 from applications.core.utils.paciente import EstadoCivilChoices, SexoChoices
 from proy_clinico.util import valida_cedula, valida_ruc
 from django.utils import timezone
+from django.conf import settings
 
 """Modelo que representa los diferentes tipos de sangre."""
 class TipoSangre(models.Model):
@@ -712,3 +713,14 @@ class FotoPaciente(models.Model):
 
     def __str__(self):
         return f"Foto de {self.paciente} ({self.fecha_subida.strftime('%Y-%m-%d %H:%M')})"
+
+    #Pagos modelo
+class PagoPendiente(models.Model):
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    descripcion = models.CharField(max_length=200)
+    monto = models.DecimalField(max_digits=10, decimal_places=2)
+    pagado = models.BooleanField(default=False)
+    fecha = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.descripcion} - ${self.monto} ({'Pagado' if self.pagado else 'Pendiente'})"

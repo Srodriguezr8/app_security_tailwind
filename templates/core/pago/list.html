@@ -1,0 +1,54 @@
+{% extends 'home.html' %}
+{% block content %}
+<h2>Pagos</h2>
+<a href="{% url 'doctor:pago_create' %}" class="btn btn-success">Nuevo Pago</a>
+<table class="table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Atención</th>
+            <th>Método</th>
+            <th>Monto</th>
+            <th>Estado</th>
+            <th>Fecha de Pago</th>
+            <th>Pagador</th>
+            <th>Referencia</th>
+            <th>Evidencia</th>
+            <th>Observaciones</th>
+            <th>Activo</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for pago in pagos %}
+        <tr>
+            <td>{{ pago.id }}</td>
+            <td>{{ pago.atencion }}</td>
+            <td>{{ pago.get_metodo_pago_display }}</td>
+            <td>${{ pago.monto_total }}</td>
+            <td>{{ pago.get_estado_display }}</td>
+            <td>{% if pago.fecha_pago %}{{ pago.fecha_pago|date:"d/m/Y H:i" }}{% endif %}</td>
+            <td>{{ pago.nombre_pagador }}</td>
+            <td>{{ pago.referencia_externa }}</td>
+            <td>
+                {% if pago.evidencia_pago %}
+                    <a href="{{ pago.evidencia_pago.url }}" target="_blank">Ver</a>
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+            <td>{{ pago.observaciones }}</td>
+            <td>
+                {% if pago.activo %}✔{% else %}✖{% endif %}
+            </td>
+            <td>
+                <a href="{% url 'doctor:pago_update' pago.id %}" class="btn btn-sm btn-warning">Editar</a>
+                <a href="{% url 'doctor:pago_delete' pago.id %}" class="btn btn-sm btn-danger">Eliminar</a>
+            </td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="12">No hay pagos registrados.</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

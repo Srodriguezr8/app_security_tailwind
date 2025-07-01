@@ -235,7 +235,7 @@
     </div>
 
             <!-- Modal Agregar Paciente si no existe -->
-            {% include "fragments/modal_paciente.html"  %}
+            
         </div>
         <!-- Consultas Anteriores -->
           <div id="content-consultas" class="tab-content p-8">
@@ -369,27 +369,66 @@
                             </div>
                             Evaluación Clínica
                         </h3>
-
-                        <div class="space-y-6">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Motivo de Consulta *</label>
-                                    <textarea id="id_motivo_consulta" class="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent" rows="3" placeholder="Ingrese el motivo de la consulta...">{{ atencion.motivo_consulta|default:'' }}</textarea>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Síntomas *</label>
-                                    <textarea id="id_sintomas" class="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent" rows="3" placeholder="Describa los síntomas presentados...">{{ atencion.sintomas|default:'' }}</textarea>
-                                </div>
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">Examen Físico</label>
-                                <textarea id="id_examen_fisico" class="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent" rows="4" placeholder="Hallazgos del examen físico...">{{ atencion.examen_fisico|default:'' }}</textarea>
-                            </div>
-                           <!-- diagnosticos-->
-                           <div class="bg-pink-50 border border-gray-300 rounded-lg ">
+<!-- Transcriptor -->
+                    <div class="relative">
+                        <textarea id="id_motivo_consulta"
+                            class="w-full p-4 pr-14 pb-16 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            rows="3"
+                            placeholder="Ingrese el motivo de la consulta...">{{ atencion.motivo_consulta|default:'' }}</textarea>
+                        <button type="button"
+                            class="btn-mic absolute right-4 bg-transparent hover:bg-gray-100 text-black rounded-full p-3 focus:outline-none flex items-center justify-center transition-all duration-200"
+                            style="bottom: 12px;"
+                            title="Dictar por voz"
+                            data-textarea="id_motivo_consulta"
+                            data-grabando="grabando-motivo">
+                            <!-- ICONO MICRÓFONO SVG -->
+                            <svg xmlns="http://www.w3.org/2000/svg"
+                                class="w-6 h-6 pointer-events-none transition-colors duration-200"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M12 15a3 3 0 0 0 3-3V7a3 3 0 0 0-6 0v5a3 3 0 0 0 3 3zm5-3v1a5 5 0 0 1-10 0v-1m5 8v-2m0 0H9m3 0h3"/>
+                            </svg>
+                        </button>
+                        <span id="grabando-motivo"
+                            class="absolute right-4 bg-white px-2 py-1 text-sm text-green-600 rounded shadow hidden"
+                            style="bottom: 52px;">🎙 Grabando...</span>
+                    </div>
+<!-- Transcriptor -->
+                    <div class="relative">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Examen Físico</label>
+                            <textarea id="id_examen_fisico"
+                                class="w-full p-4 pr-14 pb-16 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                rows="4"
+                                placeholder="Hallazgos del examen físico...">{{ atencion.examen_fisico|default:'' }}</textarea>
+                            <button type="button"
+                                class="btn-mic absolute right-4 bg-transparent hover:bg-gray-100 text-black rounded-full p-3 focus:outline-none flex items-center justify-center transition-all duration-200"
+                                style="bottom: 12px;"
+                                title="Dictar por voz"
+                                data-textarea="id_examen_fisico"
+                                data-grabando="grabando-examen-fisico">
+                                <!-- ICONO MICRÓFONO SVG -->
+                                <svg xmlns="http://www.w3.org/2000/svg"
+                                    class="w-6 h-6 pointer-events-none transition-colors duration-200"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                    stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M12 15a3 3 0 0 0 3-3V7a3 3 0 0 0-6 0v5a3 3 0 0 0 3 3zm5-3v1a5 5 0 0 1-10 0v-1m5 8v-2m0 0H9m3 0h3"/>
+                                </svg>
+                            </button>
+                            <span id="grabando-examen-fisico"
+                                class="absolute right-4 bg-white px-2 py-1 text-sm text-green-600 rounded shadow hidden"
+                                style="bottom: 52px;">🎙 Grabando...</span>
+                        </div>
+<!-- Transcriptor -->
+                        <!-- diagnosticos-->
+                        <div class="bg-pink-50 border border-gray-300 rounded-lg ">
                              <label class="block text-sm font-semibold text-pink-800 mb-2">Diagnotico(s) *</label>
-                              <div class="bg-gray-50 p-4 rounded-xl">
+                            <div class="bg-gray-50 p-4 rounded-xl">
                                 <div class="flex items-center space-x-3 mb-3">
                                     <select
                                         id="id_diagnostico"
@@ -401,7 +440,7 @@
                                                 value="{{ diagnostico.id }}"
                                                 {% if atencion and diagnostico in atencion.diagnostico.all %}selected{% endif %}
                                                 title="{{ diagnostico.datos_adicionales|default:'' }}">
-                                                 {{ diagnostico.codigo }} - {{ diagnostico.descripcion }}
+                                                {{ diagnostico.codigo }} - {{ diagnostico.descripcion }}
                                             </option>
                                         {% empty %}
                                             <option value="" disabled>No hay diagnósticos disponibles</option>
@@ -413,9 +452,9 @@
                                 </div>
                             </div>
                             </div>
-                           <!-- fin diagnosticos-->
+                        <!-- fin diagnosticos-->
 
-                     </div>
+                    </div>
                     </div>
 
                     <!-- Plan Terapéutico -->
@@ -428,25 +467,95 @@
                             </div>
                             Plan Terapéutico
                         </h3>
-
-                        <div class="space-y-6">
-                            <div>
+<!-- Transcriptor -->
+                            <div class="relative">
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">Plan de Tratamiento *</label>
-                                <textarea id="id_tratamiento" class="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent" rows="4" placeholder="Detalle el plan de tratamiento...">{{ atencion.tratamiento|default:'' }}</textarea>
+                                <textarea id="id_tratamiento"
+                                    class="w-full p-4 pr-14 pb-16 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    rows="4"
+                                    placeholder="Detalle el plan de tratamiento...">{{ atencion.tratamiento|default:'' }}</textarea>
+                                <button type="button"
+                                    class="btn-mic absolute right-4 bg-transparent hover:bg-gray-100 text-black rounded-full p-3 focus:outline-none flex items-center justify-center transition-all duration-200"
+                                    style="bottom: 12px;"
+                                    title="Dictar por voz"
+                                    data-textarea="id_tratamiento"
+                                    data-grabando="grabando-tratamiento">
+                                    <!-- ICONO MICRÓFONO SVG -->
+                                    <svg xmlns="http://www.w3.org/2000/svg"
+                                        class="w-6 h-6 pointer-events-none transition-colors duration-200"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                        stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M12 15a3 3 0 0 0 3-3V7a3 3 0 0 0-6 0v5a3 3 0 0 0 3 3zm5-3v1a5 5 0 0 1-10 0v-1m5 8v-2m0 0H9m3 0h3"/>
+                                    </svg>
+                                </button>
+                                <span id="grabando-tratamiento"
+                                    class="absolute right-4 bg-white px-2 py-1 text-sm text-green-600 rounded shadow hidden"
+                                    style="bottom: 52px;">🎙 Grabando...</span>
                             </div>
 
-                            <div>
+<!-- Transcriptor -->
+                            <div class="relative">
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">Exámenes Solicitados</label>
-                                <textarea id="id_examenes_enviados" class="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent" rows="3" placeholder="Lista de exámenes solicitados...">{{ atencion.examenes_enviados|default:'' }}</textarea>
+                                <textarea id="id_examenes_enviados"
+                                    class="w-full p-4 pr-14 pb-16 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    rows="3"
+                                    placeholder="Lista de exámenes solicitados...">{{ atencion.examenes_enviados|default:'' }}</textarea>
+                                <button type="button"
+                                    class="btn-mic absolute right-4 bg-transparent hover:bg-gray-100 text-black rounded-full p-3 focus:outline-none flex items-center justify-center transition-all duration-200"
+                                    style="bottom: 12px;"
+                                    title="Dictar por voz"
+                                    data-textarea="id_examenes_enviados"
+                                    data-grabando="grabando-examenes-enviados">
+                                    <!-- ICONO MICRÓFONO SVG -->
+                                    <svg xmlns="http://www.w3.org/2000/svg"
+                                        class="w-6 h-6 pointer-events-none transition-colors duration-200"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                        stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M12 15a3 3 0 0 0 3-3V7a3 3 0 0 0-6 0v5a3 3 0 0 0 3 3zm5-3v1a5 5 0 0 1-10 0v-1m5 8v-2m0 0H9m3 0h3"/>
+                                    </svg>
+                                </button>
+                                <span id="grabando-examenes-enviados"
+                                    class="absolute right-4 bg-white px-2 py-1 text-sm text-green-600 rounded shadow hidden"
+                                    style="bottom: 52px;">🎙 Grabando...</span>
                             </div>
 
-                            <div>
+<!-- Transcriptor -->
+                            <div class="relative">
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">Comentario Adicional</label>
-                                <textarea id="id_comentario_adicional" class="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent" rows="3" placeholder="Comentarios adicionales...">{{ atencion.comentario_adicional|default:'' }}</textarea>
+                                <textarea id="id_comentario_adicional"
+                                    class="w-full p-4 pr-14 pb-16 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    rows="3"
+                                    placeholder="Comentarios adicionales...">{{ atencion.comentario_adicional|default:'' }}</textarea>
+                                <button type="button"
+                                    class="btn-mic absolute right-4 bg-transparent hover:bg-gray-100 text-black rounded-full p-3 focus:outline-none flex items-center justify-center transition-all duration-200"
+                                    style="bottom: 12px;"
+                                    title="Dictar por voz"
+                                    data-textarea="id_comentario_adicional"
+                                    data-grabando="grabando-comentario-adicional">
+                                    <!-- ICONO MICRÓFONO SVG -->
+                                    <svg xmlns="http://www.w3.org/2000/svg"
+                                        class="w-6 h-6 pointer-events-none transition-colors duration-200"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                        stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M12 15a3 3 0 0 0 3-3V7a3 3 0 0 0-6 0v5a3 3 0 0 0 3 3zm5-3v1a5 5 0 0 1-10 0v-1m5 8v-2m0 0H9m3 0h3"/>
+                                    </svg>
+                                </button>
+                                <span id="grabando-comentario-adicional"
+                                    class="absolute right-4 bg-white px-2 py-1 text-sm text-green-600 rounded shadow hidden"
+                                    style="bottom: 52px;">🎙 Grabando...</span>
                             </div>
+<!-- Transcriptor -->
                         </div>
                     </div>
-
                     <!-- Prescripción de Medicamentos -->
                     <div class="bg-white rounded-2xl shadow-xl p-8">
                         <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
@@ -462,8 +571,8 @@
                         <div class="bg-gray-50 p-6 rounded-xl mb-6">
                             <h4 class="font-semibold text-gray-800 mb-4">Agregar Medicamento</h4>
                             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-                               <!-- select dinamico -->
-                                  <div>
+                            <!-- select dinamico -->
+                                <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">Medicamento *</label>
                                     <select id="medicamento-select" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500" name="medicamento_id" required>
                                         <option value="">Seleccione medicamento...</option>
@@ -781,10 +890,132 @@
  </style>
 
  <script>
+// ==============================
+// Chat Voz - Script Global 
+// ==============================
+document.addEventListener('DOMContentLoaded', function () {
+    const btnsMic = document.querySelectorAll('.btn-mic');
+
+    btnsMic.forEach(btn => {
+        let recognition;
+        let grabando = false;
+        let transcripcionFinal = '';
+
+        const textareaId = btn.getAttribute('data-textarea');
+        const grabandoId = btn.getAttribute('data-grabando');
+        const textarea = document.getElementById(textareaId);
+        const grabandoMsg = document.getElementById(grabandoId);
+
+        if ('webkitSpeechRecognition' in window) {
+            recognition = new webkitSpeechRecognition();
+        } else if (btn) {
+            btn.disabled = true;
+            btn.title = "Tu navegador no soporta dictado por voz";
+            return;
+        }
+
+        recognition.lang = 'es-ES';
+        recognition.continuous = true;
+        recognition.interimResults = true;
+
+        recognition.onstart = () => {
+            grabandoMsg?.classList.remove('hidden');
+            grabandoMsg.innerText = "🎙 Grabando...";
+            // Solo agrega el color de grabando
+            btn.classList.remove("bg-transparent", "text-black", "hover:bg-gray-100", "hover:text-gray-700");
+            btn.classList.add("bg-red-500", "text-white");
+        };
+
+        recognition.onend = () => {
+            grabandoMsg?.classList.add('hidden');
+            grabando = false;
+            // Quita el color de grabando y vuelve al original
+            btn.classList.remove("bg-red-500", "text-white");
+            btn.classList.add("bg-transparent", "text-black", "hover:bg-gray-100", "hover:text-gray-700");
+        };
+
+        recognition.onresult = (event) => {
+            let temporal = '';
+            for (let i = event.resultIndex; i < event.results.length; ++i) {
+                const transcript = event.results[i][0].transcript;
+                if (event.results[i].isFinal) {
+                    transcripcionFinal += transcript + ' ';
+                } else {
+                    temporal += transcript;
+                }
+            }
+            if (textarea) {
+                textarea.value = transcripcionFinal + temporal;
+                textarea.scrollTop = textarea.scrollHeight;
+            }
+        };
+
+        btn.addEventListener('click', () => {
+            if (!grabando) {
+                transcripcionFinal = textarea?.value || "";
+                recognition.start();
+                grabando = true;
+            } else {
+                recognition.stop();
+                grabando = false;
+            }
+        });
+    });
+});
+
+// ==============================
+// Chat Voz - Script Glonbal
+// ==============================
+
+// Botones para transcripcion
+document.addEventListener('DOMContentLoaded', function () {
+    const input = document.getElementById('nuevo-diagnostico-input');
+    const btn = document.getElementById('agregar-diagnostico-btn');
+    const lista = document.getElementById('diagnosticos-lista');
+    const hiddenInput = document.getElementById('diagnosticos_agregados');
+    let diagnosticos = [];
+
+    // Evento para agregar diagnóstico
+    btn.addEventListener('click', function () {
+        const texto = input.value.trim();
+        if (texto && !diagnosticos.includes(texto)) {
+            diagnosticos.push(texto);
+
+            // Crear el chip visual
+            const chip = document.createElement('span');
+            chip.className = 'bg-pink-100 text-pink-800 px-3 py-1 rounded-full flex items-center space-x-2 mb-1';
+            chip.innerHTML = `
+                <span>${texto}</span>
+                <button type="button" class="ml-2 text-pink-500 hover:text-red-700 font-bold focus:outline-none" title="Eliminar">&times;</button>
+            `;
+
+            // Botón para eliminar el chip
+            chip.querySelector('button').onclick = function () {
+                diagnosticos = diagnosticos.filter(d => d !== texto);
+                chip.remove();
+                hiddenInput.value = diagnosticos.join('|'); // actualiza el campo oculto
+            };
+
+            lista.appendChild(chip);
+            input.value = '';
+            input.focus();
+            hiddenInput.value = diagnosticos.join('|'); // actualiza el campo oculto
+        }
+    });
+
+    // Permite agregar con Enter
+    input.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            btn.click();
+        }
+    });
+});
+
  // Recibir el contexto del paciente desde Django
- const pacienteDesdeServidor = {{ paciente_json|safe }};
- const medicamentosDesdeServidor = {{ medicamentos_json|safe }};
- const modoEdicion = {{ modo_edicion|yesno:"true,false" }};
+const pacienteDesdeServidor = {{ paciente_json|safe }};
+const medicamentosDesdeServidor = {{ medicamentos_json|safe }};
+const modoEdicion = {{ modo_edicion|yesno:"true,false" }};
 
 // ==============================
 // SISTEMA DE ATENCIÓN MÉDICA - CÓDIGO ORGANIZADO
