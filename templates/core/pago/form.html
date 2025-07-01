@@ -1,0 +1,10 @@
+{% extends 'home.html' %}
+{% block content %}
+<h2>{% if object %}Editar{% else %}Nuevo{% endif %} Pago</h2>
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Guardar</button>
+    <a href="{% url 'doctor:pago_list' %}" class="btn btn-secondary">Cancelar</a>
+</form>
+{% endblock %}
