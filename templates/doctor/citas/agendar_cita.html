@@ -315,18 +315,25 @@
 {% endblock %}
 
 {% block js %}
-<script src="{% static 'js/doctor/save_patient.js' %}"></script>
+<script src="{% static 'js/doctor/management_patient.js' %}"></script>
 <script>
 // Variables globales
 let currentDate = new Date();
+const _idMedico = 1;
+const _idEspecialidad = 2;
 let selectedDate = null;
 let draggedPatient = null;
 let scheduleData = {};
 let patientsData = [];
 let filteredPatients = [];
 let pendingAppointments = {};
-let isAddingPatient = false; // AGREGADO: Control del estado del panel
+let scheduleDeleteData = {};
+let tipoCita = ['Normal', 'Urgente', 'Seguimiento'];
+let isAddingPatient = false; //  Control del estado del panel
 let isLoadingPatients = false; // Cargando pacientes desde el servicio
+let isSavingAppointment = false; //  Control del estado de guardado de citas
+let cachedAppointments = {};
+let isLoadingScheduleData = false; // Control de carga de horarios
 
 // Configuración de horarios
 const weeklyScheduleConfig = [
@@ -457,28 +464,27 @@ function formatTime(minutes) {
     return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
 }
 
-// MODIFICADO: Inicialización - Modal oculto por defecto
+
+// Inicialización de sistema de citas
 document.addEventListener('DOMContentLoaded', function() {
     initializeCalendar();
-    // cargar pacientes después de un breve retraso para simular una llamada a la API
+
+    // cargar pacientes la lista de pacientes después de 2 segundo
     setTimeout(() => {
           loadPatients();
     }, 2000);
-
+    
+    //  cosngiuración de  escucha de eventos
     setupEventListeners();
-    
-    // IMPORTANTE: Modal inicialmente oculto
-    document.getElementById('scheduleModal').classList.add('hidden');
-    
-    setTimeout(() => {
-        generateMockScheduleData();
-        generateDailyLimits();
-        renderCalendar();
-    }, 500);
 });
 
-function initializeCalendar() {
+async function initializeCalendar() {
+    currentDate = new Date();
     updateMonthDisplay();
+ 
+    await loadRealScheduleData(getParametersForSchedule(currentDate));
+    // generateMockScheduleData();
+    generateDailyLimits();
     renderCalendar();
 }
 
@@ -495,7 +501,7 @@ async function loadPatients() {
         const url = '/doctor/patients_search_api/'; 
         isLoadingPatients = true;
 
-        result = await getPatientsService(csrfToken, params, url, 'GET');
+        result = await getPatientsService(csrfToken, params, url);
         if (result.success) {
            filteredPatients = processPatientsData(result.data);
         } else {
@@ -594,27 +600,54 @@ function renderCalendar() {
     const calendarGrid = document.getElementById('calendarGrid');
     calendarGrid.innerHTML = '';
     
-    const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-    const startDate = new Date(firstDay);
-    const dayOfWeek = firstDay.getDay();
-    const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-    startDate.setDate(firstDay.getDate() - daysToSubtract);
+    // Obtener el primer día del mes actual que se está mostrando (currentDate)
+    const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
     
-    const today = new Date();
+    // Calcular el día de la semana del primer día del mes (0 = Domingo, 1 = Lunes, etc.)
+    // Ajustamos para que Lunes sea 0 si tu calendario empieza en Lunes, o el día que corresponda.
+    // getDay() devuelve 0 para domingo, 1 para lunes, etc.
+    // Si quieres que la semana empiece en Lunes (1), y domingo (0) al final, el ajuste sería:
+    let dayOfWeek = firstDayOfMonth.getDay();
+    // Si tu semana empieza en Lunes (lo más común en calendarios), necesitas que Lunes sea 0, Martes 1, etc.
+    // Si getDay() es 0 (Domingo), queremos que daysToSubtract sea 6 (para ir al lunes de la semana anterior).
+    // Si getDay() es 1 (Lunes), queremos que daysToSubtract sea 0.
+    // Si getDay() es 6 (Sábado), queremos que daysToSubtract sea 5.
+    const daysToSubtract = (dayOfWeek === 0) ? 6 : dayOfWeek - 1; // Ajuste para que la semana empiece en Lunes
+
+    // Calcular la fecha de inicio para dibujar el calendario (primer día visible)
+    const startDate = new Date(firstDayOfMonth);
+    startDate.setDate(firstDayOfMonth.getDate() - daysToSubtract);
     
-    for (let i = 0; i < 42; i++) {
-        const cellDate = new Date(startDate);
-        cellDate.setDate(startDate.getDate() + i);
+    // Calcular el último día del mes actual
+    const lastDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+
+    // Calcular el día de la semana del último día del mes actual
+    let lastDayOfMonthWeekDay = lastDayOfMonth.getDay();
+    // Ajustar para que si es domingo (0), sea 6, si es lunes (1), sea 0, etc.
+    const daysToAddAfterMonthEnd = (lastDayOfMonthWeekDay === 0) ? 0 : 7 - lastDayOfMonthWeekDay; // Días para completar la semana (hasta domingo si la semana termina en domingo)
+    
+    // Calcular la fecha final del calendario a dibujar (último día visible)
+    const endDateVisible = new Date(lastDayOfMonth);
+    endDateVisible.setDate(lastDayOfMonth.getDate() + daysToAddAfterMonthEnd);
+
+    const today = new Date(); // Fecha actual para marcar el día de hoy
+    
+    // Iterar para dibujar las celdas
+    // El bucle irá desde startDate hasta endDateVisible
+    let currentCellDate = new Date(startDate);
+    while (currentCellDate <= endDateVisible) {
+        const cellDate = new Date(currentCellDate); // Copia para la celda actual
         
         const dayCell = document.createElement('div');
-        dayCell.className = `calendar-day border border-gray-200 dark:border-gray-600 p-3`;
+        dayCell.className = `calendar-day border border-gray-100 dark:border-gray-400 p-3`;
         
         const isCurrentMonth = cellDate.getMonth() === currentDate.getMonth();
         const isToday = cellDate.toDateString() === today.toDateString();
-        const isActive = isDayActive(cellDate);
-        
+        const isActive = isDayActive(cellDate); // Esta función debería estar definida
+
+        // Aplicar clases CSS
         if (!isCurrentMonth) {
-            dayCell.classList.add('text-gray-400', 'dark:text-gray-600');
+            dayCell.classList.add('text-gray-600', 'dark:text-gray-900');
         }
         
         if (isToday) {
@@ -628,8 +661,10 @@ function renderCalendar() {
         }
         
         const dateKey = cellDate.toISOString().split('T')[0];
+        // Asegurarse de que scheduleData y dailyLimits estén disponibles globalmente
         const daySchedule = scheduleData[dateKey] || [];
-        const dayLimit = dailyLimits[dateKey] || { limit_cita_dia: scheduleConfig.limit_cita_dia, num_citas_dia: daySchedule.length };
+        // Asumiendo que scheduleConfig.limit_cita_dia es el límite por defecto si no hay un dailyLimit específico
+        const dayLimit = dailyLimits[dateKey] || { limit_cita_dia: scheduleConfig.limit_cita_dia, num_citas_dia: daySchedule.length }; 
         
         const occupancyPercentage = dayLimit.limit_cita_dia > 0 ? (daySchedule.length / dayLimit.limit_cita_dia) * 100 : 0;
         let progressClass = 'low';
@@ -639,7 +674,7 @@ function renderCalendar() {
         let dayContent = `
             <div class="flex justify-between items-start mb-2">
                 <span class="font-semibold ${isCurrentMonth ? 'text-gray-900 dark:text-white' : ''}">${cellDate.getDate()}</span>
-                 ${daySchedule.length > 0 ? `<span class="text-xs bg-blue-600 dark:bg-blue-800 text-white px-2 py-1 rounded-full">${daySchedule.length}</span>` : ''}
+                ${daySchedule.length > 0 ? `<span class="text-xs bg-blue-600 dark:bg-blue-800 text-white px-2 py-1 rounded-full">${daySchedule.length}</span>` : ''}
             </div>
         `;
         
@@ -676,14 +711,18 @@ function renderCalendar() {
         
         dayCell.innerHTML = dayContent;
         
-        // MODIFICADO: Solo agregar evento click si el día está activo
+        // Solo agregar evento click si el día está activo
         if (isActive) {
             dayCell.addEventListener('click', () => openScheduleModal(cellDate));
         }
         
         calendarGrid.appendChild(dayCell);
+        
+        // Avanzar al siguiente día
+        currentCellDate.setDate(currentCellDate.getDate() + 1);
     }
 }
+
 
 // MODIFICADO: Función para abrir modal solo cuando se hace clic en un día
 function openScheduleModal(date) {
@@ -830,22 +869,25 @@ function renderTimeSlots(gridId, slots, daySchedule, pendingForDay, dateKey) {
 
 function setupEventListeners() {
     // Navegación del calendario
-    document.getElementById('prevMonth').addEventListener('click', () => {
-        currentDate.setMonth(currentDate.getMonth() - 1);
-        updateMonthDisplay();
-        renderCalendar();
+    document.getElementById('prevMonth').addEventListener('click', () => {      
+        handleMonthNavigation('prev');
     });
     
     document.getElementById('nextMonth').addEventListener('click', () => {
-        currentDate.setMonth(currentDate.getMonth() + 1);
-        updateMonthDisplay();
-        renderCalendar();
+        handleMonthNavigation('next');
     });
     
-    document.getElementById('todayBtn').addEventListener('click', () => {
-        currentDate = new Date();
+    document.getElementById('todayBtn').addEventListener('click',  async () => {
+        
+        currentDate = new Date(); // Establece la fecha a hoy
         updateMonthDisplay();
+        
+        await loadRealScheduleData(getParametersForSchedule(currentDate));
+
         renderCalendar();
+        selectedDate = new Date(); // Asegúrate de que el día seleccionado vuelva a hoy
+        renderScheduleGrid(selectedDate);
+
     });
     
     // MODIFICADO: Modal de horarios - cerrar y resetear estado
@@ -910,8 +952,10 @@ function setupEventListeners() {
     
 
     // Botón guardar
-    document.getElementById('saveSchedule').addEventListener('click', saveAllAppointments);
-    
+    document.getElementById('saveSchedule').addEventListener('click',  async () => {
+        await saveAllAppointments();
+    });
+
     // MODIFICADO: Botón agregar paciente
     document.getElementById('addPatientBtn').addEventListener('click', showAddPatientPanel);
     
@@ -925,6 +969,24 @@ function setupEventListeners() {
     setupFormValidation();
 }
 
+
+
+// Función para manejar la navegación entre meses
+async function handleMonthNavigation(direction) {
+    if (direction === 'next') {
+        currentDate.setMonth(currentDate.getMonth() + 1);
+    } else { // 'prev'
+        currentDate.setMonth(currentDate.getMonth() - 1);
+    }
+    updateMonthDisplay(); // Actualiza el texto del mes en el UI
+
+    // Carga los datos para el nuevo rango de fechas
+    await loadRealScheduleData(getParametersForSchedule(currentDate));
+
+    // Vuelve a renderizar el calendario con los datos actualizados
+    renderCalendar();
+    renderScheduleGrid(selectedDate); // Asegúrate de que renderice el día seleccionado en el nuevo mes
+}
   // convierte los datos crudos de pacientes en un formato más manejable
 function processPatientsData(rawPatients) {
     if (!Array.isArray(rawPatients)) {
@@ -1138,14 +1200,14 @@ async function handleAddPatientSubmit(e) {
         return;
     }
     
-    const saveButton = document.getElementById('savePatient');
-    const originalButtonContent = saveButton.innerHTML;
+    const savePatientButton = document.getElementById('savePatient');
+    const originalButtonContent = savePatientButton.innerHTML;
     
     try {
         // 2. Mostrar estado de carga
         isAddingPatient = true;
         clearFormErrors();
-        setLoadingState(saveButton, true);
+        setLoadingState(savePatientButton, true);
         showModalNotification('Enviando datos al servidor...', 'info');
         
         // 3. Preparar datos del formulario
@@ -1162,6 +1224,7 @@ async function handleAddPatientSubmit(e) {
         if (result.success) {
             // 6. Manejar éxito
             await handleSuccess(result, patientPayload);
+            hideAddPatientPanel();
         } else {
             // 7. Manejar error del servicio
             await handleError(result.message, 5000);
@@ -1172,7 +1235,7 @@ async function handleAddPatientSubmit(e) {
         await handleError('[ERR:1129]Error inesperado al procesar la solicitud' + error, 7000);
     } finally {
         // 9. Restaurar botón siempre
-        setLoadingState(saveButton, false, originalButtonContent);
+        setLoadingState(savePatientButton, false, originalButtonContent);
         isAddingPatient = false; // Restaurar estado
     }
 }
@@ -1339,11 +1402,8 @@ function handleDrop(e) {
 }
 
 
-
-
-
+// Agrega una cita directamente al horario [pendingAppointments]
 function addAppointmentDirectly(patient, date, time) {
-    
 
     if (!pendingAppointments[date]) {
         pendingAppointments[date] = [];
@@ -1366,7 +1426,7 @@ function addAppointmentDirectly(patient, date, time) {
     
     pendingAppointments[date].push(appointmentData);
 
-    console.log('Agregando cita directamente:', appointmentData);
+
     if (selectedDate && selectedDate.toISOString().split('T')[0] === date) {
         renderScheduleGrid(selectedDate);
         renderPatients();
@@ -1375,6 +1435,7 @@ function addAppointmentDirectly(patient, date, time) {
     showModalNotification(`${patient.name} agendado para las ${time}`, 'success');
 }
 
+// Elimina una cita pendiente del horario [pendingAppointments]
 function removePendingAppointment(date, time) {
     if (pendingAppointments[date]) {
         const removedAppointment = pendingAppointments[date].find(apt => apt.hora_cita === time);
@@ -1394,9 +1455,14 @@ function removePendingAppointment(date, time) {
     }
 }
 
+// Elimina una cita existente del horario [scheduleData]
 function removeExistingAppointment(date, time) {
     if (scheduleData[date]) {
+
+        // Buscar la cita a eliminar
         const removedAppointment = scheduleData[date].find(apt => apt.time === time);
+        let  removedAppointmentCopy = { ...removedAppointment };
+        // Eliminar la cita del horario existente
         scheduleData[date] = scheduleData[date].filter(apt => apt.time !== time);
         
         if (scheduleData[date].length === 0) {
@@ -1407,44 +1473,65 @@ function removeExistingAppointment(date, time) {
             dailyLimits[date].num_citas_dia = scheduleData[date] ? scheduleData[date].length : 0;
         }
         
+         if (!scheduleDeleteData[date]) {
+            scheduleDeleteData[date] = [];
+         }
+
+        scheduleDeleteData[date].push(removedAppointmentCopy);
         renderCalendar();
+
         if (selectedDate && selectedDate.toISOString().split('T')[0] === date) {
             renderScheduleGrid(selectedDate);
             renderPatients();
         }
-        
+        console.log('Guardado para el backend:', removedAppointmentCopy);
         showModalNotification(`Cita de ${removedAppointment ? removedAppointment.patientName : 'paciente'} eliminada`, 'info');
     }
 }
 
-function saveAllAppointments() {
+// Solo guarda las citas pendientes del día seleccionado  
+ async function saveAllAppointments() {
+    if (isSavingAppointment)  return;
+
     const dateKey = selectedDate.toISOString().split('T')[0];
     const pendingForDay = pendingAppointments[dateKey] || [];
-    
-    if (pendingForDay.length === 0) {
+    if (!scheduleDeleteData[dateKey]) {
+        scheduleDeleteData[dateKey] = [];
+    }
+
+    if (pendingForDay.length === 0 &&  scheduleDeleteData[dateKey].length === 0) {
         showModalNotification('No hay cambios pendientes para guardar', 'info');
         return;
     }
     
-    const saveButton = document.getElementById('saveSchedule');
-    saveButton.disabled = true;
-    saveButton.innerHTML = `
-        <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-        Guardando...
-    `;
-    
-    showModalNotification('Enviando datos al servidor...', 'info');
-    
-    setTimeout(() => {
-        console.log('Datos enviados al servidor:', pendingForDay);
+    const saveScheduleButton = document.getElementById('saveSchedule');
+    const originalButtonContent = saveScheduleButton.innerHTML;
+
+    try {
+        // 2. Mostrar estado de carga
+        isSavingAppointment = true;
+        clearFormErrors();
+        setLoadingState(saveScheduleButton, true);
+        showModalNotification('Enviando datos al servidor...', 'info');
         
-        const serverResponse = {
-            success: true,
-            message: 'Citas guardadas exitosamente',
-            saved_appointments: pendingForDay.length
+        // 3. Preparar datos para enviar
+        // Transformar las citas pendientes al formato del backend
+        const transformedNewAppointments = pendingForDay.map(appointment => mapFrontendAppointmentToBackend(appointment, dateKey));
+        
+        const data = { delete_list: scheduleDeleteData[dateKey] || [], 
+            new_appointments:  transformedNewAppointments
         };
+
+        console.log('Nuevas citas:', data.new_appointments);
+        // 4. Obtener token CSRF y API endpoint
+        const csrfToken = getCSRFToken();
+        const api = '/doctor/appointments_create_api/';
         
-        if (serverResponse.success) {
+        // 5. Enviar al servidor
+        const result = await saveAllAppointmentsService(csrfToken, data, api);
+
+        if (result.success) {
+            console.log('Citas guardadas exitosamente:', result.data);
             if (!scheduleData[dateKey]) {
                 scheduleData[dateKey] = [];
             }
@@ -1471,30 +1558,95 @@ function saveAllAppointments() {
             renderCalendar();
             renderScheduleGrid(selectedDate);
             renderPatients();
-            
-            showModalNotification(`${pendingForDay.length} cita(s) guardada(s) exitosamente`, 'success');
-            
-            setTimeout(() => {
-                document.getElementById('scheduleModal').classList.add('hidden');
-                clearModalNotifications();
-                hideAddPatientPanel();
-            }, 1000);
-            
+
+            await showModalNotification('Citas guardadas exitosamente', 'success', 2000);
+            document.getElementById('scheduleModal').classList.add('hidden');
         } else {
-            showModalNotification('Error al guardar las citas. Intenta nuevamente.', 'error');
+            // 7. Manejar error del servicio (si result.success es false)
+            console.error('Error al guardar citas:', result);
+            
+            let errorMessage = result.message; // Mensaje general del backend
+            if (result.data && result.data.errors && result.data.errors.length > 0) {
+                errorMessage += "\nDetalles:\n" + result.data.errors.join('\n');
+            }
+
+            await handleError(errorMessage, 8000); 
+
         }
         
-        saveButton.disabled = false;
-        saveButton.innerHTML = `
-            <i class="fas fa-save"></i>
-            Guardar Cambios
-        `;
+    } catch (error) {
+        // 8. Manejar errores inesperados
+        await handleError('[ERR:1480]Error inesperado al procesar la solicitud \n' + error, 7000);
+    } finally {
+  
+        clearModalNotifications();
+        setLoadingState(saveScheduleButton, false, originalButtonContent);
+        isSavingAppointment = false; // Restaurar estado
+    }
+
+}
+
+// Esta función tomará un objeto de cita del frontend y lo transformará
+function mapFrontendAppointmentToBackend(frontendAppointment, dateKey) {
+    // Definir un mapeo para los tipos de cita si tu frontend usa algo diferente a Django choices
+    const tipoCitaMap = {
+        'Normal': 'normal', // Asumiendo que 'normal' en frontend es 'normal' en Django
+        'Urgente': 'urgente', // Asumiendo que 'urgente' en frontend es 'urgente' en Django
+        'Seguimiento': 'seguimiento'
+    };
+
+    // Definir un mapeo para las condiciones si tu frontend usa algo diferente a Django choices
+    // Idealmente, frontend y backend usarían los mismos valores para los choices para evitar esto.
+    const condicionMap = {
+        'Infección Respiratoria': 'infeccion_respiratoria', // Ejemplo de mapeo
+        'Hipertensión': 'hipertension',
+        'Diabetes': 'diabetes',
+        'Control Rutinario': 'control_rutinario',
+        'Cardiología': 'cardiologia',
+        'Seguimiento': 'seguimiento',
+        'Neurología': 'neurologia',
+        'Ginecología': 'ginecologia',
+        'Ortopedia': 'ortopedia',
+        'Dermatología': 'dermatologia',
+        'Oftalmología': 'oftalmologia',
+        'Otorrinolaringología': 'otorrinolaringologia',
+        'Pediatría': 'pediatria',
+        'Gastroenterología': 'gastroenterologia',
+
+    };
+
+    return {
+        // Campos directos o con cambio de nombre simple
+        paciente_id: frontendAppointment.paciente_id, 
+        orden : frontendAppointment.orden, 
+        medico_id: _idMedico,     // Coincide con 'medico' FK en Django
+        especialidad_id: _idEspecialidad, // Coincide con 'especialidad' FK en Django
         
-    }, 1000);
+        fecha: dateKey, // Backend espera 'fecha'
+        hora_cita: frontendAppointment.hora_cita,   // Backend espera 'hora_cita'
+
+        observaciones: frontendAppointment.observaciones || '', 
+        
+        // Selecciona una condición de forma aleatoria del mapeo
+        condition: (() => {
+            const keys = Object.keys(condicionMap);
+            const randomKey = keys[Math.floor(Math.random() * keys.length)];
+            return condicionMap[randomKey];
+        })(),
+
+        // Mapeo del tipo de cita de forma aleatoria
+        tipo_cita: (() => {
+            const tipos = Object.values(tipoCitaMap);
+            return tipos[Math.floor(Math.random() * tipos.length)];
+        })(),
+        
+    
+    };
 }
 
 
-function showModalNotification(message, type = 'info', duration = 3000) {
+
+function showModalNotification(message, type = 'info', duration = 2000) {
 
     return new Promise(resolve => {
         const container = document.getElementById('notificationContainer');
@@ -1542,6 +1694,7 @@ function showModalNotification(message, type = 'info', duration = 3000) {
         }, duration);
     });
 }
+
 function clearModalNotifications() {
     const container = document.getElementById('notificationContainer');
     if (container) {
@@ -1571,8 +1724,12 @@ function generateDailyLimits() {
             limit_cita_dia: dayLimit,
             num_citas_dia: currentCitas
         };
+
     }
+
+    console.log ('Límites diarios generados:', dailyLimits);
 }
+
 
 function generateMockScheduleData() {
     const today = new Date();
@@ -1627,6 +1784,100 @@ function generateMockScheduleData() {
             scheduleData[date].sort((a, b) => a.time.localeCompare(b.time));
         }
     });
+}
+
+
+function getParametersForSchedule(dateSelected) {
+    const startDate = new Date(dateSelected.getFullYear(), dateSelected.getMonth(), 1);
+    startDate.setDate(startDate.getDate() - 3);
+
+    const endDate = new Date(dateSelected.getFullYear(), dateSelected.getMonth() + 1, 5);
+
+    return {
+        start_date: startDate.toISOString().split('T')[0], // Formatea a 'YYYY-MM-DD'
+        end_date: endDate.toISOString().split('T')[0]     // Formatea a 'YYYY-MM-DD'
+    };
+}
+
+// Función para cargar citas reales desde el backend
+async function loadRealScheduleData(params) {
+    if (isLoadingScheduleData) return;
+    isLoadingScheduleData = true; // Evitar múltiples cargas simultáneas
+
+    const api = '/doctor/appointments_list/'; // Tu nueva API endpoint
+
+    try {
+        csrfToken = getCSRFToken(); // Obtener el token CSRF
+        console.log('Cargando citas desde el backend con los siguientes parámetros:', params);
+        // Usa tu servicio genérico para hacer la petición GET
+        const result = await loadRealScheduleService(csrfToken, params, api);
+
+        if (result.success) {
+            console.log('Citas cargadas del backend:', result.data);
+            const loadedCitas = result.data;
+            
+            // Transformar los datos del backend al formato que scheduleData espera
+            // y agruparlas por fecha
+            const newScheduleData = {};
+            loadedCitas.forEach(cita => {
+                const dateKey = cita.fecha; // 'YYYY-MM-DD'
+                const nombreCapitalizado = cita.nombres ? capitalizeFirstLetter(patient.nombres.split(' ')[0]) : '';
+                const apellidoCapitalizado = cita.apellidos ? capitalizeFirstLetter(patient.apellidos.split(' ')[0]) : '';
+                const fullName = `${nombreCapitalizado} ${apellidoCapitalizado}`.trim();
+                
+                if (!newScheduleData[dateKey]) {
+                    newScheduleData[dateKey] = [];
+                }
+                newScheduleData[dateKey].push({
+                    id: cita.id, // ID real de la base de datos
+                    patientId: cita.paciente_id,
+                    patientName: fullName,
+                    condition: cita.condicion, // Usar el valor del choice
+                    time: cita.hora_cita,
+                    priority: cita.tipo_cita, // Mapear a tu display de priority (urgent, follow-up, normal)
+                    date: dateKey, // Otros datos útiles que quieras guardar en el frontend
+                    medicoId: cita.medico_id,
+                    especialidadId: cita.especialidad_id,
+                    estado: cita.estado,
+                    observaciones: cita.observaciones,
+                    date: new Date(cita.fecha) // Convertir a objeto Date si es necesario
+                });
+            });
+
+            // Ordenar las citas por hora dentro de cada día
+            Object.keys(newScheduleData).forEach(dateKey => {
+                newScheduleData[dateKey].sort((a, b) => a.time.localeCompare(b.time));
+            });
+
+            // Fusionar con el scheduleData existente (si ya hay mock o data cargada)
+            // Esto es crucial para no sobrescribir citas pendientes o eliminadas que aún no se han guardado
+            Object.assign(scheduleData, newScheduleData);
+
+            // También puedes actualizar dailyLimits aquí si tu API devuelve el conteo
+            // O calcularlo en el frontend después de cargar las citas
+            Object.keys(newScheduleData).forEach(dateKey => {
+                if (!dailyLimits[dateKey]) {
+                    dailyLimits[dateKey] = { limit_cita_dia: scheduleConfig.limit_cita_dia, num_citas_dia: 0 };
+                }
+                dailyLimits[dateKey].num_citas_dia = newScheduleData[dateKey].length;
+            });
+
+
+            return newScheduleData;
+
+        } else {
+            console.error('Error al cargar citas del backend:', result.message);
+            showModalNotification(`Error al cargar citas: ${result.message}`, 'error');
+            return {};
+        }
+    } catch (error) {
+        console.error('Error en la función loadRealScheduleData:', error);
+        showModalNotification('Error inesperado al cargar citas. Intente recargar.', 'error');
+        return {};
+    } finally {
+        isLoadingScheduleData = false; // Restaurar estado
+    }
+
 }
 
 
