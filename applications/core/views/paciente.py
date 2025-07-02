@@ -2,11 +2,152 @@ from django.http import JsonResponse
 from django.db.models import Q
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth.decorators import login_required
+from applications.core.form.paciente import PacienteForm
 from applications.core.models import Paciente
 
+
+from django.contrib import messages
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from django.urls import reverse_lazy
+from django.views import View
+
+from applications.core.form.medicamento import MedicamentoForm
+from applications.core.models import  Medicamento
+from applications.security.components.mixin_crud import CreateViewMixin, DeleteViewMixin, ListViewMixin, PermissionMixin, UpdateViewMixin
+from django.views.generic import ListView, CreateView, UpdateView, DeleteView
+from django.db.models import Q
+
+
+class PacienteListView(PermissionMixin, ListViewMixin, ListView):
+    template_name = 'core/pacientes/list.html'
+    model = Paciente
+    context_object_name = 'pacientes'
+    permission_required = 'view_paciente'
+
+    def get_queryset(self):
+        q1 = self.request.GET.get('q')
+        if q1 is not None:
+            self.query.add(Q(nombres__icontains=q1), Q.OR)
+            self.query.add(Q(apellidos__icontains=q1), Q.OR)
+            self.query.add(Q(cedula_ecuatoriana__icontains=q1), Q.OR)
+            self.query.add(Q(dni__icontains=q1), Q.OR)
+            self.query.add(Q(fecha_nacimiento__icontains=q1), Q.OR)
+            self.query.add(Q(telefono__icontains=q1), Q.OR)
+            self.query.add(Q(email__icontains=q1), Q.OR)
+            self.query.add(Q(sexo__icontains=q1), Q.OR)
+            self.query.add(Q(estado_civil__icontains=q1), Q.OR)
+            self.query.add(Q(direccion__icontains=q1), Q.OR)
+            self.query.add(Q(tipo_sangre__tipo__icontains=q1), Q.OR)
+        return self.model.objects.filter(self.query).order_by('id')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['create_url'] = reverse_lazy('core:paciente_create')
+
+        return context
+
+
+class PacienteCreateView(PermissionMixin, CreateViewMixin, CreateView):
+    model = Paciente
+    template_name = 'core/pacientes/form.html'
+    form_class = PacienteForm
+    success_url = reverse_lazy('core:paciente_list')
+    permission_required = 'add_paciente'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data()
+        context['grabar'] = 'Grabar Paciente'
+        context['back_url'] = self.success_url
+        return context
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        paciente = self.object
+        messages.success(self.request, f"Éxito al crear el paciente {paciente.nombres.split()[0]} {paciente.apellidos.split()[0]}.")
+        return response
+
+
+class PacienteUpdateView(PermissionMixin, UpdateViewMixin, UpdateView):
+    model = Paciente
+    template_name = 'core/pacientes/form.html'
+    form_class = PacienteForm
+    success_url = reverse_lazy('core:paciente_list')
+    permission_required = 'change_paciente'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data()
+        context['grabar'] = 'Actualizar Paciente'
+        context['back_url'] = self.success_url
+        return context
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        paciente = self.object
+        messages.success(self.request, f"Éxito al actualizar el paciente {paciente.nombres.split()[0]} {paciente.apellidos.split()[0]}.")
+        return response
+
+
+class PacienteDeleteView(PermissionMixin, DeleteViewMixin, DeleteView):
+    model = Paciente
+    template_name = 'core/delete.html'
+    success_url = reverse_lazy('core:paciente_list')
+    permission_required = 'delete_paciente'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data()
+        context['grabar'] = 'Eliminar paciente'
+        paciente = self.object
+        context['description'] = f"¿Desea eliminar el paciente: {paciente.nombres.split()[0]} {paciente.apellidos.split()[0]}?"
+        context['back_url'] = self.success_url
+        return context
+
+    
+    def form_valid(self, form):
+        # Guardar info antes de eliminar
+        paciente = self.object
+        
+        # Llamar al delete del padre
+        response = super().form_valid(form)
+        
+        # Agregar mensaje
+        messages.success(self.request, f"Éxito al eliminar lógicamente el paciente: {paciente.nombres.split()[0]} {paciente.apellidos.split()[0]}.")
+        
+        return response
+    
+
+class SavePacienteView(View):
+    def post(self,request,*args,**kargs):
+        try:
+            form = PacienteForm(request.POST, request.FILES)
+            id = request.POST.get('paciente_id')
+            paciente = Paciente.objects.get(pk=id)
+            form = PacienteForm(request.POST, request.FILES, instance=paciente)
+            if form.is_valid():
+                paciente = form.save(commit=False)
+            
+                borrar_imagen = request.POST.get('borrar_imagen') == 'true'
+
+                if borrar_imagen and paciente.foto:
+                    paciente.foto.delete(save=False)
+                    paciente.foto = None
+
+                paciente.save()
+
+                return JsonResponse({'ok': True, 
+                                     'paciente': f"{paciente.nombres.split()[0]} {paciente.apellidos.split()[0]}"
+                                     })
+            return JsonResponse({'ok': False, 'errors': form.errors}, status=400)
+
+        except Exception as e:
+            print('error al guardar')
+            return JsonResponse({'ok': False, 'errors': str(e)}, status=400)
+    
+
+
+
+
 """  Vista para buscar pacientes mediante AJAX. Por nombres, apellidos, cédula o teléfono. """
-
-
 @login_required
 @require_http_methods(["GET"])
 def paciente_find(request):
