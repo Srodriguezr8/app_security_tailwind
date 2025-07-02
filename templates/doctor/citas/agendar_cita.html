@@ -11,81 +11,106 @@
 
 <!-- Modal de Horarios - INICIALMENTE OCULTO -->
 <div class="min-h-screen bg-secundary-custom p-6">
-    
+
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-6">
-        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-            <div>
-                <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                    <i class="fas fa-calendar-alt text-blue-600 mr-3"></i>
-                    Calendario Médico
-                </h1>
-                <p class="text-gray-600 dark:text-gray-300">Gestiona citas y horarios médicos</p>
-            </div>
-            
-            <div class="flex flex-col lg:flex-row lg:items-center gap-4 lg:gap-8 w-full lg:w-auto mt-4 lg:mt-0">
-                <div class="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
-                   
-                    <div class="flex-1 min-w-0">
-                        <label for="doctorSearch" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Médico:</label>
-                        <input
-                            type="text"
-                            id="doctorSearch"
-                            list="doctorsDatalist"
-                            placeholder="Escribe para buscar médico..."
-                            class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                        <datalist id="doctorsDatalist">
+        <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 w-full">
+
+                <div class="flex flex-col sm:flex-row gap-4 lg:w-auto lg:flex-shrink-0">
+                    <!-- Título del Calendario -->
+                    <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                        <i class="fas fa-calendar-alt text-blue-600 mr-3"></i>
+                        Calendario Médico
+                    </h1>
+                    <p class="text-gray-600 dark:text-gray-300">Gestiona citas y horarios médicos</p>
+                </div>
+
+                <!-- Filtros de búsqueda -->
+                <div class="flex flex-col sm:flex-row gap-4 w-full lg:flex-1 lg:max-w-[500px] xl:max-w-[600px]">
+
+                    <!-- cuadro de busque de medico -->
+                    <div class="bg-white rounded-lg shadow-md p-2">
+                        <label for="searchInput" class="block text-sm font-medium text-gray-700 mb-2">
+                            Buscar médico:
+                        </label>
+                        <input type="text" id="searchInput" list="searchDatalist"
+                            placeholder="Escribe al menos 3 caracteres..." autocomplete="off"
+                            class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors">
+                        <datalist id="searchDatalist">
                         </datalist>
+
+                        <!-- Indicador de estado -->
+                        <p id="statusText" class="mt-2 text-sm text-gray-500">
+                            Escribe al menos 3 caracteres para buscar
+                        </p>
                     </div>
-                    
+
+                    <!-- cuadro de busque de especialidad -->
                     <div class="flex-1 min-w-0">
-                        <label for="specialtySelect" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Especialidad:</label>
-                        <select
-                            id="specialtySelect"
-                            class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                        >
-                            <option value="">Selecciona una especialidad</option>
-                            <option value="cardiologia">Cardiología</option>
-                            <option value="dermatologia">Dermatología</option>
-                            <option value="pediatria">Pediatría</option>
-                            <option value="medicina_general">Medicina General</option>
-                            </select>
+                        <label for="specialtySelect"
+                            class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Especialidad:</label>
+                        <select id="specialtySelect"
+                            class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                            <option value="">Seleccionar Especialidad</option>
+                           
+                            <option value="" disabled>Sin especialidad asignada</option>
+                        
+                        </select>
+
                     </div>
                 </div>
 
-                <div class="flex items-center gap-4 mt-4 sm:mt-0">
+                <!-- Botones de navegación del calendario -->
+                <div class="flex items-center gap-1 mt-1 sm:mt-0 lg:w-min lg:flex-shrink-0">
                     <div class="flex items-center bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
-                        <button id="prevMonth" class="p-2 hover:bg-white dark:hover:bg-gray-600 rounded-md transition-colors">
+                        <button id="prevMonth"
+                            class="p-2 hover:bg-white dark:hover:bg-gray-600 rounded-md transition-colors">
                             <i class="fas fa-chevron-left text-gray-600 dark:text-gray-300"></i>
                         </button>
-                        <span id="currentMonth" class="px-4 py-2 font-semibold text-gray-900 dark:text-white min-w-[200px] text-center">
-                            </span>
-                        <button id="nextMonth" class="p-2 hover:bg-white dark:hover:bg-gray-600 rounded-md transition-colors">
+                        <span id="currentMonth"
+                            class="px-2 py-1 font-semibold text-gray-900 dark:text-white min-w-[100px] text-center">
+                        </span>
+                        <button id="nextMonth"
+                            class="p-2 hover:bg-white dark:hover:bg-gray-600 rounded-md transition-colors">
                             <i class="fas fa-chevron-right text-gray-600 dark:text-gray-300"></i>
                         </button>
                     </div>
-                    
-                    <button id="todayBtn" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
+
+                    <button id="todayBtn"
+                        class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
                         <i class="fas fa-calendar-day mr-2"></i>Hoy
                     </button>
                 </div>
-            </div>
-            </div>
+
+        </div>
     </div>
 
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
         <div class="grid grid-cols-7 bg-gray-50 dark:bg-gray-700">
-            <div class="p-4 text-center font-semibold text-gray-700 dark:text-gray-300 border-r border-gray-200 dark:border-gray-600">Lunes</div>
-            <div class="p-4 text-center font-semibold text-gray-700 dark:text-gray-300 border-r border-gray-200 dark:border-gray-600">Martes</div>
-            <div class="p-4 text-center font-semibold text-gray-700 dark:text-gray-300 border-r border-gray-200 dark:border-gray-600">Miércoles</div>
-            <div class="p-4 text-center font-semibold text-gray-700 dark:text-gray-300 border-r border-gray-200 dark:border-gray-600">Jueves</div>
-            <div class="p-4 text-center font-semibold text-gray-700 dark:text-gray-300 border-r border-gray-200 dark:border-gray-600">Viernes</div>
-            <div class="p-4 text-center font-semibold text-gray-700 dark:text-gray-300 border-r border-gray-200 dark:border-gray-600">Sábado</div>
+            <div
+                class="p-4 text-center font-semibold text-gray-700 dark:text-gray-300 border-r border-gray-200 dark:border-gray-600">
+                Lunes</div>
+            <div
+                class="p-4 text-center font-semibold text-gray-700 dark:text-gray-300 border-r border-gray-200 dark:border-gray-600">
+                Martes</div>
+            <div
+                class="p-4 text-center font-semibold text-gray-700 dark:text-gray-300 border-r border-gray-200 dark:border-gray-600">
+                Miércoles</div>
+            <div
+                class="p-4 text-center font-semibold text-gray-700 dark:text-gray-300 border-r border-gray-200 dark:border-gray-600">
+                Jueves</div>
+            <div
+                class="p-4 text-center font-semibold text-gray-700 dark:text-gray-300 border-r border-gray-200 dark:border-gray-600">
+                Viernes</div>
+            <div
+                class="p-4 text-center font-semibold text-gray-700 dark:text-gray-300 border-r border-gray-200 dark:border-gray-600">
+                Sábado</div>
             <div class="p-4 text-center font-semibold text-gray-700 dark:text-gray-300">Domingo</div>
         </div>
-        
+
         <div id="calendarGrid" class="grid grid-cols-7 min-h-[600px]">
         </div>
     </div>
+
 </div>
 
 
@@ -356,12 +381,124 @@
 {% endblock %}
 
 {% block js %}
+
 <script src="{% static 'js/doctor/management_patient.js' %}"></script>
-<script>
+
+<script id="selector_medico" type="text/javascript">
+        const searchInput = document.getElementById('searchInput');
+        const searchDatalist = document.getElementById('searchDatalist');
+        const statusText = document.getElementById('statusText');
+        const specialtySelect = document.getElementById('specialtySelect');
+        specialtySelect.disabled = true;
+        specialtySelect.classList.add('disabled');
+
+        let medicosList = [];
+
+        // Simula la llamada a la API
+        async function getMedicos(searchTerm, url) {
+            // Simulación de respuesta de la API
+            // En la vida real, harías fetch(url + '?search=' + encodeURIComponent(searchTerm))
+            // Aquí devolvemos una lista filtrada
+            const allMedicos = [
+                { id: 1, nombreCompleto: 'Dr. Ángel Ortiz', especialidades: [{ id: 1, nombre: 'Cardiología' }, { id: 2, nombre: 'Medicina Interna' }] },
+                { id: 2, nombreCompleto: 'Dra. María González', especialidades: [{ id: 3, nombre: 'Pediatría' }] },
+                { id: 3, nombreCompleto: 'Dr. Carlos Rodríguez', especialidades: [{ id: 4, nombre: 'Neurología' }, { id: 5, nombre: 'Psiquiatría' }] },
+                { id: 4, nombreCompleto: 'Dra. Ana Martínez', especialidades: [{ id: 6, nombre: 'Ginecología' }] }
+            ];
+            // Filtra por nombre
+            return allMedicos.filter(m => m.nombreCompleto.toLowerCase().includes(searchTerm.toLowerCase()));
+        }
+
+        // Actualiza el datalist con los médicos encontrados
+        async function updateDatalist(searchTerm) {
+            searchDatalist.innerHTML = '';
+            if (searchTerm.length < 3) {
+                statusText.textContent = 'Escribe al menos 3 caracteres para buscar';
+                statusText.className = 'mt-2 text-sm text-gray-500';
+                medicosList = [];
+                return;
+            }
+            const url = '/api/medicos/'; // URL ficticia
+            medicosList = await getMedicos(searchTerm, url);
+
+            medicosList.forEach(medico => {
+                const option = document.createElement('option');
+                option.value = medico.nombreCompleto;
+                searchDatalist.appendChild(option);
+            });
+
+            if (medicosList.length > 0) {
+                statusText.textContent = `${medicosList.length} resultado(s) encontrado(s)`;
+                statusText.className = 'mt-2 text-sm text-green-600';
+            } else {
+                statusText.textContent = 'No se encontraron resultados';
+                statusText.className = 'mt-2 text-sm text-red-500';
+            }
+        }
+
+        // Cuando el usuario escribe
+        searchInput.addEventListener('input', function (e) {
+            updateDatalist(e.target.value);
+        });
+
+        // Cuando selecciona un médico, llena las especialidades
+        // Cuando selecciona un médico, llena las especialidades y guarda el id del médico seleccionado
+        let selectedMedicoId = null;
+
+        searchInput.addEventListener('change', function (e) {
+            _idMedico = 0;   
+            console.log('Médico seleccionado:', e.target.value);
+            const value = e.target.value;
+            const medico = medicosList.find(m => m.nombreCompleto === value);
+
+            if (medico === undefined) {
+                statusText.textContent = 'Médico no encontrado';
+                statusText.className = 'mt-2 text-sm text-red-500';
+                specialtySelect.disabled = true;
+                specialtySelect.classList.add('disabled');
+                selectedMedicoId = null; // Reiniciar el id del médico seleccionado
+                _idMedico = 0;
+                return;
+            }
+            // Limpiar especialidades
+            specialtySelect.innerHTML = '<option value="">Seleccionar Especialidad</option>';
+            _idMedico = medico.id;  
+            if (medico && medico.especialidades && medico.especialidades.length > 0) {
+                selectedMedicoId = medico.id; // Guardar el id del médico seleccionado
+                medico.especialidades.forEach(esp => {
+                    const opt = document.createElement('option');
+                    opt.value = esp.id;
+                    opt.textContent = esp.nombre;
+                    specialtySelect.appendChild(opt);
+                });
+
+                specialtySelect.disabled = false;
+                specialtySelect.classList.add('disabled');
+                statusText.textContent = 'Especialidades cargadas';
+                statusText.className = 'mt-2 text-sm text-blue-600';
+            } else if (medico) {
+                selectedMedicoId = medico.id; // Guardar el id aunque no tenga especialidades
+                statusText.textContent = 'El médico no tiene especialidades registradas';
+                statusText.className = 'mt-2 text-sm text-yellow-600';
+            } else {
+                selectedMedicoId = null;
+                statusText.textContent = 'Opción seleccionada';
+                statusText.className = 'mt-2 text-sm text-blue-600';
+            }
+        });
+
+      specialtySelect.addEventListener('change', function (e) {
+          _idEspecialidad = e.target.value;
+      });   
+
+    </script>
+
+
+<script id="variables_globales">
     // Variables globales
     let currentDate = new Date();
-    const _idMedico = 1;
-    const _idEspecialidad = 2;
+    let _idMedico = 0;
+    let _idEspecialidad = 0;
     let selectedDate = null;
     let draggedPatient = null;
     let scheduleData = {};
@@ -375,7 +512,9 @@
     let isSavingAppointment = false; //  Control del estado de guardado de citas
     let cachedAppointments = {};
     let isLoadingScheduleData = false; // Control de carga de horarios
+ </script>
 
+<script id="manejo_calendario">
     // Configuración de horarios
     const weeklyScheduleConfig = [
         { dia_semana: 'Lunes', hora_inicio: '08:00', hora_fin: '12:00', intervalo_desde: '14:00', intervalo_hasta: '18:00', activo: true },
@@ -458,7 +597,7 @@
 
     function generateTimeSlotsForDay(date) {
         const dayIndex = date.getDay(); // 0 = Domingo, 1 = Lunes, ..., 6 = Sábado
-        console.log('Generating time slots for day index:', dayIndex);
+
         const dayConfig = weeklyScheduleConfig[dayIndex - 1];
 
         if (!dayConfig || !dayConfig.activo) {
@@ -555,7 +694,7 @@
         currentDate = new Date();
         updateMonthDisplay();
 
-        await loadRealScheduleData(getParametersForSchedule(currentDate));
+        // await loadRealScheduleData(getParametersForSchedule(currentDate));
         // generateMockScheduleData();
         generateDailyLimits();
         renderCalendar();
@@ -1064,7 +1203,7 @@
 
         // Vuelve a renderizar el calendario con los datos actualizados
         renderCalendar();
-        renderScheduleGrid(selectedDate); // Asegúrate de que renderice el día seleccionado en el nuevo mes
+       
     }
     // convierte los datos crudos de pacientes en un formato más manejable
     function processPatientsData(rawPatients) {
@@ -1800,7 +1939,7 @@
                 num_citas_dia: currentCitas
             };
         }
-        console.log('Límites diarios generados:', dailyLimits);
+
     }
 
 
@@ -1874,19 +2013,18 @@
 
     // Función para cargar citas reales desde el backend
     async function loadRealScheduleData(params) {
-        if (isLoadingScheduleData) return;
+        if (isLoadingScheduleData || _idMedico == 0 || _idEspecialidad == 0) return;
         isLoadingScheduleData = true; // Evitar múltiples cargas simultáneas
 
         const api = '/doctor/appointments_list/'; // Tu nueva API endpoint
 
         try {
             csrfToken = getCSRFToken(); // Obtener el token CSRF
-            console.log('Cargando citas desde el backend con los siguientes parámetros:', params);
+
             // Usa tu servicio genérico para hacer la petición GET
             const result = await loadRealScheduleService(csrfToken, params, api);
 
             if (result.success) {
-                console.log('Citas cargadas del backend:', result.data);
                 const loadedCitas = result.data;
 
                 // Transformar los datos del backend al formato que scheduleData espera
@@ -1969,4 +2107,5 @@
 
 
 </script>
+
 {% endblock %}
