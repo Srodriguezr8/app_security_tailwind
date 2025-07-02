@@ -2,6 +2,8 @@ from decimal import Decimal
 
 from django.utils import timezone
 from django.db import models
+from applications.core.models import Doctor, Especialidad
+from applications.core.utils.paciente import CondicionPacienteChoices, TipoCitaChoices
 from applications.doctor.utils.cita_medica import EstadoCitaChoices
 from applications.doctor.utils.doctor import DiaSemanaChoices
 from applications.doctor.utils.pago import MetodoPagoChoices, EstadoPagoChoices
@@ -50,6 +52,43 @@ class CitaMedica(models.Model):
 
     observaciones = models.TextField(verbose_name="Observaciones", blank=True, null=True)
 
+    # --- Nuevas Propiedades ---
+
+    # Condición del paciente para esta cita
+    # Nota: Si las "condiciones" son enfermedades o dolencias específicas,
+    # y quieres una lista extensible sin modificar el código,
+    # considera crear un modelo `Condicion` y un ForeignKey aquí.
+    # Por ahora, usamos un CharField con choices como lo pediste.
+    condicion = models.CharField(
+        max_length=50, # Ajusta la longitud máxima según tus necesidades
+        choices=CondicionPacienteChoices.choices,
+        blank=True, # Puede ser opcional, dependiendo de tu lógica
+        null=True, # Permite valores nulos en la BD
+        verbose_name="Condición o Motivo de la Cita",
+        help_text="Motivo principal o condición del paciente para esta cita."
+    )
+
+    # Relación con el modelo Doctor
+    medico = models.ForeignKey(Doctor, on_delete=models.SET_NULL, null=True, blank=True,
+                               verbose_name="Médico Asignado", related_name="citas_agendadas")
+    
+    # Relación con el modelo Especialidad
+    # NOTA IMPORTANTE: Si un médico puede tener varias especialidades, esta especialidad aquí
+    # debe ser una de las especialidades que el 'medico' asignado atiende.
+    # Esta relación es crucial para filtrar médicos por especialidad al agendar.
+    especialidad = models.ForeignKey(Especialidad, on_delete=models.SET_NULL, null=True, blank=True,
+                                     verbose_name="Especialidad de la Cita", related_name="citas_por_especialidad")
+
+    # Tipo de cita (Urgente, Normal, Seguimiento)
+    tipo_cita = models.CharField(
+        max_length=15, # 'seguimiento' es el más largo
+        choices=TipoCitaChoices.choices,
+        default=TipoCitaChoices.NORMAL, # Valor por defecto
+        verbose_name="Tipo de Cita",
+        help_text="Clasificación de la prioridad o propósito de la cita."
+    )
+
+
     def __str__(self):
         return f"{self.paciente.nombre_completo} - {self.fecha} {self.hora_cita}"
 
@@ -57,10 +96,18 @@ class CitaMedica(models.Model):
         ordering = ['fecha', 'hora_cita']
         indexes = [
             models.Index(fields=['fecha', 'hora_cita'], name='idx_fecha_hora'),
+            # Nuevos índices para mejorar el rendimiento en búsquedas comunes
+            models.Index(fields=['medico', 'fecha', 'hora_cita'], name='idx_medico_fecha_hora'),
+            models.Index(fields=['especialidad'], name='idx_especialidad'),
+            models.Index(fields=['tipo_cita'], name='idx_tipo_cita'),
+            models.Index(fields=['estado'], name='idx_estado_cita'),
         ]
         verbose_name = "Cita Médica"
         verbose_name_plural = "Citas Médicas"
-        unique_together = ('fecha', 'hora_cita')  # Previene duplicidad
+        unique_together = ('fecha', 'hora_cita', 'medico') # Añadido 'medico' para permitir que un médico solo tenga una cita a la vez
+
+
+
 
 class Atencion(models.Model):
     # Paciente que recibe esta atención médica
@@ -283,16 +330,16 @@ class ServiciosAdicionales(models.Model):
 class Pago(models.Model):
     # Relación con la atención médica (opcional para servicios independientes)
     atencion = models.ForeignKey(Atencion, on_delete=models.PROTECT,
-                                 verbose_name="Atención", related_name="pagos",
-                                 null=True, blank=True)
+                                verbose_name="Atención", related_name="pagos",
+                                null=True, blank=True)
 
     # Información del pago
     metodo_pago = models.CharField(max_length=20, choices=MetodoPagoChoices.choices,
-                                   verbose_name="Método de Pago")
+                                verbose_name="Método de Pago")
     monto_total = models.DecimalField(max_digits=10, decimal_places=2,
-                                      verbose_name="Monto Total")
+                                    verbose_name="Monto Total")
     estado = models.CharField(max_length=20, choices=EstadoPagoChoices.choices,
-                              default=EstadoPagoChoices.PENDIENTE, verbose_name="Estado")
+                            default=EstadoPagoChoices.PENDIENTE, verbose_name="Estado")
 
     # Fechas
     fecha_pago = models.DateTimeField(verbose_name="Fecha de Pago", null=True, blank=True)
@@ -443,3 +490,69 @@ class DetallePago(models.Model):
     class Meta:
         verbose_name = "Detalle de Pago"
         verbose_name_plural = "Detalles de Pago"
+
+#########Modelo Wrapper Orden de pago#########
+class OrdenPago:
+    """
+    Wrapper para crear y mostrar una orden de pago con sus detalles.
+    """
+    def __init__(self, pago=None):
+        self.pago = pago  # Pago ya existente o None (nuevo)
+        # Lista de detalles actuales (si es edición)
+        if self.pago:
+            self.detalles = list(self.pago.detalles.select_related('servicio_adicional').all())
+        else:
+            self.detalles = []
+        # Todos los servicios activos para elegir en el formulario
+        self.servicios_adicionales = ServiciosAdicionales.objects.filter(activo=True).order_by('nombre_servicio')
+
+    def crear_pago(self, atencion, metodo_pago, nombre_pagador=None, observaciones=None,
+                estado=None, fecha_pago=None, referencia_externa=None, evidencia_pago=None):
+        self.pago = Pago.objects.create(
+            atencion=atencion,
+            metodo_pago=metodo_pago,
+            nombre_pagador=nombre_pagador,
+            observaciones=observaciones,
+            estado=estado if estado else 'pendiente',
+            fecha_pago=fecha_pago,
+            referencia_externa=referencia_externa,
+            evidencia_pago=evidencia_pago
+        )
+        self.detalles = []
+
+    def agregar_detalle(
+        self,
+        servicio_adicional,
+        cantidad=1,
+        precio_unitario=None,
+        descuento_porcentaje=0,
+        aplica_seguro=False,
+        valor_seguro=None,
+        descripcion_seguro=None
+    ):
+        if not self.pago:
+            raise ValueError("¡Primero debes crear el Pago principal con .crear_pago()!")
+        if precio_unitario is None:
+            precio_unitario = servicio_adicional.costo_servicio
+        detalle = DetallePago.objects.create(
+            pago=self.pago,
+            servicio_adicional=servicio_adicional,
+            cantidad=cantidad,
+            precio_unitario=precio_unitario,
+            descuento_porcentaje=Decimal(descuento_porcentaje),
+            aplica_seguro=aplica_seguro,
+            valor_seguro=valor_seguro,
+            descripcion_seguro=descripcion_seguro or ""
+        )
+        self.detalles.append(detalle)
+        self.actualizar_total()
+
+    def actualizar_total(self):
+        if not self.pago:
+            return
+        total = sum([d.subtotal for d in self.pago.detalles.all()])
+        self.pago.monto_total = total
+        self.pago.save()
+
+    def __str__(self):
+        return f"Orden de Pago: {self.pago} ({len(self.detalles)} detalles)"

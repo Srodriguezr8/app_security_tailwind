@@ -1,10 +1,335 @@
 {% extends 'home.html' %}
+<title>{% block title %}{{title}}{% endblock %}</title>
+{% load static %}
+{% load widget_tweaks %}
 {% block content %}
-<h2>{% if object %}Editar{% else %}Nuevo{% endif %} Pago</h2>
-<form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn btn-primary">Guardar</button>
-    <a href="{% url 'doctor:pago_list' %}" class="btn btn-secondary">Cancelar</a>
-</form>
+<section class="dark:bg-principal">
+    <div class="text-center" data-aos="fade" data-aos-delay="200">
+        <div class="sm:pt-28 lg:pt-4">
+            <h1 class="rounded-2xl bg-indigo-500 px-2 py-1 text-white uppercase text-4xl">
+                {{ title1 }}
+            </h1>
+        </div>
+        {% if messages %}
+            <ul class="mb-4" id="mensajes-exito">
+                {% for message in messages %}
+                    <li class="text-green-600 font-bold">{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        <form method="post" enctype="multipart/form-data" class="space-y-6 py-4">
+            {# === BLOQUE DE ERRORES DEL FORMULARIO Y FORMSET === #}
+            {% if form.non_field_errors %}
+                <div class="bg-red-100 text-red-800 rounded-lg p-3 mb-4">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+            {% if form.errors %}
+                <div class="bg-red-100 text-red-800 rounded-lg p-3 mb-4">
+                    <ul>
+                    {% for field, errors in form.errors.items %}
+                        <li><strong>{{ field }}</strong>: {{ errors|striptags }}</li>
+                    {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+            {% if formset.non_form_errors %}
+                <div class="bg-red-100 text-red-800 rounded-lg p-3 mb-4">
+                    {{ formset.non_form_errors }}
+                </div>
+            {% endif %}
+            {% for dform in formset.forms %}
+                {% if dform.errors %}
+                    <div class="bg-red-100 text-red-800 rounded-lg p-3 mb-4">
+                        <ul>
+                        {% for field, errors in dform.errors.items %}
+                            <li><strong>{{ field }}</strong>: {{ errors|striptags }}</li>
+                        {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+            {% endfor %}
+            {# === FIN BLOQUE DE ERRORES === #}
+
+            <div class="mx-4 lg:mx-20" data-aos="fade">
+                <div class="bg-white dark:bg-secundario rounded-3xl p-8 max-w-4xl mx-auto"
+                    data-aos="fade-up" data-aos-delay="200">
+                    {% csrf_token %}
+                    {{ form.non_field_errors }}
+                    <!-- Campos de Pago -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {% for field in form.visible_fields %}
+                        <div class="field-container {% if field.errors %}has-error{% endif %}">
+                            <label for="{{ field.id_for_label }}"
+                                class="font-black uppercase text-lg block mb-2
+                                {% if field.errors %}text-red-600 dark:text-red-400{% else %}dark:text-blue-300{% endif %}">
+                                {{ field.label }}
+                                {% if field.field.required %}<span class="text-red-500">*</span>{% endif %}
+                            </label>
+                            <div class="relative">
+                                {% if field.name == "observaciones" %}
+                                    {{ field|add_class:"block w-full border border-indigo-100 rounded-xl bg-white px-4 py-2 focus:outline-none focus:border-indigo-400 transition resize-none min-h-[38px] max-h-[250px]" }}
+                                {% elif field.name == "fecha_pago" %}
+                                    {{ field|add_class:"block w-full border border-indigo-100 rounded-xl bg-white px-4 py-2 focus:outline-none focus:border-indigo-400 transition"|attr:"type:date" }}
+                                {% elif field.name == "monto_total" %}
+                                    <div class="flex items-end justify-end space-x-4">
+                                        {{ field|add_class:"block w-full border border-indigo-100 rounded-xl bg-white px-4 py-2 focus:outline-none focus:border-indigo-400 transition" }}
+                                        <button type="submit"
+                                            class="bg-blue-700 hover:bg-blue-800 text-white py-2 px-10 w-44 rounded-lg flex items-center justify-center transition-all duration-300 font-medium shadow-lg hover:shadow-xl ml-8"
+                                            style="min-width:180px;">
+                                            <i class="fa-solid fa-save mr-2"></i>
+                                            Guardar
+                                        </button>
+                                    </div>
+                                {% else %}
+                                    {{ field|add_class:"block w-full border border-indigo-100 rounded-xl bg-white px-4 py-2 focus:outline-none focus:border-indigo-400 transition" }}
+                                {% endif %}
+                                {% if field.errors %}
+                                <div class="absolute top-2 right-2 pointer-events-none">
+                                    <i class="fa-solid fa-exclamation-circle text-red-500"></i>
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% if field.errors %}
+                            <div class="mt-2 text-red-600 dark:text-red-400 text-sm">
+                                {% for error in field.errors %}
+                                <div class="flex items-center mt-1">
+                                    <i class="fa-solid fa-circle-exclamation text-xs mr-2"></i>
+                                    {{ error }}
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <!-- Detalles del Pago -->
+                    <h3 class="font-bold text-xl mt-10 mb-2 text-left">Detalles del Pago</h3>
+                    {{ formset.management_form }}
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead>
+                                <tr>
+                                    <th>Servicio</th>
+                                    <th>Cantidad</th>
+                                    <th>Precio Unitario</th>
+                                    <th>Descuento %</th>
+                                    <th>Aplica Seguro</th>
+                                    <th>Valor Seguro</th>
+                                    <th>Descripción Seguro</th>
+                                    <th>Eliminar</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for dform in formset.forms %}
+                                <tr>
+                                    {{ dform.id }}
+                                    <td>{{ dform.servicio_adicional }}</td>
+                                    <td>{{ dform.cantidad }}</td>
+                                    <td>{{ dform.precio_unitario }}</td>
+                                    <td>{{ dform.descuento_porcentaje }}</td>
+                                    <td>{{ dform.aplica_seguro }}</td>
+                                    <td>{{ dform.valor_seguro }}</td>
+                                    <td>{{ dform.descripcion_seguro }}</td>
+                                    <td>
+                                        <span style="display:none;">{{ dform.DELETE }}</span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        <div class="text-right mt-6">
+                            <span class="font-bold text-lg">Total: </span>
+                            <span id="total-pago" class="font-bold text-2xl text-indigo-700">
+                                ${{ form.monto_total.value|default:"0.00" }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="flex flex-col md:flex-row justify-center items-center mt-8 space-y-3 md:space-y-0 md:space-x-8">
+                        <button type="button" id="btn-guardar-pago"
+                            class="w-full md:w-auto bg-blue-700 hover:bg-blue-800 text-white py-3 px-8 rounded-lg flex items-center justify-center transition-all duration-300 font-medium shadow-lg hover:shadow-xl opacity-50 cursor-not-allowed"
+                            disabled>
+                            <i class="fa-solid fa-save mr-2"></i>Guardar Pago
+                        </button>
+                        <a class="w-full md:w-auto bg-red-700 hover:bg-red-800 text-white py-3 px-8 rounded-lg flex items-center justify-center transition-all duration-300 font-medium shadow-lg hover:shadow-xl"
+                            href="#">
+                            <i class="fa-solid fa-xmark mr-2"></i>Cancelar
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</section>
+<!-- Modal para método de pago -->
+<div id="modal-metodo-pago"
+    class="fixed inset-0 z-50 flex items-center justify-center hidden"
+    style="backdrop-filter: blur(8px); background: rgba(30, 41, 59, 0.25);">
+    <div class="bg-white rounded-xl shadow-xl p-8 max-w-md w-full relative">
+        <!-- BOTÓN X PERFECTAMENTE ARRIBA A LA DERECHA -->
+        <button type="button" id="cerrar-modal-metodo"
+            class="absolute top-0 right-0 mt-3 mr-3 text-2xl text-gray-400 hover:text-gray-700 transition-all duration-150"
+            style="z-index: 20;">&times;</button>
+        <h2 class="text-2xl font-bold mb-6 text-indigo-600">Selecciona el Método de Pago</h2>
+        <div class="flex flex-col space-y-4">
+            <button type="button" class="btn-metodo bg-green-600 hover:bg-green-700 text-white py-3 px-4 rounded-lg" data-metodo="efectivo">
+                <i class="fa-solid fa-money-bill-wave mr-2"></i>Efectivo
+            </button>
+            <button type="button" class="btn-metodo bg-blue-700 hover:bg-blue-800 text-white py-3 px-4 rounded-lg" data-metodo="paypal">
+                <i class="fa-brands fa-paypal mr-2"></i>PayPal
+            </button>
+        </div>
+        <div id="paypal-btn-container" class="mt-6 hidden"></div>
+    </div>
+</div>
+<input type="hidden" id="campo-metodo-pago" name="metodo_pago" value="">
+<input type="hidden" id="campo-transaccion-paypal" name="referencia_externa" value="">
+<!-- SDK de PayPal -->
+<script src="https://www.paypal.com/sdk/js?client-id=AS4WYQGQC7fxxj__tQaHEy-gJHOTZyW5SMgAgKFUKGozhlu35csxXGKm_2dGdnaDU2l0q-LBFRmJyt33&currency=USD&components=buttons,marks,hosted-fields"></script>
+
+<script>
+// Actualiza el total y habilita/deshabilita el botón
+function actualizarTotal() {
+    let total = 0;
+    document.querySelectorAll('tbody tr').forEach(row => {
+        let cantidad = parseFloat(row.querySelector('input[name$="cantidad"]')?.value || 0);
+        let precio = parseFloat(row.querySelector('input[name$="precio_unitario"]')?.value || 0);
+        let descuento = parseFloat(row.querySelector('input[name$="descuento_porcentaje"]')?.value || 0);
+        let aplica_seguro = row.querySelector('input[name$="aplica_seguro"]')?.checked;
+        let valor_seguro = parseFloat(row.querySelector('input[name$="valor_seguro"]')?.value || 0);
+        let subtotal = 0;
+        if (cantidad && (precio || valor_seguro)) {
+            let base = (aplica_seguro && valor_seguro) ? valor_seguro : precio;
+            subtotal = (base - (base * (descuento / 100))) * cantidad;
+        }
+        if (subtotal > 0) total += subtotal;
+    });
+    document.getElementById('total-pago').textContent = '$' + total.toFixed(2);
+    // --------- Sincroniza con el campo de monto_total -----------
+    //let montoInput = document.querySelector('input[name="monto_total"]');
+    //if (montoInput) {
+    //    montoInput.value = total.toFixed(2);
+    //}
+    let botonGuardar = document.getElementById('btn-guardar-pago');
+    if (!botonGuardar) return;
+    if (total > 0) {
+        botonGuardar.disabled = false;
+        botonGuardar.classList.remove('opacity-50', 'cursor-not-allowed');
+    } else {
+        botonGuardar.disabled = true;
+        botonGuardar.classList.add('opacity-50', 'cursor-not-allowed');
+    }
+}
+document.addEventListener('input', function(e) {
+    if (e.target.closest('tbody')) actualizarTotal();
+});
+document.addEventListener('DOMContentLoaded', actualizarTotal);
+
+// Mostrar el modal al intentar guardar
+document.getElementById('btn-guardar-pago').addEventListener('click', function() {
+    if (!this.disabled) {
+        document.getElementById('modal-metodo-pago').classList.remove('hidden');
+    }
+});
+// Cerrar modal
+document.getElementById('cerrar-modal-metodo').onclick = function() {
+    document.getElementById('modal-metodo-pago').classList.add('hidden');
+};
+
+// ---- PAGO Y MODAL ----
+let metodoSeleccionado = null;
+let totalActual = 0;
+function getTotalActual() {
+    let t = document.getElementById('total-pago').textContent.replace('$','');
+    return parseFloat(t) || 0;
+}
+document.querySelectorAll('.btn-metodo').forEach(btn => {
+    btn.addEventListener('click', function() {
+        let metodo = this.getAttribute('data-metodo');
+        metodoSeleccionado = metodo;
+        document.getElementById('campo-metodo-pago').value = metodo;
+        if (metodo === 'efectivo') {
+            document.getElementById('modal-metodo-pago').classList.add('hidden');
+            document.querySelector('form').submit();
+        } else if (metodo === 'paypal' || metodo === 'tarjeta') {
+            mostrarPayPal();
+        }
+    });
+});
+function mostrarPayPal() {
+    document.getElementById('paypal-btn-container').classList.remove('hidden');
+    document.getElementById('paypal-btn-container').innerHTML = ''; // Limpia botones previos
+    document.getElementById('modal-metodo-pago').classList.remove('hidden');
+    totalActual = getTotalActual();
+    paypal.Buttons({
+        style: {
+            layout: 'vertical',
+            color:  metodoSeleccionado === 'tarjeta' ? 'silver' : 'blue',
+            shape:  'rect',
+            label:  metodoSeleccionado === 'tarjeta' ? 'pay' : 'paypal'
+        },
+        fundingSource: metodoSeleccionado === 'tarjeta' ? paypal.FUNDING.CARD : undefined,
+        createOrder: function(data, actions) {
+            return actions.order.create({
+                purchase_units: [{
+                    amount: { value: totalActual.toFixed(2) }
+                }]
+            });
+        },
+        onApprove: function(data, actions) {
+            return actions.order.capture().then(function(details) {
+                document.getElementById('campo-metodo-pago').value = metodoSeleccionado;
+                let inputTrans = document.getElementById('campo-transaccion-paypal');
+                if (!inputTrans) {
+                    inputTrans = document.createElement('input');
+                    inputTrans.type = 'hidden';
+                    inputTrans.name = 'referencia_externa';
+                    inputTrans.id = 'campo-transaccion-paypal';
+                    document.querySelector('form').appendChild(inputTrans);
+                }
+                inputTrans.value = details.id;
+                document.getElementById('modal-metodo-pago').classList.add('hidden');
+                document.querySelector('form').submit();
+            });
+        },
+        onCancel: function (data) {
+            alert("Pago cancelado.");
+        },
+        onError: function (err) {
+            alert("Ocurrió un error con el pago: " + err);
+        }
+    }).render('#paypal-btn-container');
+}
+
+// Sincronizar el total visual con el monto_total escrito y autosize observaciones
+document.addEventListener('DOMContentLoaded', function() {
+    var montoInput = document.querySelector('input[name="monto_total"]');
+    var totalSpan = document.getElementById('total-pago');
+    if (montoInput && totalSpan) {
+        function actualizarTotal() {
+            let valor = parseFloat(montoInput.value) || 0;
+            totalSpan.textContent = '$' + valor.toFixed(2);
+        }
+        montoInput.addEventListener('input', actualizarTotal);
+        actualizarTotal();
+    }
+    // AUTOSIZE para Observaciones
+    var txt = document.querySelector('textarea[name="observaciones"]');
+    if (txt) {
+        txt.setAttribute('rows', 1);
+        txt.style.overflowY = 'hidden';
+        txt.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + "px";
+        });
+    }
+    // Ocultar mensaje de éxito tras 3 segundos
+    var mensajes = document.getElementById('mensajes-exito');
+    if (mensajes) {
+        setTimeout(function() {
+            mensajes.style.display = "none";
+        }, 3000);
+    }
+});
+</script>
 {% endblock %}
