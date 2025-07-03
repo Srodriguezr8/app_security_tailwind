@@ -117,3 +117,9 @@ async function saveAllAppointmentsService(csrfToken, appointmentsData, api) {
 async function loadRealScheduleService(csrfToken, searchParams, api) {
     return await apiService(api, 'GET', csrfToken, null, searchParams);
 }
+
+
+async function getDoctorsService(csrfToken, searchParams, api) {
+    return await apiService(api, 'GET', csrfToken, null, searchParams);
+}
+

@@ -2,6 +2,7 @@ from datetime import datetime, date
 from http.client import PRECONDITION_FAILED
 import random
 import logging
+from re import search
 from turtle import pencolor
 from typing import Any, Dict, List, Tuple
 from django.http import JsonResponse
@@ -195,7 +196,7 @@ def patients_search_api(request):
 
 @csrf_exempt
 @login_required
-def appointments_api(request):
+def add_appointments_api(request):
     """
     API para gestionar citas médicas (crear y eliminar).
     
@@ -538,23 +539,40 @@ def get_appointments_api(request):
         # Obtener los parámetros de fecha del request
         start_date_str = request.GET.get('start_date')
         end_date_str = request.GET.get('end_date')
+        medico_id =request.GET.get('medico_id')
+        especialidad_id = request.GET.get('especialidad_id')
         
-        print('llegue al servidor...', start_date_str, end_date_str)
+        print('llegue al servidor...', start_date_str, end_date_str,medico_id,especialidad_id)
         # Validar y convertir las fechas
         if not start_date_str or not end_date_str:
             return JsonResponse({'error': 'Faltan parámetros de fecha (start_date, end_date).'}, status=400)
 
+        
         try:
             start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
             end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
         except ValueError:
             return JsonResponse({'error': 'Formato de fecha inválido. Use YYYY-MM-DD.'}, status=400)
 
+        # Convertir ids a enteros si son válidos
+        try:
+            medico_id = int(medico_id) if medico_id not in [None, '', 'null'] else None
+            especialidad_id = int(especialidad_id) if especialidad_id not in [None, '', 'null'] else None
+        except ValueError:
+            return JsonResponse({'error': 'medico_id o especialidad_id inválidos (deben ser numéricos).'}, status=400)
+
         # Consultar citas dentro del rango de fechas
         # Usamos select_related para traer los datos relacionados (Paciente, Doctor, Especialidad)
         # en una sola consulta, evitando N+1 queries.
+        # Validación explícita por si son cero o negativos (opcional según tu lógica)
+        if medico_id <= 0 or especialidad_id <= 0:
+            return JsonResponse({'error': 'medico_id y especialidad_id deben ser mayores que cero.'}, status=400)
+
+        # Filtro obligatorio por ambos campos
         citas = CitaMedica.objects.select_related('paciente', 'medico', 'especialidad').filter(
-            fecha__range=[start_date, end_date]
+            fecha__range=[start_date, end_date],
+            medico_id=medico_id,
+            especialidad_id=especialidad_id
         ).order_by('fecha', 'hora_cita')
 
         # Serializar los datos de las citas
@@ -592,4 +610,72 @@ def get_appointments_api(request):
     except Exception as e:
         logger.error(f"Error inesperado en get_appointments_api: {str(e)}", exc_info=True)
         return JsonResponse({'error': 'Error interno del servidor. Consulte los registros.'}, status=500)
+
+
+
+@login_required
+def get_doctors_api(request):
+    search_query = request.GET.get('search', None)
+
+    print('Llegue al servidor con search_query:', search_query)
+    if not search_query: # Si search_query es None o una cadena vacía ('')
+        return JsonResponse({
+                'success': False,
+            'message': 'Falta el parámetro de búsqueda "search".',
+            'data': [],
+            }, status=400)
+      
+    try :
+        doctors_query = Doctor.objects.all()
+
+        if search_query:
+            doctors_query = doctors_query.filter(
+                Q(nombres__icontains=search_query) | # Usar 'nombres'
+                Q(apellidos__icontains=search_query) | # Usar 'apellidos'
+                Q(ruc__icontains=search_query) # Usar 'ruc'
+            )
+        
+        # Pre-cargar las relaciones de especialidades para optimizar consultas (evitar N+1)
+        # 'especialidades_asignadas' es el related_name del ForeignKey a Doctor en DoctorEspecialidad
+        doctors_query = doctors_query.prefetch_related('especialidad') # <-- ¡CAMBIO AQUÍ!
+
+        medicos_encontrados = [serialize_doctor(doctor) for doctor in doctors_query]
+        print('medicos_encontrados :', medicos_encontrados)
+        return JsonResponse({
+                'success': True,
+                'message': 'Medicos encontrados',
+                'data': medicos_encontrados
+            })
+
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'JSON inválido'}, status=400)
+    except IntegrityError as e:
+        print(f"[ERROR] Error en get_doctors_api: {e}")
+    except Exception as e:
+        print(f"[ERROR] Error en get_doctors_api: {e}")
+        return JsonResponse({'error': 'Error interno del servidor'}, status=500)
+ 
+
+def serialize_doctor(doctor):
+    """
+    Serializa un objeto Doctor incluyendo sus especialidades y el tiempo de atención.
+    """
+    especialidades_data = []
+    # Accede a las especialidades a través del related_name corregido en DoctorEspecialidad
+    for de_info in doctor.especialidad.all(): # <-- ¡CAMBIO AQUÍ!
+        especialidades_data.append({
+            'id': de_info.id,
+            'nombre': de_info.nombre
+        })
+
+    return {
+        'id': doctor.id,
+        'nombres': doctor.nombres, # Usar 'nombres' y 'apellidos' como en tu modelo
+        'apellidos': doctor.apellidos,
+        'ruc': doctor.ruc, # Usa 'ruc' en lugar de 'cedula' si ese es el campo correcto
+        'telefono': doctor.telefonos,
+        'email': doctor.email,
+        'especialidades': especialidades_data,
+    }
+
 
