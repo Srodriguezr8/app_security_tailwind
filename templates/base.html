@@ -29,8 +29,7 @@
 
             {% include 'includes/header.html' %}
 
-            <main class="flex-1 overflow-x-hidden overflow-y-auto p-6 md:p-8">
-
+            <main class="flex-1 overflow-x-hidden overflow-y-auto p-2 md:p-8">
                 <div class="max-w-7xl mx-auto rounded-lg bg-primary-custom shadow-custom p-6">
                     {% if request.user.is_authenticated %}
                     {% block content %}{% endblock %}
@@ -38,7 +37,7 @@
                     {% include 'includes/home_public.html' %}
                     {% endif %}
                 </div>
-            </main>
+            
             {% include 'includes/footer.html' %}
         </div>
 

@@ -48,11 +48,22 @@ async function apiService(url, method, csrfToken, body = null, queryParams = nul
         const response = await fetch(fullUrl.toString(), fetchOptions);
 
         if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
+    const errorData = await response.json().catch(() => ({})); // Intenta parsear el cuerpo como JSON
             let statusCode = response.status;
 
             result.message = errorData.message || errorMap[statusCode] || `Error del servidor: ${statusCode} - ${response.statusText}`;
-            return result;
+            
+            // *** AQUÍ ESTÁ LA MODIFICACIÓN CLAVE ***
+            // Si el errorData del backend contiene una propiedad 'data', la copiamos a nuestro 'result.data'
+            if (errorData.data !== undefined) {
+                result.data = errorData.data;
+            }
+            // También podemos copiar el estado de 'success' si el backend lo envía en un error
+            if (errorData.success !== undefined) {
+                result.success = errorData.success ;
+            }
+            
+            return result; 
         }
 
         const responseData = await response.json(); // Data real del servidor
@@ -86,30 +97,29 @@ async function apiService(url, method, csrfToken, body = null, queryParams = nul
     }
 }
 
-// ----------------------------------------------------
-// Funciones específicas que utilizan apiService
-// ----------------------------------------------------
 
-/**
- * Guarda o actualiza un paciente en la API.
- * @param {string} csrfToken El token CSRF.
- * @param {object} patientData Los datos del paciente a enviar.
- * @param {string} api La URL de la API de guardar/actualizar paciente.
- * @returns {Promise<object>} Resultado de la operación.
- */
+
 async function savePatientService(csrfToken, patientData, api) {
     // Asumimos POST para guardar/crear un nuevo paciente
     // Si necesitas PUT/PATCH para actualizar, puedes añadir un parámetro 'method' aquí
     return await apiService(api, 'POST', csrfToken, patientData);
 }
 
-/**
- * Obtiene pacientes de la API, con o sin parámetros de búsqueda.
- * @param {string} csrfToken El token CSRF.
- * @param {object} searchParams Parámetros de búsqueda (ej. { search: 'Juan' }).
- * @param {string} api La URL de la API de búsqueda/listado de pacientes.
- * @returns {Promise<object>} Resultado de la operación, incluyendo la lista de pacientes.
- */
+
 async function getPatientsService(csrfToken, searchParams, api) {
     return await apiService(api, 'GET', csrfToken, null, searchParams);
 }
+
+async function saveAllAppointmentsService(csrfToken, appointmentsData, api) {
+    return await apiService(api, 'POST', csrfToken, appointmentsData);
+}
+
+async function loadRealScheduleService(csrfToken, searchParams, api) {
+    return await apiService(api, 'GET', csrfToken, null, searchParams);
+}
+
+
+async function getDoctorsService(csrfToken, searchParams, api) {
+    return await apiService(api, 'GET', csrfToken, null, searchParams);
+}
+

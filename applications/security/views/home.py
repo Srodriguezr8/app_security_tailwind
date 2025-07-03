@@ -6,6 +6,7 @@ from applications.security.components.mixin_crud import (
     ListViewMixin,
     PermissionMixin,
     SessionGroupMixin,
+    SessionGroupMixin
 )
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
@@ -13,12 +14,12 @@ from applications.security.models import Group, Menu, Module
 from django.urls import reverse
 
 
-class ModuloTemplateView(PermissionMixin, TemplateView):
+class ModuloTemplateView(SessionGroupMixin, PermissionMixin, TemplateView):
     template_name = "home.html"
 
     def get_context_data(self, **kwargs):
         # context = super().get_context_data(**kwargs)
-        context = {}
+        context = super().get_context_data(**kwargs)
         context["title"] = "IC - Modulos"
         context["title1"] = "Modulos Disponibles"
         MenuModule(self.request).fill(context)

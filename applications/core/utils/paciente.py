@@ -61,4 +61,8 @@ class CondicionPacienteChoices(models.TextChoices):
     ORTOPEDIA = 'ortopedia', 'Ortopedia' # Nota: Esto es más una especialidad
     DERMATOLOGIA = 'dermatologia', 'Dermatología' # Nota: Esto es más una especialidad
     OFTALMOLOGIA = 'oftalmologia', 'Oftalmología' # Nota: Esto es más una especialidad
-    ARTRITIS = 'artritis', 'Artritis' # Añadido de tu ejemplo anterior    
+    ARTRITIS = 'artritis', 'Artritis' # Añadido de tu 
+    INFECION_RESPIRATOTORIA =  'infeccion_respiratoria', 'Infeccion respiratoria'
+    OTORRINOLARINGOLOGIA = 'otorrinolaringologia', 'Otorrinolaringología'
+    PEDIATRIA = 'pediatria', 'Pediatría'
+    GASTROENTEROLOGIA = 'gastroenterologia', 'Gastroenterología'
