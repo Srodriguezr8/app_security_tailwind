@@ -1,0 +1,236 @@
+{% extends 'base.html' %} 
+<title>{% block title %}{{title}}{% endblock %}</title>
+{% load static %}
+{% include 'fragments/messages.html' %}
+{% block content %}
+<section class="dark:bg-principal">
+    <div class="text-center" data-aos="fade" data-aos-delay="200">
+        <div class="sm:pt-28 lg:pt-4">
+             <h1 class="rounded-2xl  bg-indigo-500 px-2 py-1 text-white uppercase text-4xl">
+                {{ title1 }}
+             </h1>
+        </div>
+
+        <!-- Mensajes de error del formulario (no específicos de campo) -->
+        {% if form.non_field_errors %}
+        <div class="mx-4 lg:mx-20 mb-6" data-aos="fade-up">
+            <div class="bg-red-50 dark:bg-red-900/30 border-l-4 border-red-500 p-4 rounded-lg max-w-4xl mx-auto">
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        <i class="fa-solid fa-exclamation-triangle text-red-500 text-lg"></i>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-red-800 dark:text-red-200 font-medium">
+                            Se encontraron errores en el formulario:
+                        </h3>
+                        <div class="mt-2 text-red-700 dark:text-red-300">
+                            <ul class="list-disc list-inside space-y-1">
+                                {% for error in form.non_field_errors %}
+                                <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <form method="post" class="space-y-6 py-4">
+            <div class="mx-4 lg:mx-20" data-aos="fade">
+                <!-- Contenedor principal del formulario -->
+                <div class="bg-white dark:bg-secundario rounded-3xl p-8 max-w-4xl mx-auto"
+                    data-aos="fade-up" data-aos-delay="200">
+                    {% csrf_token %}
+                
+
+                    <!-- Campos uno debajo del otro -->
+                    <div class="space-y-6">
+                        <!-- Campo Name -->
+                        <div class="field-container {% if form.tipo.errors %}has-error{% endif %}">
+                            <label for="{{ form.tipo.id_for_label }}"
+                                class="font-black uppercase text-lg block mb-2
+                                       {% if form.tipo.errors %}text-red-600 dark:text-red-400{% else %}dark:text-blue-300{% endif %}">
+                                {{ form.tipo.label }}
+                                {% if form.tipo.field.required %}<span class="text-red-500">*</span>{% endif %}
+                            </label>
+                            <div class="relative">
+                                {{ form.tipo }}
+                                {% if form.tipo.errors %}
+                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                    <i class="fa-solid fa-exclamation-circle text-red-500"></i>
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% if form.tipo.errors %}
+                            <div class="mt-2 text-red-600 dark:text-red-400 text-sm">
+                                {% for error in form.tipo.errors %}
+                                <div class="flex items-center mt-1">
+                                    <i class="fa-solid fa-circle-exclamation text-xs mr-2"></i>
+                                    {{ error }}
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Campo Description -->
+                        <div class="field-container {% if form.descripcion.errors %}has-error{% endif %}">
+                            <label for="{{ form.descripcion.id_for_label }}"
+                                class="font-black uppercase text-lg block mb-2
+                                       {% if form.descripcion.errors %}text-red-600 dark:text-red-400{% else %}dark:text-blue-300{% endif %}">
+                                {{ form.descripcion.label }}
+                                {% if form.descripcion.field.required %}<span class="text-red-500">*</span>{% endif %}
+                            </label>
+                            <div class="relative">
+                                {{ form.descripcion }}
+                                {% if form.descripcion.errors %}
+                                <div class="absolute top-2 right-2 pointer-events-none">
+                                    <i class="fa-solid fa-exclamation-circle text-red-500"></i>
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% if form.descripcion.errors %}
+                            <div class="mt-2 text-red-600 dark:text-red-400 text-sm">
+                                {% for error in form.descripcion.errors %}
+                                <div class="flex items-center mt-1">
+                                    <i class="fa-solid fa-circle-exclamation text-xs mr-2"></i>
+                                    {{ error }}
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        
+                    </div>
+
+                    <!-- Botones de acción -->
+                     <div class="flex flex-col md:flex-row justify-center items-center mt-8 space-y-3 md:space-y-0 md:space-x-8">
+                        <button type="submit"
+                            class="w-full md:w-auto bg-blue-700 hover:bg-blue-800 text-white py-3 px-8 rounded-lg flex items-center justify-center transition-all duration-300 font-medium shadow-lg hover:shadow-xl">
+                            <i class="fa-solid fa-save mr-2"></i>Guardar Tipo Sangre
+                        </button>
+                        <a class="w-full md:w-auto bg-red-700 hover:bg-red-800 text-white py-3 px-8 rounded-lg flex items-center justify-center transition-all duration-300 font-medium shadow-lg hover:shadow-xl"
+                            href="{% url 'core:tipo_sangre_list' %}">
+                            <i class="fa-solid fa-xmark mr-2"></i>Cancelar
+                        </a>
+                    </div>
+                    <!-- Botón de guardar -->
+                </div>
+            </div>
+        </form>
+    </div>
+</section>
+
+<!-- CSS para estilos de error -->
+<style>
+/* Estilos para campos con errores */
+.field-container.has-error input,
+.field-container.has-error select,
+.field-container.has-error textarea {
+    border-color: #ef4444 !important;
+    background-color: rgba(254, 242, 242, 0.5) !important;
+    color: #991b1b !important;
+}
+
+.field-container.has-error input:focus,
+.field-container.has-error select:focus,
+.field-container.has-error textarea:focus {
+    border-color: #dc2626 !important;
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2) !important;
+    outline: none !important;
+}
+
+/* Dark mode para campos con errores */
+@media (prefers-color-scheme: dark) {
+    .field-container.has-error input,
+    .field-container.has-error select,
+    .field-container.has-error textarea {
+        background-color: rgba(153, 27, 27, 0.2) !important;
+        color: #fca5a5 !important;
+        border-color: #ef4444 !important;
+    }
+    
+    .field-container.has-error input:focus,
+    .field-container.has-error select:focus,
+    .field-container.has-error textarea:focus {
+        box-shadow: 0 0 0 2px rgba(185, 28, 28, 0.4) !important;
+    }
+}
+
+/* Estilos para checkboxes con errores */
+.field-container.has-error input[type="checkbox"] {
+    border-color: #ef4444 !important;
+    accent-color: #ef4444 !important;
+}
+
+/* Animación sutil para errores */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-2px); }
+    20%, 40%, 60%, 80% { transform: translateX(2px); }
+}
+
+.field-container.has-error {
+    animation: shake 0.5s ease-in-out;
+}
+/* Estilos mejorados para el checkbox */
+input[type="checkbox"] {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    width: 1.25rem;
+    height: 1.25rem;
+    border: 2px solid #d1d5db;
+    border-radius: 0.25rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    position: relative;
+}
+
+input[type="checkbox"]:checked {
+    background-color: #4f46e5;
+    border-color: #4f46e5;
+}
+
+input[type="checkbox"]:checked::after {
+    content: "✓";
+    position: absolute;
+    color: white;
+    font-size: 0.75rem;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+input[type="checkbox"]:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.3);
+}
+
+.dark input[type="checkbox"] {
+    border-color: #4b5563;
+    background-color: #374151;
+}
+
+.dark input[type="checkbox"]:checked {
+    background-color: #4f46e5;
+    border-color: #4f46e5;
+}
+
+/* Animación sutil para errores */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-2px); }
+    20%, 40%, 60%, 80% { transform: translateX(2px); }
+}
+
+.field-container.has-error {
+    animation: shake 0.5s ease-in-out;
+}
+</style>
+
+
+
+{% endblock %}

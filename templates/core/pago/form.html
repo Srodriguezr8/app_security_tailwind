@@ -17,7 +17,7 @@
                 {% endfor %}
             </ul>
         {% endif %}
-        <form method="post" enctype="multipart/form-data" class="space-y-6 py-4">
+        <form id="form-pago" method="post" enctype="multipart/form-data" class="space-y-6 py-4">
             {# === BLOQUE DE ERRORES DEL FORMULARIO Y FORMSET === #}
             {% if form.non_field_errors %}
                 <div class="bg-red-100 text-red-800 rounded-lg p-3 mb-4">
@@ -68,7 +68,13 @@
                             </label>
                             <div class="relative">
                                 {% if field.name == "observaciones" %}
-                                    {{ field|add_class:"block w-full border border-indigo-100 rounded-xl bg-white px-4 py-2 focus:outline-none focus:border-indigo-400 transition resize-none min-h-[38px] max-h-[250px]" }}
+                                {{ field|add_class:"block w-full border border-indigo-100 rounded-xl bg-white px-4 py-2 focus:outline-none focus:border-indigo-400 transition resize-none" }}
+                                <style>
+                                    textarea[name="observaciones"] {
+                                        min-height: 40px !important;
+                                        max-height: 90px !important;
+                                    }
+                                </style>
                                 {% elif field.name == "fecha_pago" %}
                                     {{ field|add_class:"block w-full border border-indigo-100 rounded-xl bg-white px-4 py-2 focus:outline-none focus:border-indigo-400 transition"|attr:"type:date" }}
                                 {% elif field.name == "monto_total" %}
@@ -104,53 +110,73 @@
                         {% endfor %}
                     </div>
                     <!-- Detalles del Pago -->
-                    <h3 class="font-bold text-xl mt-10 mb-2 text-left">Detalles del Pago</h3>
+                    <div style="height: 60px;"></div>
+                    <div class="flex flex-col items-center mb-4">
+                        <h3 class="text-2xl font-extrabold text-indigo-700 tracking-wide text-center">
+                            Detalles del Pago
+                        </h3>
+                    </div>
                     {{ formset.management_form }}
                     <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead>
+                        <table class="min-w-full divide-y divide-gray-200 rounded-2xl overflow-hidden shadow-lg border border-indigo-100">
+                            <thead class="bg-indigo-100">
                                 <tr>
-                                    <th>Pago</th>
-                                    <th>Servicio Adicional</th>
-                                    <th>Cantidad</th>
-                                    <th>Precio Unitario</th>
-                                    <th>Valor de consulta</th>
-                                    <th>Descuento %</th>
-                                    <th>Aplica Seguro</th>
-                                    <th>Valor Seguro</th>
-                                    <th>Descripción Seguro</th>
-                                <!--   <th>Subtotal</th>-->
-                                <!--   <th>Eliminar</th>-->
+                                    <th class="px-2 py-2 text-xs font-bold text-indigo-700 uppercase">Pago</th>
+                                    <th class="px-2 py-2 text-xs font-bold text-indigo-700 uppercase">Servicio Adicional</th>
+                                    <th class="px-2 py-2 text-xs font-bold text-indigo-700 uppercase">Cantidad</th>
+                                    <th class="px-2 py-2 text-xs font-bold text-indigo-700 uppercase">Precio Unitario</th>
+                                    <th class="px-2 py-2 text-xs font-bold text-indigo-700 uppercase">Valor Consulta</th>
+                                    <th class="px-2 py-2 text-xs font-bold text-indigo-700 uppercase">Descuento %</th>
+                                    <th class="px-2 py-2 text-xs font-bold text-indigo-700 uppercase">Aplica Seguro</th>
+                                    <th class="px-2 py-2 text-xs font-bold text-indigo-700 uppercase">Valor Seguro</th>
+                                    <th class="px-2 py-2 text-xs font-bold text-indigo-700 uppercase">Descripción Seguro</th>
+                                    <!-- <th>Subtotal</th> -->
+                                    <!-- <th>Eliminar</th> -->
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody class="bg-white divide-y divide-indigo-50">
                                 {% for dform in formset.forms %}
                                 <tr>
                                     {{ dform.id }}
-                                    <td>{{ dform.pago }}</td> <!-- NUEVO: Campo Pago -->
-                                    <td class="relative">
-                                        {{ dform.servicio_adicional }}
-                                        <button type="button" class="ml-2 bg-green-500 text-white rounded-full px-2 py-1 text-xs hover:bg-green-700" onclick="abrirModalServicio(this)">
+                                    <td>
+                                        {{ dform.pago|add_class:"block w-full border border-indigo-200 rounded-lg px-2 py-1 bg-white focus:outline-none focus:border-indigo-400 transition" }}
+                                    </td>
+                                    <td class="relative flex flex-row items-center gap-2">
+                                        {{ dform.servicio_adicional|add_class:"block w-full border border-indigo-200 rounded-lg px-2 py-1 bg-white focus:outline-none focus:border-indigo-400 transition" }}
+                                        <button type="button" class="ml-2 bg-green-500 text-white rounded-full px-2 py-1 text-xs hover:bg-green-700 shadow btn-nuevo-servicio">
                                             + Nuevo
                                         </button>
                                     </td>
-                                    <td>{{ dform.cantidad }}</td>
-                                    <td>{{ dform.precio_unitario }}</td>
-                                    <td>{{ dform.valor_consulta }}</td> <!-- NUEVO: Valor de consulta -->
-                                    <td>{{ dform.descuento_porcentaje }}</td>
-                                    <td>{{ dform.aplica_seguro }}</td>
-                                    <td>{{ dform.valor_seguro }}</td>
-                                    <td>{{ dform.descripcion_seguro }}</td>
-                                <!--   <td>{{ dform.subtotal_view }}</td>-->
                                     <td>
-                                        {% if dform.instance.pk %}
-                                            {{ dform.DELETE }}
-                                        {% endif %}
+                                        {{ dform.cantidad|add_class:"block w-full border border-indigo-200 rounded-lg px-2 py-1 bg-white focus:outline-none focus:border-indigo-400 transition text-center" }}
                                     </td>
+                                    <td>
+                                        {{ dform.precio_unitario|add_class:"block w-full border border-indigo-200 rounded-lg px-2 py-1 bg-white focus:outline-none focus:border-indigo-400 transition text-center" }}
+                                    </td>
+                                    <td>
+                                        {{ dform.valor_consulta|add_class:"block w-full border border-indigo-200 rounded-lg px-2 py-1 bg-white focus:outline-none focus:border-indigo-400 transition text-center" }}
+                                    </td>
+                                    <td>
+                                        {{ dform.descuento_porcentaje|add_class:"block w-full border border-indigo-200 rounded-lg px-2 py-1 bg-white focus:outline-none focus:border-indigo-400 transition text-center" }}
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="flex justify-center items-center">
+                                            {{ dform.aplica_seguro|add_class:"w-5 h-5 text-green-600 rounded border-gray-300 focus:ring focus:ring-indigo-200" }}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {{ dform.valor_seguro|add_class:"block w-full border border-indigo-200 rounded-lg px-2 py-1 bg-white focus:outline-none focus:border-indigo-400 transition text-center" }}
+                                    </td>
+                                    <td>
+                                        {{ dform.descripcion_seguro|add_class:"block w-full border border-indigo-200 rounded-lg px-2 py-1 bg-white focus:outline-none focus:border-indigo-400 transition" }}
+                                    </td>
+                                    {# ELIMINADO: Columna del checkbox DELETE #}
                                 </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
+                        <!-- AQUÍ EL MENSAJE DE ÉXITO -->
+                        <div id="mensaje-guardado-detalle" class="text-center mt-4"></div>
                         <div class="text-right mt-6">
                             <span class="font-bold text-lg">Total: </span>
                             <span id="total-pago" class="font-bold text-2xl text-indigo-700">
@@ -158,25 +184,14 @@
                             </span>
                         </div>
                     </div>
-                    <div class="flex justify-end mt-4">
+                    <div class="flex justify-center mt-8">
                         <button type="button"
                             id="btn-guardar-detalle"
-                            class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-6 py-3 text-base font-bold shadow-lg flex items-center"
+                            class="bg-blue-700 hover:bg-blue-800 text-white py-2 px-10 w-44 rounded-lg flex items-center justify-center transition-all duration-300 font-medium shadow-lg hover:shadow-xl"
                             style="min-width:180px;">
                             <i class="fa-solid fa-save mr-2"></i>
                             Guardar Detalle
                         </button>
-                    </div>
-                    <div class="flex flex-col md:flex-row justify-center items-center mt-8 space-y-3 md:space-y-0 md:space-x-8">
-                        <button type="button" id="btn-guardar-pago"
-                            class="w-full md:w-auto bg-blue-700 hover:bg-blue-800 text-white py-3 px-8 rounded-lg flex items-center justify-center transition-all duration-300 font-medium shadow-lg hover:shadow-xl opacity-50 cursor-not-allowed"
-                            disabled>
-                            <i class="fa-solid fa-save mr-2"></i>Guardar Pago
-                        </button>
-                        <a class="w-full md:w-auto bg-red-700 hover:bg-red-800 text-white py-3 px-8 rounded-lg flex items-center justify-center transition-all duration-300 font-medium shadow-lg hover:shadow-xl"
-                            href="#">
-                            <i class="fa-solid fa-xmark mr-2"></i>Cancelar
-                        </a>
                     </div>
                 </div>
             </div>
@@ -265,7 +280,7 @@ document.addEventListener('change', function(e){
                         const inpPrecio = row.querySelector('input[name$="precio_unitario"]');
                         if (inpPrecio) {
                             inpPrecio.value = data.costo_servicio;
-                            inpPrecio.dispatchEvent(new Event('input')); // recalcula subtotal
+                            actualizarTotal();
                         }
                     }
                 }
@@ -286,7 +301,7 @@ document.addEventListener('change', function(e){
                         const inpValorConsulta = row.querySelector('input[name$="valor_consulta"]');
                         if (inpValorConsulta) {
                             inpValorConsulta.value = data.valor_consulta;
-                            inpValorConsulta.dispatchEvent(new Event('input'));
+                            actualizarTotal();
                         }
                     }
                 }
@@ -295,21 +310,30 @@ document.addEventListener('change', function(e){
     }
 });
 
-// --------- BOTÓN GUARDAR DETALLE (SÓLO para la fila activa) ---------
+// --------- BOTÓN GUARDAR DETALLE (solo para la fila activa) ---------
 document.addEventListener('DOMContentLoaded', function() {
+    // --- MENSAJE DE ÉXITO MODERNO ---
+    if (!document.getElementById('mensaje-guardado-detalle')) {
+        let btn = document.getElementById('btn-guardar-detalle');
+        if (btn) {
+            let div = document.createElement('div');
+            div.id = "mensaje-guardado-detalle";
+            div.className = "text-center mt-4";
+            btn.parentNode.insertBefore(div, btn.nextSibling);
+        }
+    }
+
     const btnGuardarDetalle = document.getElementById('btn-guardar-detalle');
     if (btnGuardarDetalle) {
         btnGuardarDetalle.addEventListener('click', function() {
-            // Encuentra la fila activa (la que el usuario llenó o modificó)
             let filaActiva = null;
             document.querySelectorAll('tbody tr').forEach(row => {
-                // Si la fila tiene al menos un campo con valor (excepto los selects vacíos)
                 let campos = row.querySelectorAll('input, select');
                 let hayDatos = Array.from(campos).some(input =>
                     (input.tagName === 'INPUT' && input.type !== 'hidden' && input.value && input.value != "0" && input.value != "") ||
                     (input.tagName === 'SELECT' && input.value && input.value !== "")
                 );
-                if (hayDatos) {
+                if (hayDatos && !filaActiva) {
                     filaActiva = row;
                 }
             });
@@ -317,7 +341,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 alert('Completa al menos un detalle para guardar.');
                 return;
             }
-            // Prepara los datos
             const data = {
                 pago: filaActiva.querySelector('select[name$="pago"]')?.value,
                 servicio_adicional: filaActiva.querySelector('select[name$="servicio_adicional"]')?.value,
@@ -329,10 +352,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 valor_seguro: filaActiva.querySelector('input[name$="valor_seguro"]')?.value,
                 descripcion_seguro: filaActiva.querySelector('input[name$="descripcion_seguro"]')?.value,
             };
-            if (!data.pago || !data.servicio_adicional) {
-                alert('Debes seleccionar el Pago y Servicio Adicional.');
+
+            if (!data.pago || data.pago === "" || data.pago === "-- Seleccione un Pago --") {
+                alert("Debes seleccionar un Pago válido en la fila que quieres guardar.");
                 return;
             }
+            if (!data.servicio_adicional || data.servicio_adicional === "" || data.servicio_adicional === "-- Seleccione --") {
+                alert("Debes seleccionar un Servicio Adicional válido.");
+                return;
+            }
+
             fetch('/doctor/api/guardar_detalle_pago/', {
                 method: 'POST',
                 headers: {
@@ -344,26 +373,31 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(resp => resp.json())
             .then(res => {
                 if(res.ok){
-                    // Feedback visual bonito
                     btnGuardarDetalle.classList.remove("bg-indigo-600");
                     btnGuardarDetalle.classList.add("bg-green-600");
                     btnGuardarDetalle.innerHTML = '<i class="fa-solid fa-check mr-2"></i> Guardado';
+                    const msgDiv = document.getElementById("mensaje-guardado-detalle");
+                    msgDiv.innerHTML = `
+                        <div class="bg-green-100 border border-green-300 text-green-800 rounded-lg px-4 py-2 mb-2 mx-auto max-w-md font-bold shadow-lg animate-fadeIn">
+                            <i class="fa-solid fa-circle-check mr-2"></i>¡Detalle de pago registrado exitosamente!
+                        </div>`;
+                    setTimeout(() => { msgDiv.innerHTML = ""; }, 4000);
+
                     setTimeout(() => {
                         btnGuardarDetalle.classList.add("bg-indigo-600");
                         btnGuardarDetalle.classList.remove("bg-green-600");
                         btnGuardarDetalle.innerHTML = '<i class="fa-solid fa-save mr-2"></i> Guardar Detalle';
                     }, 1500);
 
-                    // Limpia los campos excepto select de pago
                     filaActiva.querySelectorAll('input:not([name$="pago"]), select:not([name$="pago"])').forEach(el => {
                         if (el.type == "checkbox") el.checked = false;
                         else el.value = '';
                     });
                     actualizarTotal();
-                }else{
+                } else {
                     alert('Error al guardar: ' + (res.error || 'Verifica los datos'));
                 }
-            }).catch(() => {
+            }).catch(err => {
                 alert('Error de conexión al guardar el detalle.');
             });
         });
@@ -376,7 +410,7 @@ document.addEventListener('input', function(e) {
 });
 document.addEventListener('DOMContentLoaded', actualizarTotal);
 
-// ---- MODAL PAGO (igual que tu código) ----
+// ---- MODAL PAGO ----
 document.getElementById('btn-guardar-pago').addEventListener('click', function() {
     if (!this.disabled) {
         document.getElementById('modal-metodo-pago').classList.remove('hidden');
@@ -386,181 +420,137 @@ document.getElementById('cerrar-modal-metodo').onclick = function() {
     document.getElementById('modal-metodo-pago').classList.add('hidden');
 };
 
-// ---- PAGO Y MODAL PAYPAL ----
-let metodoSeleccionado = null;
-let totalActual = 0;
-function getTotalActual() {
-    let t = document.getElementById('total-pago').textContent.replace('$','');
-    return parseFloat(t) || 0;
-}
-document.querySelectorAll('.btn-metodo').forEach(btn => {
-    btn.addEventListener('click', function() {
-        let metodo = this.getAttribute('data-metodo');
-        metodoSeleccionado = metodo;
-        document.getElementById('campo-metodo-pago').value = metodo;
-        if (metodo === 'efectivo') {
-            document.getElementById('modal-metodo-pago').classList.add('hidden');
-            document.querySelector('form').submit();
-        } else if (metodo === 'paypal' || metodo === 'tarjeta') {
-            mostrarPayPal();
-        }
+
+// === BLOQUE ENVÍO AJAX DEL FORMULARIO DE SERVICIO ADICIONAL ===
+const formServicio = document.getElementById('form-servicio');
+if (formServicio) {
+    formServicio.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const data = {
+            nombre_servicio: this.nombre_servicio.value,
+            costo_servicio: this.costo_servicio.value,
+            descripcion: this.descripcion.value,
+        };
+        fetch('/doctor/api/servicio_adicional/crear/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify(data)
+        })
+        .then(resp => resp.json())
+        .then(obj => {
+            let msjPrevio = document.getElementById('msj-exito-servicio');
+            if (msjPrevio) msjPrevio.remove();
+
+            if(obj.id) {
+                let btn = formServicio.querySelector('button[type="submit"]');
+                let msj = document.createElement('div');
+                msj.id = 'msj-exito-servicio';
+                msj.className = 'bg-green-100 text-green-700 p-2 rounded mt-2 mb-2 text-center font-bold transition-all';
+                msj.innerText = '¡Servicio guardado correctamente!';
+                btn.parentNode.insertBefore(msj, btn);
+
+                btn.disabled = true;
+                setTimeout(function() {
+                    window.location.reload();
+                }, 1300);
+            } else {
+                alert('Error al guardar el servicio adicional.');
+            }
+        })
+        .catch(() => {
+            alert('Error al guardar el servicio adicional.');
+        });
     });
-});
-function mostrarPayPal() {
-    document.getElementById('paypal-btn-container').classList.remove('hidden');
-    document.getElementById('paypal-btn-container').innerHTML = '';
-    document.getElementById('modal-metodo-pago').classList.remove('hidden');
-    totalActual = getTotalActual();
-    paypal.Buttons({
-        style: {
-            layout: 'vertical',
-            color:  metodoSeleccionado === 'tarjeta' ? 'silver' : 'blue',
-            shape:  'rect',
-            label:  metodoSeleccionado === 'tarjeta' ? 'pay' : 'paypal'
-        },
-        fundingSource: metodoSeleccionado === 'tarjeta' ? paypal.FUNDING.CARD : undefined,
-        createOrder: function(data, actions) {
-            return actions.order.create({
-                purchase_units: [{
-                    amount: { value: totalActual.toFixed(2) }
-                }]
-            });
-        },
-        onApprove: function(data, actions) {
-            return actions.order.capture().then(function(details) {
-                document.getElementById('campo-metodo-pago').value = metodoSeleccionado;
-                let inputTrans = document.getElementById('campo-transaccion-paypal');
-                if (!inputTrans) {
-                    inputTrans = document.createElement('input');
-                    inputTrans.type = 'hidden';
-                    inputTrans.name = 'referencia_externa';
-                    inputTrans.id = 'campo-transaccion-paypal';
-                    document.querySelector('form').appendChild(inputTrans);
-                }
-                inputTrans.value = details.id;
-                document.getElementById('modal-metodo-pago').classList.add('hidden');
-                document.querySelector('form').submit();
-            });
-        },
-        onCancel: function (data) {
-            alert("Pago cancelado.");
-        },
-        onError: function (err) {
-            alert("Ocurrió un error con el pago: " + err);
+}
+// ===========================================================================
+
+function actualizarTotalPagoAlCargar() {
+    let total = 0;
+    document.querySelectorAll('tbody tr').forEach(row => {
+        let subtotal = calcularSubtotal(row);
+        var subtotalInput = row.querySelector('input[name$="subtotal_view"]');
+        if (subtotalInput) subtotalInput.value = subtotal ? subtotal.toFixed(2) : '';
+        if (subtotal > 0) total += subtotal;
+    });
+    document.getElementById('total-pago').textContent = '$' + total.toFixed(2);
+}
+actualizarTotalPagoAlCargar();
+
+// ================= ENVÍO AJAX DEL FORMULARIO PRINCIPAL DE PAGO =================
+const form = document.getElementById('form-pago');
+if (form) {
+    form.addEventListener('submit', function(event) {
+        event.preventDefault();
+        if (!document.getElementById('modal-metodo-pago').classList.contains('hidden')) {
+            return;
         }
-    }).render('#paypal-btn-container');
+        const formData = new FormData(form);
+        fetch(window.location.href, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': form.querySelector('[name="csrfmiddlewaretoken"]').value,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: formData
+        })
+        .then(resp => resp.json())
+        .then(data => {
+            if (data.ok) {
+                setTimeout(function() {
+                    window.location.reload();
+                }, 1000);
+            } else {
+                alert('Error al registrar el pago.');
+            }
+        })
+        .catch(() => {
+            alert('Ocurrió un error al guardar el pago.');
+        });
+    });
 }
 
-// --------- EL RESTO DE TU SCRIPT (autosize, modales de servicios, mensajes, etc) SIGUE IGUAL ---------
-document.addEventListener('DOMContentLoaded', function() {
-    var montoInput = document.querySelector('input[name="monto_total"]');
-    var totalSpan = document.getElementById('total-pago');
-    function actualizarTotalInner() {
-        let total = 0;
-        document.querySelectorAll('input[name$="subtotal_view"]').forEach(function(input){
-            let v = parseFloat(input.value) || 0;
-            total += v;
-        });
-        if (totalSpan) totalSpan.textContent = '$' + total.toFixed(2);
-    }
-    if (montoInput && totalSpan) {
-        montoInput.addEventListener('input', function(){
-            actualizarTotalInner();
-        });
-        actualizarTotalInner();
-    }
-    var txt = document.querySelector('textarea[name="observaciones"]');
-    if (txt) {
-        txt.setAttribute('rows', 1);
-        txt.style.overflowY = 'hidden';
-        txt.addEventListener('input', function() {
-            this.style.height = 'auto';
-            this.style.height = (this.scrollHeight) + "px";
-        });
-    }
-    var mensajes = document.getElementById('mensajes-exito');
-    if (mensajes) {
-        setTimeout(function() {
-            mensajes.style.display = "none";
-        }, 3000);
-    }
-
-    // ---- MODAL SERVICIO ADICIONAL AJAX, etc... IGUAL ----
-    let selectActualServicio = null;
-    window.abrirModalServicio = function(btn) {
-        selectActualServicio = btn.parentNode.querySelector('select');
+// --------- ANIMACIÓN PARA MENSAJE DE ÉXITO ---------
+const cssFadeIn = `
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px);}
+    to { opacity: 1; transform: translateY(0);}
+}
+.animate-fadeIn {
+    animation: fadeIn 0.5s;
+}`;
+const style = document.createElement('style');
+style.innerHTML = cssFadeIn;
+document.head.appendChild(style);
+//para el modal 
+// MODAL SERVICIO ADICIONAL (usando delegación y sin duplicados)
+document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('btn-nuevo-servicio')) {
+        // Busca el select más cercano (en la misma celda o fila)
+        let cell = e.target.closest('td');
+        if (cell) {
+            selectActualServicio = cell.querySelector('select[name$="servicio_adicional"]');
+        } else {
+            selectActualServicio = null;
+        }
         document.getElementById('modal-servicio').classList.remove('hidden');
         document.getElementById('form-servicio').reset();
-    };
-    window.cerrarModalServicio = function() {
-        document.getElementById('modal-servicio').classList.add('hidden');
-    };
-    const formServicio = document.getElementById('form-servicio');
-    if (formServicio) {
-        formServicio.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const data = {
-                nombre_servicio: this.nombre_servicio.value,
-                costo_servicio: this.costo_servicio.value,
-                descripcion: this.descripcion.value,
-            };
-            fetch('/doctor/api/servicio_adicional/crear/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-                },
-                body: JSON.stringify(data)
-            })
-            .then(resp => resp.json())
-            .then(obj => {
-                if(obj.id) {
-                    document.querySelectorAll('select[name$="servicio_adicional"]').forEach(sel => {
-                        let existe = false;
-                        sel.querySelectorAll('option').forEach(o => { if(o.value == obj.id) existe = true; });
-                        if(!existe) {
-                            let opt = document.createElement('option');
-                            opt.value = obj.id;
-                            opt.text = obj.nombre_servicio;
-                            sel.add(opt);
-                        }
-                    });
-                    if (selectActualServicio) {
-                        selectActualServicio.value = obj.id;
-                    }
-                    document.querySelectorAll('#form-servicio .mensaje-exito-servicio').forEach(el => el.remove());
-                    let msj = document.createElement('div');
-                    msj.className = 'mensaje-exito-servicio bg-green-100 text-green-700 p-2 rounded mt-2 text-center font-bold';
-                    msj.innerText = '¡Servicio guardado correctamente!';
-                    document.getElementById('form-servicio').appendChild(msj);
-                    document.querySelectorAll('.mensaje-exito-global-servicio').forEach(el => el.remove());
-                    let msjGlobal = document.createElement('div');
-                    msjGlobal.className = 'mensaje-exito-global-servicio bg-green-100 text-green-700 p-2 rounded mt-2 text-center font-bold fixed top-20 left-1/2 transform -translate-x-1/2 z-50';
-                    msjGlobal.innerText = '¡Servicio guardado correctamente!';
-                    document.body.appendChild(msjGlobal);
-                    setTimeout(() => msjGlobal.remove(), 2500);
-                }
-                document.getElementById('form-servicio').reset();
-                setTimeout(() => window.cerrarModalServicio(), 2000);
-            });
-        });
     }
-
-    // --------- TOTAL AUTOMÁTICO AL CARGAR ---------
-    function actualizarTotalPagoAlCargar() {
-        let total = 0;
-        document.querySelectorAll('tbody tr').forEach(row => {
-            let subtotal = calcularSubtotal(row);
-            var subtotalInput = row.querySelector('input[name$="subtotal_view"]');
-            if (subtotalInput) subtotalInput.value = subtotal ? subtotal.toFixed(2) : '';
-            if (subtotal > 0) total += subtotal;
-        });
-        document.getElementById('total-pago').textContent = '$' + total.toFixed(2);
+});
+window.cerrarModalServicio = function() {
+    document.getElementById('modal-servicio').classList.add('hidden');
+};
+// Delegación para que funcione en todos los casos
+document.addEventListener('click', function(e) {
+    if (e.target.matches('.btn-nuevo-servicio')) {
+        selectActualServicio = e.target.parentNode.querySelector('select');
+        document.getElementById('modal-servicio').classList.remove('hidden');
+        document.getElementById('form-servicio').reset();
     }
-    actualizarTotalPagoAlCargar();
 });
 </script>
-
 
 <!-- Modal para crear servicio adicional -->
 <div id="modal-servicio" class="fixed inset-0 z-50 flex items-center justify-center hidden"

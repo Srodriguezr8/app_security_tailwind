@@ -1,0 +1,16 @@
+{% for detalle in detalles %}
+<tr>
+    <td>{{ detalle.pago }}</td>
+    <td>{{ detalle.servicio_adicional }}</td>
+    <td>{{ detalle.cantidad }}</td>
+    <td>{{ detalle.precio_unitario }}</td>
+    <td>{{ detalle.valor_consulta }}</td>
+    <td>{{ detalle.descuento_porcentaje }}</td>
+    <td>{{ detalle.aplica_seguro|yesno:"Sí,No" }}</td>
+    <td>{{ detalle.valor_seguro }}</td>
+    <td>{{ detalle.descripcion_seguro }}</td>
+    <td><!-- Acciones si quieres --></td>
+</tr>
+{% empty %}
+<tr><td colspan="10">Sin detalles</td></tr>
+{% endfor %}

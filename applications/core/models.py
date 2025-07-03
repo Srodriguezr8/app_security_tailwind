@@ -7,6 +7,7 @@ from applications.core.utils.paciente import EstadoCivilChoices, SexoChoices
 from proy_clinico.util import valida_cedula, valida_ruc
 from django.utils import timezone
 from django.conf import settings
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 """Modelo que representa los diferentes tipos de sangre."""
 class TipoSangre(models.Model):
@@ -354,6 +355,7 @@ class Doctor(models.Model):
         verbose_name = "Doctor"
         verbose_name_plural = "Doctores"
         ordering = ['apellidos', 'nombres']
+
 
 
 # Modelo que representa los diferentes cargos que pueden tener los empleados en la clínica.

@@ -38,6 +38,8 @@ class HorarioAtencion(models.Model):
         verbose_name_plural = "Horarios de Atención"
         unique_together = ('dia_semana', 'hora_inicio', 'hora_fin')  # Evita duplicados exactos
 
+
+
 class CitaMedica(models.Model):
     paciente = models.ForeignKey('core.Paciente', on_delete=models.CASCADE, verbose_name="Paciente", related_name="citas")
     fecha = models.DateField(verbose_name="Fecha de la Cita")

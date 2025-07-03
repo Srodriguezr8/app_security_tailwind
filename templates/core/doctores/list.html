@@ -1,7 +1,8 @@
-{% extends 'home.html' %}
+{% extends 'base.html' %}
 <title>{% block title %}{{title}}{% endblock %}</title>
 {% block content %}
 {% load static %}
+{% include 'fragments/messages.html' %}
 
 <section class="dark:bg-principal mt-2">
     <div class="text-center" data-aos="fade-up" data-aos-delay="200">
