@@ -3,7 +3,7 @@ from applications.doctor.views.agenda_cita import AgendaCitaMedicaListView, add_
 from applications.doctor.views.atencion_medica import AtencionListView, AtencionCreateView, AtencionUpdateView, \
     AtencionDeleteView
 from applications.doctor.views.pago import ( PagoListView, PagoCreateView, PagoUpdateView, PagoDeleteView)
-from applications.doctor.views.ordenpago import OrdenPagoCreateView, crear_servicio_adicional, get_valor_consulta
+from applications.doctor.views.ordenpago import OrdenPagoCreateView, crear_servicio_adicional, get_valor_consulta, get_costo_servicio_adicional, guardar_detalle_pago
 
 app_name='doctor' # define un espacio de nombre para la aplicacion
 urlpatterns = [
@@ -28,4 +28,8 @@ urlpatterns = [
   path('api/servicio_adicional/crear/', crear_servicio_adicional, name='crear_servicio_adicional'),
   #Api MONTO TOTAL
   path('api/get_valor_consulta/<int:pago_id>/', get_valor_consulta, name='get_valor_consulta'),
+  #API AUTOMATIZACION SERVICIO ADICIONAL
+  path('api/get_costo_servicio/<int:servicio_id>/', get_costo_servicio_adicional, name='get_costo_servicio'),
+  #API GUARDAR DETALLE PAGO
+  path('api/guardar_detalle_pago/', guardar_detalle_pago, name='guardar_detalle_pago'),
 ]

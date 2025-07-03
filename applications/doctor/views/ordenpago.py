@@ -91,3 +91,38 @@ def get_valor_consulta(request, pago_id):
         return JsonResponse({'valor_consulta': float(pago.monto_total)})
     except Pago.DoesNotExist:
         return JsonResponse({'error': 'No existe ese Pago'}, status=404)
+    
+# --- NUEVO API para obtener el costo de un servicio adicional ---
+
+def get_costo_servicio_adicional(request, servicio_id):
+    try:
+        servicio = ServiciosAdicionales.objects.get(pk=servicio_id)
+        return JsonResponse({'costo_servicio': float(servicio.costo_servicio)})
+    except ServiciosAdicionales.DoesNotExist:
+        return JsonResponse({'error': 'No existe ese Servicio'}, status=404)
+    
+## Endpoint para guardar un detalle
+
+from django.views.decorators.http import require_POST
+
+@require_POST
+def guardar_detalle_pago(request):
+    data = json.loads(request.body.decode('utf-8'))
+    try:
+        from applications.doctor.models import DetallePago, Pago, ServiciosAdicionales
+        pago = Pago.objects.get(pk=data['pago'])
+        servicio = ServiciosAdicionales.objects.get(pk=data['servicio_adicional'])
+        detalle = DetallePago.objects.create(
+            pago=pago,
+            servicio_adicional=servicio,
+            cantidad=data.get('cantidad', 1),
+            precio_unitario=data.get('precio_unitario', 0),
+            valor_consulta=data.get('valor_consulta', 0),
+            descuento_porcentaje=data.get('descuento_porcentaje', 0),
+            aplica_seguro=data.get('aplica_seguro', False),
+            valor_seguro=data.get('valor_seguro', 0),
+            descripcion_seguro=data.get('descripcion_seguro', ''),
+        )
+        return JsonResponse({'ok': True, 'id': detalle.id})
+    except Exception as e:
+        return JsonResponse({'ok': False, 'error': str(e)})

@@ -39,6 +39,7 @@ class DetallePagoForm(forms.ModelForm):
             # ... y cualquier otro campo
         ]
         widgets = {
+            'precio_unitario': forms.TextInput(attrs={'readonly': 'readonly'}),
             'valor_consulta': forms.TextInput(attrs={'readonly': 'readonly'}),
         }
     def __init__(self, *args, **kwargs):

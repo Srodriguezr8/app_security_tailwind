@@ -111,7 +111,7 @@
                             <thead>
                                 <tr>
                                     <th>Pago</th>
-                                    <th>Servicio</th>
+                                    <th>Servicio Adicional</th>
                                     <th>Cantidad</th>
                                     <th>Precio Unitario</th>
                                     <th>Valor de consulta</th>
@@ -119,8 +119,8 @@
                                     <th>Aplica Seguro</th>
                                     <th>Valor Seguro</th>
                                     <th>Descripción Seguro</th>
-                                    <th>Subtotal</th>
-                                    <th>Eliminar</th>
+                                <!--   <th>Subtotal</th>-->
+                                <!--   <th>Eliminar</th>-->
                                 </tr>
                             </thead>
                             <tbody>
@@ -141,7 +141,7 @@
                                     <td>{{ dform.aplica_seguro }}</td>
                                     <td>{{ dform.valor_seguro }}</td>
                                     <td>{{ dform.descripcion_seguro }}</td>
-                                    <td>{{ dform.subtotal_view }}</td>
+                                <!--   <td>{{ dform.subtotal_view }}</td>-->
                                     <td>
                                         {% if dform.instance.pk %}
                                             {{ dform.DELETE }}
@@ -157,6 +157,15 @@
                                 ${{ form.monto_total.value|default:"0.00" }}
                             </span>
                         </div>
+                    </div>
+                    <div class="flex justify-end mt-4">
+                        <button type="button"
+                            id="btn-guardar-detalle"
+                            class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-6 py-3 text-base font-bold shadow-lg flex items-center"
+                            style="min-width:180px;">
+                            <i class="fa-solid fa-save mr-2"></i>
+                            Guardar Detalle
+                        </button>
                     </div>
                     <div class="flex flex-col md:flex-row justify-center items-center mt-8 space-y-3 md:space-y-0 md:space-x-8">
                         <button type="button" id="btn-guardar-pago"
@@ -201,23 +210,31 @@
 <script src="https://www.paypal.com/sdk/js?client-id=AS4WYQGQC7fxxj__tQaHEy-gJHOTZyW5SMgAgKFUKGozhlu35csxXGKm_2dGdnaDU2l0q-LBFRmJyt33&currency=USD&components=buttons,marks,hosted-fields"></script>
 
 <script>
-// Actualiza el total y habilita/deshabilita el botón
+// --------- TOTAL Y SUBTOTAL ---------
+function calcularSubtotal(row) {
+    let cantidad = parseFloat(row.querySelector('input[name$="cantidad"]')?.value || 0);
+    let precio = parseFloat(row.querySelector('input[name$="precio_unitario"]')?.value || 0);
+    let valor_consulta = parseFloat(row.querySelector('input[name$="valor_consulta"]')?.value || 0);
+    let descuento = parseFloat(row.querySelector('input[name$="descuento_porcentaje"]')?.value || 0);
+    let aplica_seguro = row.querySelector('input[name$="aplica_seguro"]')?.checked;
+    let valor_seguro = parseFloat(row.querySelector('input[name$="valor_seguro"]')?.value || 0);
+
+    let base = cantidad * ((aplica_seguro && valor_seguro) ? valor_seguro : precio);
+    base += valor_consulta;
+    let subtotal = base - (base * (descuento / 100));
+    if (valor_seguro > 0) {
+        subtotal -= valor_seguro;
+    }
+    return subtotal > 0 ? subtotal : 0;
+}
+
 function actualizarTotal() {
     let total = 0;
     document.querySelectorAll('tbody tr').forEach(row => {
-        let cantidad = parseFloat(row.querySelector('input[name$="cantidad"]')?.value || 0);
-        let precio = parseFloat(row.querySelector('input[name$="precio_unitario"]')?.value || 0);
-        let valor_consulta = parseFloat(row.querySelector('input[name$="valor_consulta"]')?.value || 0);
-        let descuento = parseFloat(row.querySelector('input[name$="descuento_porcentaje"]')?.value || 0);
-        let aplica_seguro = row.querySelector('input[name$="aplica_seguro"]')?.checked;
-        let valor_seguro = parseFloat(row.querySelector('input[name$="valor_seguro"]')?.value || 0);
-        let subtotal = 0;
-        let base = (aplica_seguro && valor_seguro) ? valor_seguro : precio;
-        base += valor_consulta;
-        subtotal = (base - (base * (descuento / 100))) * cantidad;
-        if (subtotal > 0) total += subtotal;
+        let subtotal = calcularSubtotal(row);
         var subtotalInput = row.querySelector('input[name$="subtotal_view"]');
         if (subtotalInput) subtotalInput.value = subtotal ? subtotal.toFixed(2) : '';
+        if (subtotal > 0) total += subtotal;
     });
     document.getElementById('total-pago').textContent = '$' + total.toFixed(2);
 
@@ -231,23 +248,145 @@ function actualizarTotal() {
         botonGuardar.classList.add('opacity-50', 'cursor-not-allowed');
     }
 }
+
+// --------- DELEGACIÓN: autocompleta PRECIO UNITARIO y VALOR CONSULTA ---------
+document.addEventListener('change', function(e){
+    // Servicio Adicional => Precio Unitario
+    if(e.target && e.target.matches('select[name$="servicio_adicional"]')) {
+        const selectServicio = e.target;
+        const servicioId = selectServicio.value;
+        if (servicioId) {
+            fetch(`/doctor/api/get_costo_servicio/${servicioId}/`)
+            .then(resp => resp.json())
+            .then(data => {
+                if (data.costo_servicio !== undefined) {
+                    const row = selectServicio.closest('tr');
+                    if (row) {
+                        const inpPrecio = row.querySelector('input[name$="precio_unitario"]');
+                        if (inpPrecio) {
+                            inpPrecio.value = data.costo_servicio;
+                            inpPrecio.dispatchEvent(new Event('input')); // recalcula subtotal
+                        }
+                    }
+                }
+            });
+        }
+    }
+    // Pago => Valor Consulta
+    if(e.target && e.target.matches('select[name$="pago"]')) {
+        const selectPago = e.target;
+        const pagoId = selectPago.value;
+        if (pagoId) {
+            fetch(`/doctor/api/get_valor_consulta/${pagoId}/`)
+            .then(resp => resp.json())
+            .then(data => {
+                if (data.valor_consulta !== undefined) {
+                    const row = selectPago.closest('tr');
+                    if (row) {
+                        const inpValorConsulta = row.querySelector('input[name$="valor_consulta"]');
+                        if (inpValorConsulta) {
+                            inpValorConsulta.value = data.valor_consulta;
+                            inpValorConsulta.dispatchEvent(new Event('input'));
+                        }
+                    }
+                }
+            });
+        }
+    }
+});
+
+// --------- BOTÓN GUARDAR DETALLE (SÓLO para la fila activa) ---------
+document.addEventListener('DOMContentLoaded', function() {
+    const btnGuardarDetalle = document.getElementById('btn-guardar-detalle');
+    if (btnGuardarDetalle) {
+        btnGuardarDetalle.addEventListener('click', function() {
+            // Encuentra la fila activa (la que el usuario llenó o modificó)
+            let filaActiva = null;
+            document.querySelectorAll('tbody tr').forEach(row => {
+                // Si la fila tiene al menos un campo con valor (excepto los selects vacíos)
+                let campos = row.querySelectorAll('input, select');
+                let hayDatos = Array.from(campos).some(input =>
+                    (input.tagName === 'INPUT' && input.type !== 'hidden' && input.value && input.value != "0" && input.value != "") ||
+                    (input.tagName === 'SELECT' && input.value && input.value !== "")
+                );
+                if (hayDatos) {
+                    filaActiva = row;
+                }
+            });
+            if (!filaActiva) {
+                alert('Completa al menos un detalle para guardar.');
+                return;
+            }
+            // Prepara los datos
+            const data = {
+                pago: filaActiva.querySelector('select[name$="pago"]')?.value,
+                servicio_adicional: filaActiva.querySelector('select[name$="servicio_adicional"]')?.value,
+                cantidad: filaActiva.querySelector('input[name$="cantidad"]')?.value,
+                precio_unitario: filaActiva.querySelector('input[name$="precio_unitario"]')?.value,
+                valor_consulta: filaActiva.querySelector('input[name$="valor_consulta"]')?.value,
+                descuento_porcentaje: filaActiva.querySelector('input[name$="descuento_porcentaje"]')?.value,
+                aplica_seguro: filaActiva.querySelector('input[name$="aplica_seguro"]')?.checked,
+                valor_seguro: filaActiva.querySelector('input[name$="valor_seguro"]')?.value,
+                descripcion_seguro: filaActiva.querySelector('input[name$="descripcion_seguro"]')?.value,
+            };
+            if (!data.pago || !data.servicio_adicional) {
+                alert('Debes seleccionar el Pago y Servicio Adicional.');
+                return;
+            }
+            fetch('/doctor/api/guardar_detalle_pago/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify(data)
+            })
+            .then(resp => resp.json())
+            .then(res => {
+                if(res.ok){
+                    // Feedback visual bonito
+                    btnGuardarDetalle.classList.remove("bg-indigo-600");
+                    btnGuardarDetalle.classList.add("bg-green-600");
+                    btnGuardarDetalle.innerHTML = '<i class="fa-solid fa-check mr-2"></i> Guardado';
+                    setTimeout(() => {
+                        btnGuardarDetalle.classList.add("bg-indigo-600");
+                        btnGuardarDetalle.classList.remove("bg-green-600");
+                        btnGuardarDetalle.innerHTML = '<i class="fa-solid fa-save mr-2"></i> Guardar Detalle';
+                    }, 1500);
+
+                    // Limpia los campos excepto select de pago
+                    filaActiva.querySelectorAll('input:not([name$="pago"]), select:not([name$="pago"])').forEach(el => {
+                        if (el.type == "checkbox") el.checked = false;
+                        else el.value = '';
+                    });
+                    actualizarTotal();
+                }else{
+                    alert('Error al guardar: ' + (res.error || 'Verifica los datos'));
+                }
+            }).catch(() => {
+                alert('Error de conexión al guardar el detalle.');
+            });
+        });
+    }
+});
+
+// --------- RECALCULA TOTAL SIEMPRE ---------
 document.addEventListener('input', function(e) {
     if (e.target.closest('tbody')) actualizarTotal();
 });
 document.addEventListener('DOMContentLoaded', actualizarTotal);
 
-// Mostrar el modal al intentar guardar
+// ---- MODAL PAGO (igual que tu código) ----
 document.getElementById('btn-guardar-pago').addEventListener('click', function() {
     if (!this.disabled) {
         document.getElementById('modal-metodo-pago').classList.remove('hidden');
     }
 });
-// Cerrar modal
 document.getElementById('cerrar-modal-metodo').onclick = function() {
     document.getElementById('modal-metodo-pago').classList.add('hidden');
 };
 
-// ---- PAGO Y MODAL ----
+// ---- PAGO Y MODAL PAYPAL ----
 let metodoSeleccionado = null;
 let totalActual = 0;
 function getTotalActual() {
@@ -312,9 +451,8 @@ function mostrarPayPal() {
     }).render('#paypal-btn-container');
 }
 
-// Sincronizar el total visual con el monto_total escrito y autosize observaciones
+// --------- EL RESTO DE TU SCRIPT (autosize, modales de servicios, mensajes, etc) SIGUE IGUAL ---------
 document.addEventListener('DOMContentLoaded', function() {
-    // --------- TOTAL Y AUTOSIZE OBSERVACIONES ---------
     var montoInput = document.querySelector('input[name="monto_total"]');
     var totalSpan = document.getElementById('total-pago');
     function actualizarTotalInner() {
@@ -347,7 +485,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 3000);
     }
 
-    // --------- MODAL SERVICIO ADICIONAL (AJAX) ---------
+    // ---- MODAL SERVICIO ADICIONAL AJAX, etc... IGUAL ----
     let selectActualServicio = null;
     window.abrirModalServicio = function(btn) {
         selectActualServicio = btn.parentNode.querySelector('select');
@@ -408,71 +546,21 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // --------- AUTOLLENA VALOR DE CONSULTA AL SELECCIONAR PAGO ---------
-    document.querySelectorAll('select[name$="pago"]').forEach(function(selectPago){
-        selectPago.addEventListener('change', function(){
-            const pagoId = this.value;
-            if (pagoId) {
-                fetch(`/doctor/api/get_valor_consulta/${pagoId}/`)
-                .then(resp => resp.json())
-                .then(data => {
-                    if (data.valor_consulta !== undefined) {
-                        const row = selectPago.closest('tr');
-                        if (row) {
-                            const inpValorConsulta = row.querySelector('input[name$="valor_consulta"]');
-                            if (inpValorConsulta) {
-                                inpValorConsulta.value = data.valor_consulta;
-                                inpValorConsulta.dispatchEvent(new Event('input'));
-                            }
-                        }
-                    }
-                });
-            }
-        });
-    });
-
-    // --------- CÁLCULO DE SUBTOTAL (SUMA PRECIO + VALOR DE CONSULTA) ---------
-    document.addEventListener('input', function(e) {
-        document.querySelectorAll('tbody tr').forEach(function(row) {
-            var cantidad = parseFloat(row.querySelector('input[name$="cantidad"]')?.value || 0);
-            var precio = parseFloat(row.querySelector('input[name$="precio_unitario"]')?.value || 0);
-            var valor_consulta = parseFloat(row.querySelector('input[name$="valor_consulta"]')?.value || 0);
-            var descuento = parseFloat(row.querySelector('input[name$="descuento_porcentaje"]')?.value || 0);
-            var aplica_seguro = row.querySelector('input[name$="aplica_seguro"]')?.checked;
-            var valor_seguro = parseFloat(row.querySelector('input[name$="valor_seguro"]')?.value || 0);
-            var subtotal = 0;
-            var base = (aplica_seguro && valor_seguro) ? valor_seguro : precio;
-            base += valor_consulta;
-            subtotal = (base - (base * (descuento / 100))) * cantidad;
-            var subtotalInput = row.querySelector('input[name$="subtotal_view"]');
-            if (subtotalInput) subtotalInput.value = subtotal ? subtotal.toFixed(2) : '';
-        });
-        actualizarTotal();
-    });
-
     // --------- TOTAL AUTOMÁTICO AL CARGAR ---------
     function actualizarTotalPagoAlCargar() {
         let total = 0;
         document.querySelectorAll('tbody tr').forEach(row => {
-            let cantidad = parseFloat(row.querySelector('input[name$="cantidad"]')?.value || 0);
-            let precio = parseFloat(row.querySelector('input[name$="precio_unitario"]')?.value || 0);
-            let valor_consulta = parseFloat(row.querySelector('input[name$="valor_consulta"]')?.value || 0);
-            let descuento = parseFloat(row.querySelector('input[name$="descuento_porcentaje"]')?.value || 0);
-            let aplica_seguro = row.querySelector('input[name$="aplica_seguro"]')?.checked;
-            let valor_seguro = parseFloat(row.querySelector('input[name$="valor_seguro"]')?.value || 0);
-            let subtotal = 0;
-            let base = (aplica_seguro && valor_seguro) ? valor_seguro : precio;
-            base += valor_consulta;
-            subtotal = (base - (base * (descuento / 100))) * cantidad;
-            if (subtotal > 0) total += subtotal;
+            let subtotal = calcularSubtotal(row);
             var subtotalInput = row.querySelector('input[name$="subtotal_view"]');
             if (subtotalInput) subtotalInput.value = subtotal ? subtotal.toFixed(2) : '';
+            if (subtotal > 0) total += subtotal;
         });
         document.getElementById('total-pago').textContent = '$' + total.toFixed(2);
     }
     actualizarTotalPagoAlCargar();
 });
 </script>
+
 
 <!-- Modal para crear servicio adicional -->
 <div id="modal-servicio" class="fixed inset-0 z-50 flex items-center justify-center hidden"
