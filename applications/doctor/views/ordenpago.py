@@ -10,7 +10,7 @@ from applications.doctor.models import Pago
 
 class OrdenPagoCreateView(LoginRequiredMixin, PermissionMixin, CreateView):
     model = Pago
-    template_name = 'core/pago/form.html'
+    template_name = 'core/pagos/form.html'
     form_class = PagoForm
     #success_url = reverse_lazy('doctor:pagos_list')  # Cambia por tu url real
     permission_required = 'add_pago'

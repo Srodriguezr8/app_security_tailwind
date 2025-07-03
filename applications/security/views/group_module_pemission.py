@@ -8,7 +8,7 @@ from applications.security.models import GroupModulePermission, Module, User,Gro
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView,TemplateView
 from django.db.models import Q
 
-class GroupModulePermissionListView(TemplateView):
+class GroupModulePermissionListView(GroupModulePermission, TemplateView):
     template_name = 'security/group_module_permission/list.html'
 
     def get_context_data(self, **kwargs):

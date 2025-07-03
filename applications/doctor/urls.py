@@ -15,6 +15,7 @@ from applications.doctor.views.atencion_medica import (
     AtencionUpdateView,
     AtencionDeleteView
 )
+from applications.doctor.views.atender_cita import CalendarioMedicoView
 from applications.doctor.views.pago import (
     PagoListView,
     PagoCreateView,
@@ -44,7 +45,7 @@ urlpatterns = [
     path('atencion_update/<int:pk>/', AtencionUpdateView.as_view(), name="atencion_update"),
     path('atencion_delete/<int:pk>/', AtencionDeleteView.as_view(), name="atencion_delete"),
 
-    # Rutas para Citas
+    # Rutas para agendar Citas
     path('agenda_cita/', AgendaCitaMedicaListView.as_view(), name="agenda_cita"),
     path('patient_create_api/', add_patient_api, name="patient_create_api"),
     path('patients_search_api/', patients_search_api, name="patients_search_api"),
@@ -52,6 +53,9 @@ urlpatterns = [
     path('appointments_list/', get_appointments_api, name="appointments_list"),
     path('doctors_list/', get_doctors_api, name="doctors_list"),
     path('setting_hours_list/', get_setting_hours, name="setting_hours_list"),
+    
+    # rutas para atender citas 
+    path('atender_cita/', CalendarioMedicoView.as_view(), name="atender_cita"),
 
     # Rutas para pagos
     path('pagos/', PagoListView.as_view(), name="pago_list"),
