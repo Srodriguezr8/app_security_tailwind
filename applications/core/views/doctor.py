@@ -17,11 +17,14 @@ class DoctorListView(PermissionMixin, ListViewMixin, ListView):
 
     def get_queryset(self):
         q1 = self.request.GET.get('q')
+        print(q1)
         if q1 is not None:
-            self.query.add(Q(codigo__icontains=q1), Q.OR)
-            self.query.add(Q(descripcion__icontains=q1), Q.OR)
-            self.query.add(Q(datos_adicionales__icontains=q1), Q.OR)
-        return self.model.objects.filter(self.query).order_by('id')
+            self.query.add(Q(nombres__icontains=q1), Q.OR)
+            self.query.add(Q(apellidos__icontains=q1), Q.OR)
+            self.query.add(Q(ruc__icontains=q1), Q.OR)
+            self.query.add(Q(codigo_unico_doctor__icontains=q1), Q.OR)
+            self.query.add(Q(especialidad__nombre__icontains=q1), Q.OR)
+        return self.model.objects.filter(self.query).distinct().order_by('id')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

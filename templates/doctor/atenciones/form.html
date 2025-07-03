@@ -1,6 +1,10 @@
 {% extends 'base.html' %}
 <title>{% block title %}{{title}}{% endblock %}</title>
 
+{% block css %}
+<script src="https://cdn.tailwindcss.com"></script>
+{% endblock css %}
+
 {% block content %}
 <section class="bg-gray-50 min-h-screen">
     <!-- Header -->
@@ -46,7 +50,6 @@
 
     <!-- Main Content -->
     <main class="container mx-auto px-6 py-8">
-
         <!-- Datos del Paciente -->
         <div id="content-paciente" class="tab-content active">
             <!-- Selector de Paciente -->
@@ -63,7 +66,8 @@
 
                 <div class="flex flex-col md:flex-row gap-4 items-end">
                     <div class="flex-1 relative">
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Buscar y Seleccionar Paciente</label>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Buscar y Seleccionar
+                            Paciente</label>
 
                         <!-- Input de búsqueda personalizado -->
                         <div class="relative">
@@ -134,8 +138,6 @@
                                 Escriba al menos 3 caracteres para buscar
                             </div>
                         </div>
-
-                        
                     </div>
 
                     <button onclick="mostrarFormularioNuevoPaciente()"
@@ -306,7 +308,7 @@
         </div>
 
         <!-- Atención Actual -->
-        <div id="content-atencion" class="tab-content hidden">
+        <div id="content-atencion" class="tab-content">
             <div class="space-y-8">
                 <!-- Identificación -->
                 <form id="atencion-form" onsubmit="event.preventDefault(); grabarAtencion();">
@@ -411,7 +413,7 @@
                                 <h4 class="font-semibold text-teal-800 text-sm mb-3">Consulta Control</h4>
                                 <div class="flex items-center justify-center">
                                     <label class="flex items-center cursor-pointer">
-                                        <input type="checkbox" id="id_consulta_control" {% if atencion.es_control %}checked{% endif %} class="sr-only">
+                                        <input type="checkbox" id="id_consulta_control" {% if atencion.es_control%}checked{% endif %} class="sr-only">
                                         <div class="relative">
                                             <div
                                                 class="w-10 h-6 bg-teal-200 rounded-full shadow-inner transition-colors duration-200 ease-in-out">
@@ -442,6 +444,7 @@
                         </h3>
                         <!-- Transcriptor -->
                         <div class="relative">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Motivo de consulta*</label>
                             <textarea id="id_motivo_consulta"
                                 class="w-full p-4 pr-14 pb-16 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 rows="3"
@@ -462,6 +465,30 @@
                                 class="absolute right-4 bg-white px-2 py-1 text-sm text-green-600 rounded shadow hidden"
                                 style="bottom: 52px;">🎙 Grabando...</span>
                         </div>
+                        
+                        <div class="relative">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Síntomas*</label>
+                            <textarea id="id_sintomas"
+                                class="w-full p-4 pr-14 pb-16 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                rows="3"
+                                placeholder="Ingrese el motivo de la consulta...">{{ atencion.sintomas|default:'' }}</textarea>
+                            <button type="button"
+                                class="btn-mic absolute right-4 bg-transparent hover:bg-gray-100 text-black rounded-full p-3 focus:outline-none flex items-center justify-center transition-all duration-200"
+                                style="bottom: 12px;" title="Dictar por voz" data-textarea="id_sintomas"
+                                data-grabando="grabando-sintomas">
+                                <!-- ICONO MICRÓFONO SVG -->
+                                <svg xmlns="http://www.w3.org/2000/svg"
+                                    class="w-6 h-6 pointer-events-none transition-colors duration-200" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M12 15a3 3 0 0 0 3-3V7a3 3 0 0 0-6 0v5a3 3 0 0 0 3 3zm5-3v1a5 5 0 0 1-10 0v-1m5 8v-2m0 0H9m3 0h3" />
+                                </svg>
+                            </button>
+                            <span id="grabando-sintomas"
+                                class="absolute right-4 bg-white px-2 py-1 text-sm text-green-600 rounded shadow hidden"
+                                style="bottom: 52px;">🎙 Grabando...</span>
+                        </div>
+
                         <!-- Transcriptor -->
                         <div class="relative">
                             <label class="block text-sm font-semibold text-gray-700 mb-2">Examen Físico</label>
@@ -511,11 +538,11 @@
                         <!-- fin diagnosticos-->
 
                     </div>
-            </div>
+                    </div>
 
             <!-- Plan Terapéutico -->
-            <div class="bg-white rounded-2xl shadow-xl p-8">
-                <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
+                 <div class="bg-white rounded-2xl shadow-xl p-8">
+                    <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
                     <div class="w-8 h-8 bg-cyan-100 rounded-lg flex items-center justify-center mr-3">
                         <svg class="w-4 h-4 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -597,10 +624,9 @@
                         style="bottom: 52px;">🎙 Grabando...</span>
                 </div>
                 <!-- Transcriptor -->
-            </div>
-
-            <!-- Prescripción de Medicamentos -->
-            <div class="bg-white rounded-2xl shadow-xl p-8">
+                 </div>
+                <!-- Prescripción de Medicamentos -->
+                <div class="bg-white rounded-2xl shadow-xl p-8">
                 <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
                     <div class="w-8 h-8 bg-rose-100 rounded-lg flex items-center justify-center mr-3">
                         <svg class="w-4 h-4 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -693,10 +719,10 @@
                         </tbody>
                     </table>
                 </div>
-            </div>
+                </div>
 
-            <!-- Botón de Guardar -->
-            <div class="bg-white rounded-2xl shadow-xl p-8 mt-8">
+                <!-- Botón de Guardar -->
+                <div class="bg-white rounded-2xl shadow-xl p-8 mt-8">
                 <div class="flex justify-center space-x-4">
                     <button type="submit"
                         class="bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-lg text-lg font-semibold transition-colors duration-200 flex items-center space-x-3">
@@ -711,24 +737,22 @@
                         Cancelar
                     </button>
                 </div>
-            </div>
+                </div>
+            </form>
 
         </div>
 
 
 
 
-        </form>
+        
         </div>
         </div>
 
     </main>
 
 </section>
-{% endblock %}
 
-{% block styles %}
-<script src="https://cdn.tailwindcss.com"></script>
 <!-- CSS para estilos de error y variables médicas -->
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
@@ -1002,9 +1026,7 @@
         transform: translateY(-2px);
     }
 </style>
-{% endblock %}
 
-{% block js %}
 <script>
     // ==============================
     // Chat Voz - Script Global 
@@ -1092,52 +1114,46 @@
         let diagnosticos = [];
 
         // Evento para agregar diagnóstico
-        if (btn) {
+        btn.addEventListener('click', function () {
+            const texto = input.value.trim();
+            if (texto && !diagnosticos.includes(texto)) {
+                diagnosticos.push(texto);
 
-            btn.addEventListener('click', function () {
-                const texto = input.value.trim();
-                if (texto && !diagnosticos.includes(texto)) {
-                    diagnosticos.push(texto);
-
-                    // Crear el chip visual
-                    const chip = document.createElement('span');
-                    chip.className = 'bg-pink-100 text-pink-800 px-3 py-1 rounded-full flex items-center space-x-2 mb-1';
-                    chip.innerHTML = `
+                // Crear el chip visual
+                const chip = document.createElement('span');
+                chip.className = 'bg-pink-100 text-pink-800 px-3 py-1 rounded-full flex items-center space-x-2 mb-1';
+                chip.innerHTML = `
                 <span>${texto}</span>
                 <button type="button" class="ml-2 text-pink-500 hover:text-red-700 font-bold focus:outline-none" title="Eliminar">&times;</button>
             `;
 
-                    // Botón para eliminar el chip
-                    chip.querySelector('button').onclick = function () {
-                        diagnosticos = diagnosticos.filter(d => d !== texto);
-                        chip.remove();
-                        hiddenInput.value = diagnosticos.join('|'); // actualiza el campo oculto
-                    };
-
-                    lista.appendChild(chip);
-                    input.value = '';
-                    input.focus();
+                // Botón para eliminar el chip
+                chip.querySelector('button').onclick = function () {
+                    diagnosticos = diagnosticos.filter(d => d !== texto);
+                    chip.remove();
                     hiddenInput.value = diagnosticos.join('|'); // actualiza el campo oculto
-                }
-            });
-        }
+                };
+
+                lista.appendChild(chip);
+                input.value = '';
+                input.focus();
+                hiddenInput.value = diagnosticos.join('|'); // actualiza el campo oculto
+            }
+        });
+
         // Permite agregar con Enter
-        if (input) {
-
-            input.addEventListener('keydown', function (e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    btn.click();
-                }
-            });
-        }
-
+        input.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                btn.click();
+            }
+        });
     });
 
     // Recibir el contexto del paciente desde Django
     const pacienteDesdeServidor = {{ paciente_json | safe }};
     const medicamentosDesdeServidor = {{ medicamentos_json | safe }};
-    const modoEdicion = {{ modo_edicion|yesno:"true,false"|safe }};
+    const modoEdicion = {{ modo_edicion|yesno:"true,false" | safe }};
 
     // ==============================
     // SISTEMA DE ATENCIÓN MÉDICA - CÓDIGO ORGANIZADO

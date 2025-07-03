@@ -146,6 +146,7 @@
         groupSelect.addEventListener('change', async function() {
             const groupId = this.value;
             selectedGroupId = groupId;
+            permissionsContainer.classList.add('hidden');
             
             if (groupId) {
                 await loadModules();

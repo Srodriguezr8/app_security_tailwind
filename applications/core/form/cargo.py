@@ -29,7 +29,7 @@ class CargoForm(ModelForm):
                 "rows": 3,
             }),
             "activo": forms.CheckboxInput(attrs={
-                "class": "mt-1 block px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm",
+                "class": "w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600",
             })
         }
         labels = {
@@ -38,28 +38,4 @@ class CargoForm(ModelForm):
             "activo": "Activo"
         }
 
-    def clean_name(self):
-        name = self.cleaned_data.get("name")
-        return name.upper()
-    
-    def clean_icon(self):
-        icon = self.cleaned_data['icon']
-        if not icon:
-            raise forms.ValidationError("El campo ícono es requerido.")
-        
-        # Patrones para FontAwesome v5 y v6
-        patterns = [
-            r'^(fas|far|fal|fad|fab|fa)\s+fa-\w+',      # fas fa-user (v5)
-            r'^fa-(solid|regular|light|duotone|brands)\s+fa-\w+',  # fa-solid fa-user (v6)
-            r'^fa-\w+$',                                 # fa-user (formato simple)
-        ]
-        
-        is_valid = any(re.match(pattern, icon) for pattern in patterns)
-        
-        if not is_valid:
-            raise forms.ValidationError(
-                "Formato de ícono inválido. Ejemplos válidos: "
-                "'fas fa-user', 'fa-solid fa-person', 'fa-home'"
-            )
-        
-        return icon
+  
