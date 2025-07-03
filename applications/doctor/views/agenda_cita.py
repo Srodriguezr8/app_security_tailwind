@@ -1,5 +1,6 @@
 from datetime import datetime, date
 from http.client import PRECONDITION_FAILED
+from operator import truediv
 import random
 import logging
 from re import search
@@ -13,11 +14,12 @@ from django.db import IntegrityError, transaction
 from applications.core.models import Doctor, Especialidad, Paciente
 from django.core.exceptions import ValidationError
 from applications.core.utils.paciente import CondicionMedicaChoices, CondicionPacienteChoices, TipoCitaChoices
-from applications.doctor.models import CitaMedica
+from applications.doctor.models import CitaMedica, HorarioAtencion
 from applications.doctor.utils.cita_medica import EstadoCitaChoices
 from applications.security.components.mixin_crud import SessionGroupMixin,  PermissionMixin, ListViewMixin
 from django.utils.dateparse import parse_date, parse_time
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
+from django.shortcuts import get_object_or_404
 import json
 from django.db.models import Q
 
@@ -541,8 +543,7 @@ def get_appointments_api(request):
         end_date_str = request.GET.get('end_date')
         medico_id =request.GET.get('medico_id')
         especialidad_id = request.GET.get('especialidad_id')
-        
-        print('llegue al servidor...', start_date_str, end_date_str,medico_id,especialidad_id)
+
         # Validar y convertir las fechas
         if not start_date_str or not end_date_str:
             return JsonResponse({'error': 'Faltan parámetros de fecha (start_date, end_date).'}, status=400)
@@ -575,6 +576,12 @@ def get_appointments_api(request):
             especialidad_id=especialidad_id
         ).order_by('fecha', 'hora_cita')
 
+        # trae el tiempo de atencion del doctor 
+        duracion_atencion = 20
+        doctor = Doctor.objects.filter(id=medico_id).first()
+        if doctor:
+            duracion_atencion = doctor.duracion_atencion
+                            
         # Serializar los datos de las citas
         serialized_citas = []
         for cita in citas:
@@ -586,7 +593,8 @@ def get_appointments_api(request):
             serialized_citas.append({
                 'id': cita.id,
                 'paciente_id': cita.paciente.id,
-                'patientName': f"{cita.paciente.nombres} {cita.paciente.apellidos}", # Nombre completo del paciente
+                'nombres': cita.paciente.nombres,
+                'apellidos': cita.paciente.apellidos,
                 'medico_id': cita.medico.id if cita.medico else None,
                 'medicoName': f"{cita.medico.nombres} {cita.medico.apellidos}" if cita.medico else None,
                 'especialidad_id': cita.especialidad.id if cita.especialidad else None,
@@ -601,10 +609,16 @@ def get_appointments_api(request):
                 'tipoCitaDisplay': tipo_cita_display, # Guardar el valor legible del choice
             })
 
+        config = get_weekly_schedule_config()
+  
         return JsonResponse({
             'success': True,
             'message': 'Citas obtenidas exitosamente.',
-            'data': serialized_citas
+            'data': {
+                    'citas': serialized_citas,
+                    'dias_laborables': config,
+                    'duracion_atencion' : duracion_atencion
+                    }
         }, status=200)
 
     except Exception as e:
@@ -617,7 +631,6 @@ def get_appointments_api(request):
 def get_doctors_api(request):
     search_query = request.GET.get('search', None)
 
-    print('Llegue al servidor con search_query:', search_query)
     if not search_query: # Si search_query es None o una cadena vacía ('')
         return JsonResponse({
                 'success': False,
@@ -640,7 +653,6 @@ def get_doctors_api(request):
         doctors_query = doctors_query.prefetch_related('especialidad') # <-- ¡CAMBIO AQUÍ!
 
         medicos_encontrados = [serialize_doctor(doctor) for doctor in doctors_query]
-        print('medicos_encontrados :', medicos_encontrados)
         return JsonResponse({
                 'success': True,
                 'message': 'Medicos encontrados',
@@ -679,3 +691,62 @@ def serialize_doctor(doctor):
     }
 
 
+@login_required
+def get_setting_hours(request):
+    if request.method != 'GET':
+        return JsonResponse({'error': 'Método no permitido. Use GET.'}, status=405)
+
+    try:
+        config = get_weekly_schedule_config()
+        return JsonResponse({
+            'success': True,
+            'message': 'Configuración de horarios obtenida',
+            'data': config
+        }, status=200)
+
+    except Exception as e:
+        print(f"[ERROR] get_setting_hours: {e}")
+        return JsonResponse({'error': 'Error interno del servidor'}, status=500)
+    
+    
+def get_weekly_schedule_config():
+    dias_ordenados = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
+    weeklyScheduleConfig = []
+
+    try:
+        for dia in dias_ordenados:
+            horario = HorarioAtencion.objects.filter(dia_semana=dia).first()
+
+            if horario:
+                weeklyScheduleConfig.append({
+                    'dia_semana': horario.dia_semana,
+                    'hora_inicio': horario.hora_inicio.strftime('%H:%M'),
+                    'hora_fin': horario.hora_fin.strftime('%H:%M'),
+                    'intervalo_desde': horario.intervalo_desde.strftime('%H:%M') if horario.intervalo_desde else '00:00',
+                    'intervalo_hasta': horario.intervalo_hasta.strftime('%H:%M') if horario.intervalo_hasta else '00:00',
+                    'activo': horario.activo
+                })
+            else:
+                weeklyScheduleConfig.append({
+                    'dia_semana': dia,
+                    'hora_inicio': '00:00',
+                    'hora_fin': '00:00',
+                    'intervalo_desde': '00:00',
+                    'intervalo_hasta': '00:00',
+                    'activo': False
+                })
+    except Exception as e:
+        print(f"[ERROR] get_weekly_schedule_config fallback: {e}")
+        # Si hay error, retornar config vacío por defecto
+        for dia in dias_ordenados:
+            weeklyScheduleConfig.append({
+                'dia_semana': dia,
+                'hora_inicio': '00:00',
+                'hora_fin': '00:00',
+                'intervalo_desde': '00:00',
+                'intervalo_hasta': '00:00',
+                'activo': False
+            })
+
+    return weeklyScheduleConfig
+    

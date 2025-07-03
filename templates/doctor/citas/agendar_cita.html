@@ -484,7 +484,7 @@
     // Función para seleccionar un médico
     function selectDoctor(doctor) {
     _idMedico = doctor.id;
-    console.log('Médico seleccionado:', _idMedico);
+
     selectedMedicoId = _idMedico;
 
     searchInput.value = doctor.nombres + ' ' + doctor.apellidos;
@@ -551,8 +551,12 @@
         // Verifica si el valor no es nulo, no está vacío y es un número entero positivo
         if (value !== null && value !== '' && !isNaN(value) && Number.isInteger(Number(value))) {
             _idEspecialidad = Number(value);
-            updateMonthDisplay()
-            await loadRealScheduleData(getParametersForSchedule(currentDate))
+
+            updateMonthDisplay();
+            // Carga los datos para el nuevo rango de fechas
+            await loadRealScheduleData(getParametersForSchedule(currentDate));
+            // Vuelve a renderizar el calendario con los datos actualizados
+            renderCalendar();
           
         } else {
             _idEspecialidad = -1; // O cero si prefieres: _idEspecialidad = 0;
@@ -626,7 +630,7 @@
     ];
 
     const scheduleConfig = {
-        tiempo_atencion: 20,
+        tiempo_atencion: 30,
         limit_cita_dia: 0,
         medico_id: 1,
         especialidad_id: 2
@@ -778,6 +782,8 @@
 
     // Inicialización de sistema de citas
     document.addEventListener('DOMContentLoaded', function () {
+        currentDate = new Date();
+       // generateDailyLimits();
 
         initializeCalendar();
 
@@ -793,11 +799,6 @@
     async function initializeCalendar() {
         currentDate = new Date();
         updateMonthDisplay();
-
-        // await loadRealScheduleData(getParametersForSchedule(currentDate));
-        // generateMockScheduleData();
-        generateDailyLimits();
-        console.log('Calendario inicializado para:', currentDate.toLocaleDateString()); 
         renderCalendar();
     }
 
@@ -1081,11 +1082,13 @@
             pendingAppointments[dateKey] = [];
         }
 
+
         setTimeout(() => {
             loadingSchedule.classList.add('hidden');
             renderScheduleGrid(date);
             renderPatients(); // Renderizar pacientes cuando se abre el modal
-        }, 1000);
+        }, 500);
+    
     }
 
     function renderScheduleGrid(date) {
@@ -1298,8 +1301,9 @@
         } else { // 'prev'
             currentDate.setMonth(currentDate.getMonth() - 1);
         }
-        updateMonthDisplay(); // Actualiza el texto del mes en el UI
 
+       // Actualiza el texto del mes en el UI
+        updateMonthDisplay();
         // Carga los datos para el nuevo rango de fechas
         await loadRealScheduleData(getParametersForSchedule(currentDate));
 
@@ -1804,7 +1808,7 @@
                 renderScheduleGrid(selectedDate);
                 renderPatients();
             }
-            console.log('Guardado para el backend:', removedAppointmentCopy);
+          
             showModalNotification(`Cita de ${removedAppointment ? removedAppointment.patientName : 'paciente'} eliminada`, 'info');
         }
     }
@@ -1843,7 +1847,6 @@
                 new_appointments: transformedNewAppointments
             };
 
-            console.log('Nuevas citas:', data.new_appointments);
             // 4. Obtener token CSRF y API endpoint
             const csrfToken = getCSRFToken();
             const api = '/doctor/appointments_create_api/';
@@ -1852,7 +1855,7 @@
             const result = await saveAllAppointmentsService(csrfToken, data, api);
 
             if (result.success) {
-                console.log('Citas guardadas exitosamente:', result.data);
+     
                 if (!scheduleData[dateKey]) {
                     scheduleData[dateKey] = [];
                 }
@@ -2023,9 +2026,9 @@
         }
     }
 
-    function generateDailyLimits() {
-        const haceOchoDias = new Date();
-        const today = new Date();   
+    function generateDailyLimits(date_initial) {
+        const haceOchoDias = date_initial;
+        const today =date_initial;   
         today.setDate(today.getDate() - 8);
 
 
@@ -2118,13 +2121,14 @@
     }
 
 
-    function getParametersForSchedule(dateSelected) {
-        const startDate = new Date(dateSelected.getFullYear(), dateSelected.getMonth(), 1);
+    function getParametersForSchedule(_dateSelected) {
+
+        const startDate = new Date(_dateSelected.getFullYear(), _dateSelected.getMonth(), 1);
         startDate.setDate(startDate.getDate() - 3);
 
-        const endDate = new Date(dateSelected.getFullYear(), dateSelected.getMonth() + 1, 5);
-
+        const endDate = new Date(_dateSelected.getFullYear(), _dateSelected.getMonth() + 1, 5);
         return {
+            limit_initial: startDate,
             start_date: startDate.toISOString().split('T')[0], // Formatea a 'YYYY-MM-DD'
             end_date: endDate.toISOString().split('T')[0],     // Formatea a 'YYYY-MM-DD'
             medico_id: _idMedico,
@@ -2147,18 +2151,32 @@
             const result = await loadRealScheduleService(csrfToken, params, api);
 
             if (result.success) {
+                
+                // Configuración de la semana
+                scheduleConfig. tiempo_atencion = result.data.duracion_atencion;
+
+                // Asegúrate de que weeklyScheduleConfig sea un array
+                weeklyScheduleConfig.length = 0; // Vacía el array original
+                weeklyScheduleConfig.push(...result.data.dias_laborables); // Copia los nuevos valores
+
+              
+                // inicializar list de has yyyy-MM-DD
+                const dateDelimit = new Date(params.limit_initial); // crear una copia
+                dateDelimit.setDate(dateDelimit.getDate() -4);
+                generateDailyLimits(dateDelimit);
 
                 scheduleData =[];
-                const loadedCitas = result.data;
+                const loadedCitas = result.data.citas;
+ 
                 // Transformar los datos del backend al formato que scheduleData espera
                 // y agruparlas por fecha
                 const newScheduleData = {};
                 loadedCitas.forEach(cita => {
                     const dateKey = cita.fecha; // 'YYYY-MM-DD'
-                    const nombreCapitalizado = cita.nombres ? capitalizeFirstLetter(patient.nombres.split(' ')[0]) : '';
-                    const apellidoCapitalizado = cita.apellidos ? capitalizeFirstLetter(patient.apellidos.split(' ')[0]) : '';
+                    const nombreCapitalizado = cita.nombres ? capitalizeFirstLetter(cita.nombres.split(' ')[0]) : '';
+                    const apellidoCapitalizado = cita.apellidos ? capitalizeFirstLetter(cita.apellidos.split(' ')[0]) : '';
                     const fullName = `${nombreCapitalizado} ${apellidoCapitalizado}`.trim();
-
+ 
                     if (!newScheduleData[dateKey]) {
                         newScheduleData[dateKey] = [];
                     }
@@ -2205,7 +2223,7 @@
                 return {};
             }
         } catch (error) {
-            console.error('Error en la función loadRealScheduleData:', error);
+         
             showModalNotification('Error inesperado al cargar citas. Intente recargar.', 'error');
             return {};
         } finally {
@@ -2218,7 +2236,7 @@
 
             // Obtener los slots basados en la nueva lógica
             const timeSlots = generateTimeSlotsForDay(dateObj);
-            const calculatedLimit = timeSlots.all.length;
+            const calculatedLimit = timeSlots.all.length
 
             if (!dailyLimits[dateKey]) {
                 dailyLimits[dateKey] = { limit_cita_dia: 0, num_citas_dia: 0 };
@@ -2226,6 +2244,7 @@
             dailyLimits[dateKey].limit_cita_dia = calculatedLimit;
             dailyLimits[dateKey].num_citas_dia = newScheduleData[dateKey].length; // Conteo de citas reales
         });
+
     }
 
 
