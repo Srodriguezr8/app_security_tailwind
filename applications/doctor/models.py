@@ -1,5 +1,4 @@
 from decimal import Decimal
-
 from django.utils import timezone
 from django.db import models
 from applications.core.models import Doctor, Especialidad
@@ -379,6 +378,7 @@ class Pago(models.Model):
         verbose_name = "Pago"
         verbose_name_plural = "Pagos"
 
+
 class DetallePago(models.Model):
     # Relación con el pago principal
     pago = models.ForeignKey(
@@ -398,14 +398,12 @@ class DetallePago(models.Model):
         help_text="Servicio adicional cobrado (ej. Radiografía, Laboratorio)."
     )
 
-    # Cantidad del servicio prestado
     cantidad = models.PositiveIntegerField(
         default=1,
         verbose_name="Cantidad",
         help_text="Cantidad del servicio facturado (ej. 1 examen, 2 procedimientos, etc.)."
     )
 
-    # Precio normal sin seguro
     precio_unitario = models.DecimalField(
         max_digits=10,
         decimal_places=2,
@@ -413,7 +411,13 @@ class DetallePago(models.Model):
         help_text="Precio normal por unidad del servicio, sin considerar seguros."
     )
 
-    # Subtotal calculado (automático)
+    # Nuevo campo
+    valor_consulta = models.DecimalField(
+        "Valor de consulta",
+        max_digits=10, decimal_places=2, null=True, blank=True,
+        help_text="Valor de consulta proveniente del pago seleccionado."
+    )
+
     subtotal = models.DecimalField(
         max_digits=10,
         decimal_places=2,
@@ -422,7 +426,6 @@ class DetallePago(models.Model):
         help_text="Subtotal calculado automáticamente, considerando seguro y descuento."
     )
 
-    # Porcentaje de descuento aplicado
     descuento_porcentaje = models.DecimalField(
         max_digits=5,
         decimal_places=2,
@@ -431,14 +434,12 @@ class DetallePago(models.Model):
         help_text="Descuento aplicado sobre el precio base. Ejemplo: 10 para 10%."
     )
 
-    # Indica si se aplica seguro
     aplica_seguro = models.BooleanField(
         default=False,
         verbose_name="Aplica Seguro",
         help_text="Marca si el servicio tiene cobertura por seguro médico."
     )
 
-    # Valor real que cubre el seguro (reemplaza precio_unitario)
     valor_seguro = models.DecimalField(
         max_digits=10,
         decimal_places=2,
@@ -448,7 +449,6 @@ class DetallePago(models.Model):
         help_text="Valor real cubierto por el seguro. Se usará en lugar del precio normal si se aplica seguro."
     )
 
-    # Descripción del seguro utilizado
     descripcion_seguro = models.CharField(
         max_length=255,
         null=True,
@@ -458,26 +458,24 @@ class DetallePago(models.Model):
     )
 
     def save(self, *args, **kwargs):
-        # Determinar precio base (seguro o normal)
-        precio_base = self.valor_seguro if self.aplica_seguro and self.valor_seguro is not None else self.precio_unitario
-
-        # Aplicar descuento
+        # Precio base es precio_unitario + valor_consulta (si existe)
+        precio_base = self.precio_unitario or Decimal(0)
+        if self.valor_consulta:
+            precio_base += self.valor_consulta
+        # Si aplica seguro, el valor base es el seguro (+ valor_consulta si existe)
+        if self.aplica_seguro and self.valor_seguro is not None:
+            precio_base = self.valor_seguro
+            if self.valor_consulta:
+                precio_base += self.valor_consulta
+        # Aplica descuento
         descuento = (self.descuento_porcentaje / Decimal(100)) * precio_base
         precio_con_descuento = precio_base - descuento
-
-        # Calcular subtotal final
+        # Calcula subtotal
         self.subtotal = round(precio_con_descuento * self.cantidad, 2)
-
         super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.servicio_adicional} - Cantidad: {self.cantidad} - Subtotal: {self.subtotal}"
-
-    class Meta:
-        verbose_name = "Detalle de Pago"
-        verbose_name_plural = "Detalles de Pagos"
-
-
 
     def actualizar_total_pago(self):
         """Actualiza el monto total del pago basado en todos los detalles"""

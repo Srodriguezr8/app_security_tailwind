@@ -26,8 +26,21 @@ class DetallePagoForm(forms.ModelForm):
 
     class Meta:
         model = DetallePago
-        exclude = ('pago', 'subtotal')
-
+        fields = [
+            'pago',
+            'servicio_adicional',
+            'cantidad',
+            'precio_unitario',
+            'valor_consulta',           # <-- Agrega este campo nuevo
+            'descuento_porcentaje',
+            'aplica_seguro',
+            'valor_seguro',
+            'descripcion_seguro',
+            # ... y cualquier otro campo
+        ]
+        widgets = {
+            'valor_consulta': forms.TextInput(attrs={'readonly': 'readonly'}),
+        }
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['servicio_adicional'].queryset = ServiciosAdicionales.objects.filter(activo=True)

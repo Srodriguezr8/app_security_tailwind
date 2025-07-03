@@ -110,13 +110,16 @@
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead>
                                 <tr>
+                                    <th>Pago</th>
                                     <th>Servicio</th>
                                     <th>Cantidad</th>
                                     <th>Precio Unitario</th>
+                                    <th>Valor de consulta</th>
                                     <th>Descuento %</th>
                                     <th>Aplica Seguro</th>
                                     <th>Valor Seguro</th>
                                     <th>Descripción Seguro</th>
+                                    <th>Subtotal</th>
                                     <th>Eliminar</th>
                                 </tr>
                             </thead>
@@ -124,15 +127,25 @@
                                 {% for dform in formset.forms %}
                                 <tr>
                                     {{ dform.id }}
-                                    <td>{{ dform.servicio_adicional }}</td>
+                                    <td>{{ dform.pago }}</td> <!-- NUEVO: Campo Pago -->
+                                    <td class="relative">
+                                        {{ dform.servicio_adicional }}
+                                        <button type="button" class="ml-2 bg-green-500 text-white rounded-full px-2 py-1 text-xs hover:bg-green-700" onclick="abrirModalServicio(this)">
+                                            + Nuevo
+                                        </button>
+                                    </td>
                                     <td>{{ dform.cantidad }}</td>
                                     <td>{{ dform.precio_unitario }}</td>
+                                    <td>{{ dform.valor_consulta }}</td> <!-- NUEVO: Valor de consulta -->
                                     <td>{{ dform.descuento_porcentaje }}</td>
                                     <td>{{ dform.aplica_seguro }}</td>
                                     <td>{{ dform.valor_seguro }}</td>
                                     <td>{{ dform.descripcion_seguro }}</td>
+                                    <td>{{ dform.subtotal_view }}</td>
                                     <td>
-                                        <span style="display:none;">{{ dform.DELETE }}</span>
+                                        {% if dform.instance.pk %}
+                                            {{ dform.DELETE }}
+                                        {% endif %}
                                     </td>
                                 </tr>
                                 {% endfor %}
@@ -194,22 +207,20 @@ function actualizarTotal() {
     document.querySelectorAll('tbody tr').forEach(row => {
         let cantidad = parseFloat(row.querySelector('input[name$="cantidad"]')?.value || 0);
         let precio = parseFloat(row.querySelector('input[name$="precio_unitario"]')?.value || 0);
+        let valor_consulta = parseFloat(row.querySelector('input[name$="valor_consulta"]')?.value || 0);
         let descuento = parseFloat(row.querySelector('input[name$="descuento_porcentaje"]')?.value || 0);
         let aplica_seguro = row.querySelector('input[name$="aplica_seguro"]')?.checked;
         let valor_seguro = parseFloat(row.querySelector('input[name$="valor_seguro"]')?.value || 0);
         let subtotal = 0;
-        if (cantidad && (precio || valor_seguro)) {
-            let base = (aplica_seguro && valor_seguro) ? valor_seguro : precio;
-            subtotal = (base - (base * (descuento / 100))) * cantidad;
-        }
+        let base = (aplica_seguro && valor_seguro) ? valor_seguro : precio;
+        base += valor_consulta;
+        subtotal = (base - (base * (descuento / 100))) * cantidad;
         if (subtotal > 0) total += subtotal;
+        var subtotalInput = row.querySelector('input[name$="subtotal_view"]');
+        if (subtotalInput) subtotalInput.value = subtotal ? subtotal.toFixed(2) : '';
     });
     document.getElementById('total-pago').textContent = '$' + total.toFixed(2);
-    // --------- Sincroniza con el campo de monto_total -----------
-    //let montoInput = document.querySelector('input[name="monto_total"]');
-    //if (montoInput) {
-    //    montoInput.value = total.toFixed(2);
-    //}
+
     let botonGuardar = document.getElementById('btn-guardar-pago');
     if (!botonGuardar) return;
     if (total > 0) {
@@ -258,7 +269,7 @@ document.querySelectorAll('.btn-metodo').forEach(btn => {
 });
 function mostrarPayPal() {
     document.getElementById('paypal-btn-container').classList.remove('hidden');
-    document.getElementById('paypal-btn-container').innerHTML = ''; // Limpia botones previos
+    document.getElementById('paypal-btn-container').innerHTML = '';
     document.getElementById('modal-metodo-pago').classList.remove('hidden');
     totalActual = getTotalActual();
     paypal.Buttons({
@@ -303,17 +314,23 @@ function mostrarPayPal() {
 
 // Sincronizar el total visual con el monto_total escrito y autosize observaciones
 document.addEventListener('DOMContentLoaded', function() {
+    // --------- TOTAL Y AUTOSIZE OBSERVACIONES ---------
     var montoInput = document.querySelector('input[name="monto_total"]');
     var totalSpan = document.getElementById('total-pago');
-    if (montoInput && totalSpan) {
-        function actualizarTotal() {
-            let valor = parseFloat(montoInput.value) || 0;
-            totalSpan.textContent = '$' + valor.toFixed(2);
-        }
-        montoInput.addEventListener('input', actualizarTotal);
-        actualizarTotal();
+    function actualizarTotalInner() {
+        let total = 0;
+        document.querySelectorAll('input[name$="subtotal_view"]').forEach(function(input){
+            let v = parseFloat(input.value) || 0;
+            total += v;
+        });
+        if (totalSpan) totalSpan.textContent = '$' + total.toFixed(2);
     }
-    // AUTOSIZE para Observaciones
+    if (montoInput && totalSpan) {
+        montoInput.addEventListener('input', function(){
+            actualizarTotalInner();
+        });
+        actualizarTotalInner();
+    }
     var txt = document.querySelector('textarea[name="observaciones"]');
     if (txt) {
         txt.setAttribute('rows', 1);
@@ -323,13 +340,159 @@ document.addEventListener('DOMContentLoaded', function() {
             this.style.height = (this.scrollHeight) + "px";
         });
     }
-    // Ocultar mensaje de éxito tras 3 segundos
     var mensajes = document.getElementById('mensajes-exito');
     if (mensajes) {
         setTimeout(function() {
             mensajes.style.display = "none";
         }, 3000);
     }
+
+    // --------- MODAL SERVICIO ADICIONAL (AJAX) ---------
+    let selectActualServicio = null;
+    window.abrirModalServicio = function(btn) {
+        selectActualServicio = btn.parentNode.querySelector('select');
+        document.getElementById('modal-servicio').classList.remove('hidden');
+        document.getElementById('form-servicio').reset();
+    };
+    window.cerrarModalServicio = function() {
+        document.getElementById('modal-servicio').classList.add('hidden');
+    };
+    const formServicio = document.getElementById('form-servicio');
+    if (formServicio) {
+        formServicio.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const data = {
+                nombre_servicio: this.nombre_servicio.value,
+                costo_servicio: this.costo_servicio.value,
+                descripcion: this.descripcion.value,
+            };
+            fetch('/doctor/api/servicio_adicional/crear/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify(data)
+            })
+            .then(resp => resp.json())
+            .then(obj => {
+                if(obj.id) {
+                    document.querySelectorAll('select[name$="servicio_adicional"]').forEach(sel => {
+                        let existe = false;
+                        sel.querySelectorAll('option').forEach(o => { if(o.value == obj.id) existe = true; });
+                        if(!existe) {
+                            let opt = document.createElement('option');
+                            opt.value = obj.id;
+                            opt.text = obj.nombre_servicio;
+                            sel.add(opt);
+                        }
+                    });
+                    if (selectActualServicio) {
+                        selectActualServicio.value = obj.id;
+                    }
+                    document.querySelectorAll('#form-servicio .mensaje-exito-servicio').forEach(el => el.remove());
+                    let msj = document.createElement('div');
+                    msj.className = 'mensaje-exito-servicio bg-green-100 text-green-700 p-2 rounded mt-2 text-center font-bold';
+                    msj.innerText = '¡Servicio guardado correctamente!';
+                    document.getElementById('form-servicio').appendChild(msj);
+                    document.querySelectorAll('.mensaje-exito-global-servicio').forEach(el => el.remove());
+                    let msjGlobal = document.createElement('div');
+                    msjGlobal.className = 'mensaje-exito-global-servicio bg-green-100 text-green-700 p-2 rounded mt-2 text-center font-bold fixed top-20 left-1/2 transform -translate-x-1/2 z-50';
+                    msjGlobal.innerText = '¡Servicio guardado correctamente!';
+                    document.body.appendChild(msjGlobal);
+                    setTimeout(() => msjGlobal.remove(), 2500);
+                }
+                document.getElementById('form-servicio').reset();
+                setTimeout(() => window.cerrarModalServicio(), 2000);
+            });
+        });
+    }
+
+    // --------- AUTOLLENA VALOR DE CONSULTA AL SELECCIONAR PAGO ---------
+    document.querySelectorAll('select[name$="pago"]').forEach(function(selectPago){
+        selectPago.addEventListener('change', function(){
+            const pagoId = this.value;
+            if (pagoId) {
+                fetch(`/doctor/api/get_valor_consulta/${pagoId}/`)
+                .then(resp => resp.json())
+                .then(data => {
+                    if (data.valor_consulta !== undefined) {
+                        const row = selectPago.closest('tr');
+                        if (row) {
+                            const inpValorConsulta = row.querySelector('input[name$="valor_consulta"]');
+                            if (inpValorConsulta) {
+                                inpValorConsulta.value = data.valor_consulta;
+                                inpValorConsulta.dispatchEvent(new Event('input'));
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    });
+
+    // --------- CÁLCULO DE SUBTOTAL (SUMA PRECIO + VALOR DE CONSULTA) ---------
+    document.addEventListener('input', function(e) {
+        document.querySelectorAll('tbody tr').forEach(function(row) {
+            var cantidad = parseFloat(row.querySelector('input[name$="cantidad"]')?.value || 0);
+            var precio = parseFloat(row.querySelector('input[name$="precio_unitario"]')?.value || 0);
+            var valor_consulta = parseFloat(row.querySelector('input[name$="valor_consulta"]')?.value || 0);
+            var descuento = parseFloat(row.querySelector('input[name$="descuento_porcentaje"]')?.value || 0);
+            var aplica_seguro = row.querySelector('input[name$="aplica_seguro"]')?.checked;
+            var valor_seguro = parseFloat(row.querySelector('input[name$="valor_seguro"]')?.value || 0);
+            var subtotal = 0;
+            var base = (aplica_seguro && valor_seguro) ? valor_seguro : precio;
+            base += valor_consulta;
+            subtotal = (base - (base * (descuento / 100))) * cantidad;
+            var subtotalInput = row.querySelector('input[name$="subtotal_view"]');
+            if (subtotalInput) subtotalInput.value = subtotal ? subtotal.toFixed(2) : '';
+        });
+        actualizarTotal();
+    });
+
+    // --------- TOTAL AUTOMÁTICO AL CARGAR ---------
+    function actualizarTotalPagoAlCargar() {
+        let total = 0;
+        document.querySelectorAll('tbody tr').forEach(row => {
+            let cantidad = parseFloat(row.querySelector('input[name$="cantidad"]')?.value || 0);
+            let precio = parseFloat(row.querySelector('input[name$="precio_unitario"]')?.value || 0);
+            let valor_consulta = parseFloat(row.querySelector('input[name$="valor_consulta"]')?.value || 0);
+            let descuento = parseFloat(row.querySelector('input[name$="descuento_porcentaje"]')?.value || 0);
+            let aplica_seguro = row.querySelector('input[name$="aplica_seguro"]')?.checked;
+            let valor_seguro = parseFloat(row.querySelector('input[name$="valor_seguro"]')?.value || 0);
+            let subtotal = 0;
+            let base = (aplica_seguro && valor_seguro) ? valor_seguro : precio;
+            base += valor_consulta;
+            subtotal = (base - (base * (descuento / 100))) * cantidad;
+            if (subtotal > 0) total += subtotal;
+            var subtotalInput = row.querySelector('input[name$="subtotal_view"]');
+            if (subtotalInput) subtotalInput.value = subtotal ? subtotal.toFixed(2) : '';
+        });
+        document.getElementById('total-pago').textContent = '$' + total.toFixed(2);
+    }
+    actualizarTotalPagoAlCargar();
 });
 </script>
+
+<!-- Modal para crear servicio adicional -->
+<div id="modal-servicio" class="fixed inset-0 z-50 flex items-center justify-center hidden"
+    style="backdrop-filter: blur(8px); background: rgba(30,41,59,0.25);">
+    <div class="bg-white rounded-xl shadow-xl p-8 max-w-md w-full relative">
+        <button type="button" class="absolute top-0 right-0 mt-3 mr-3 text-2xl text-gray-400 hover:text-gray-700" onclick="cerrarModalServicio()">&times;</button>
+        <h2 class="text-xl font-bold mb-4 text-indigo-600">Agregar Servicio Adicional</h2>
+        <form id="form-servicio">
+            <!-- AGREGA ESTA LÍNEA -->
+            <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+            <label>Nombre:</label>
+            <input type="text" name="nombre_servicio" class="block w-full border border-indigo-200 rounded-xl px-3 py-1 mb-2" required>
+            <label>Costo:</label>
+            <input type="number" name="costo_servicio" step="0.01" class="block w-full border border-indigo-200 rounded-xl px-3 py-1 mb-2" required>
+            <label>Descripción:</label>
+            <input type="text" name="descripcion" class="block w-full border border-indigo-200 rounded-xl px-3 py-1 mb-2">
+            <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-xl font-bold mt-3 w-full">Guardar Servicio</button>
+        </form>
+    </div>
+</div>
+
+
 {% endblock %}

@@ -1,10 +1,9 @@
 from django.urls import path
-
 from applications.doctor.views.agenda_cita import AgendaCitaMedicaListView, add_patient_api, patients_search_api
 from applications.doctor.views.atencion_medica import AtencionListView, AtencionCreateView, AtencionUpdateView, \
     AtencionDeleteView
 from applications.doctor.views.pago import ( PagoListView, PagoCreateView, PagoUpdateView, PagoDeleteView)
-from applications.doctor.views.ordenpago import OrdenPagoCreateView
+from applications.doctor.views.ordenpago import OrdenPagoCreateView, crear_servicio_adicional, get_valor_consulta
 
 app_name='doctor' # define un espacio de nombre para la aplicacion
 urlpatterns = [
@@ -25,5 +24,8 @@ urlpatterns = [
     path('pagos/eliminar/<int:pk>/', PagoDeleteView.as_view(), name="pago_delete"),
   #Orden de pago
   path('pagos/crear/', OrdenPagoCreateView.as_view(), name='pagos_crear'),
-
+  #API SERVICIO ADICIONAL
+  path('api/servicio_adicional/crear/', crear_servicio_adicional, name='crear_servicio_adicional'),
+  #Api MONTO TOTAL
+  path('api/get_valor_consulta/<int:pago_id>/', get_valor_consulta, name='get_valor_consulta'),
 ]
