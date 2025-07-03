@@ -14,6 +14,7 @@
 
     {% tailwind_css %}
     
+    {% block styles %}{% endblock %}
 
 </head>
 
@@ -45,10 +46,14 @@
 
 </body>
 
-{% block js %}
+<script defer src="{% static 'js/alpine/alpine.min.js' %}"></script>
+<script defer src="{% static 'js/alpine/alpine-collapse.min.js' %}"></script>
 
 <script>
 
+    document.addEventListener('alpine:init', () => {
+        Alpine.store('openMenus', []);
+    });
   
     document.addEventListener('DOMContentLoaded', function () {
 
@@ -240,7 +245,7 @@
     });
 
 </script>
+{% block js %}{% endblock %}
 
-{% endblock %}
 
 </html>

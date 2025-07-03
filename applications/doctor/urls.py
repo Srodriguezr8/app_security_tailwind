@@ -1,8 +1,10 @@
 from django.urls import path
-
+from applications.doctor.views.agenda_cita import AgendaCitaMedicaListView, add_patient_api, patients_search_api
 from applications.doctor.views.atencion_medica import AtencionListView, AtencionCreateView, AtencionUpdateView, \
     AtencionDeleteView
 from applications.doctor.views.pago import ( PagoListView, PagoCreateView, PagoUpdateView, PagoDeleteView)
+from applications.doctor.views.ordenpago import OrdenPagoCreateView, crear_servicio_adicional, get_valor_consulta, get_costo_servicio_adicional, guardar_detalle_pago
+
 app_name='doctor' # define un espacio de nombre para la aplicacion
 urlpatterns = [
     # Rutas  para vistas relacionadas con Doctor
@@ -11,9 +13,23 @@ urlpatterns = [
     path('atencion_update/<int:pk>/', AtencionUpdateView.as_view(), name="atencion_update"),
     path('atencion_delete/<int:pk>/', AtencionDeleteView.as_view(), name="atencion_delete"),
     
+  # Citas
+    path('agenda_cita/', AgendaCitaMedicaListView.as_view(), name="agenda_cita"),
+    path('patient_create_api/', add_patient_api, name="patient_create_api"),
+    path('patients_search_api/', patients_search_api, name="patients_search_api"),
     # Rutas para pago
     path('pagos/', PagoListView.as_view(), name="pago_list"),
     path('pagos/nuevo/', PagoCreateView.as_view(), name="pago_create"),
     path('pagos/editar/<int:pk>/', PagoUpdateView.as_view(), name="pago_update"),
     path('pagos/eliminar/<int:pk>/', PagoDeleteView.as_view(), name="pago_delete"),
+  #Orden de pago
+  path('pagos/crear/', OrdenPagoCreateView.as_view(), name='pagos_crear'),
+  #API SERVICIO ADICIONAL
+  path('api/servicio_adicional/crear/', crear_servicio_adicional, name='crear_servicio_adicional'),
+  #Api MONTO TOTAL
+  path('api/get_valor_consulta/<int:pago_id>/', get_valor_consulta, name='get_valor_consulta'),
+  #API AUTOMATIZACION SERVICIO ADICIONAL
+  path('api/get_costo_servicio/<int:servicio_id>/', get_costo_servicio_adicional, name='get_costo_servicio'),
+  #API GUARDAR DETALLE PAGO
+  path('api/guardar_detalle_pago/', guardar_detalle_pago, name='guardar_detalle_pago'),
 ]

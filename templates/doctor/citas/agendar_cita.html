@@ -1,0 +1,1634 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Calendario Médico - {{ block.super }}{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{% static 'css/dist/appointment_calendar.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<!-- Modal de Horarios - INICIALMENTE OCULTO -->
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+    <!-- Header del Calendario -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-6">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                    <i class="fas fa-calendar-alt text-blue-600 mr-3"></i>
+                    Calendario Médico
+                </h1>
+                <p class="text-gray-600 dark:text-gray-300">Gestiona citas y horarios médicos</p>
+            </div>
+            
+            <!-- Controles de navegación -->
+            <div class="flex items-center gap-4">
+                <div class="flex items-center bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
+                    <button id="prevMonth" class="p-2 hover:bg-white dark:hover:bg-gray-600 rounded-md transition-colors">
+                        <i class="fas fa-chevron-left text-gray-600 dark:text-gray-300"></i>
+                    </button>
+                    <span id="currentMonth" class="px-4 py-2 font-semibold text-gray-900 dark:text-white min-w-[200px] text-center">
+                        <!-- Se llena con JavaScript -->
+                    </span>
+                    <button id="nextMonth" class="p-2 hover:bg-white dark:hover:bg-gray-600 rounded-md transition-colors">
+                        <i class="fas fa-chevron-right text-gray-600 dark:text-gray-300"></i>
+                    </button>
+                </div>
+                
+                <button id="todayBtn" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
+                    <i class="fas fa-calendar-day mr-2"></i>Hoy
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Calendario Principal -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+        <!-- Días de la semana (empezando por lunes) -->
+        <div class="grid grid-cols-7 bg-gray-50 dark:bg-gray-700">
+            <div class="p-4 text-center font-semibold text-gray-700 dark:text-gray-300 border-r border-gray-200 dark:border-gray-600">Lunes</div>
+            <div class="p-4 text-center font-semibold text-gray-700 dark:text-gray-300 border-r border-gray-200 dark:border-gray-600">Martes</div>
+            <div class="p-4 text-center font-semibold text-gray-700 dark:text-gray-300 border-r border-gray-200 dark:border-gray-600">Miércoles</div>
+            <div class="p-4 text-center font-semibold text-gray-700 dark:text-gray-300 border-r border-gray-200 dark:border-gray-600">Jueves</div>
+            <div class="p-4 text-center font-semibold text-gray-700 dark:text-gray-300 border-r border-gray-200 dark:border-gray-600">Viernes</div>
+            <div class="p-4 text-center font-semibold text-gray-700 dark:text-gray-300 border-r border-gray-200 dark:border-gray-600">Sábado</div>
+            <div class="p-4 text-center font-semibold text-gray-700 dark:text-gray-300">Domingo</div>
+        </div>
+        
+        <!-- Grid del calendario -->
+        <div id="calendarGrid" class="grid grid-cols-7 min-h-[600px]">
+            <!-- Las celdas se generan dinámicamente -->
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Horarios - INICIALMENTE OCULTO -->
+<div id="scheduleModal" class="modal-overlay hidden">
+    <div class="modal-container">
+        <!-- Header del Modal - FIJO -->
+        <div class="modal-header">
+            <h2 class="text-2xl font-bold text-secondary-custom">
+                <i class="fas fa-clock text-secondary-custom mr-2"></i>
+                Horarios - <span id="modalDate"></span>
+            </h2>
+            <button id="closeModal" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                <i class="fas fa-times text-gray-500 dark:text-gray-400"></i>
+            </button>
+        </div>
+
+        <!-- Contenedor para notificaciones -->
+        <div id="notificationContainer" class="w-full hidden">
+            <!-- Las notificaciones aparecerán aquí -->
+        </div>
+            
+
+        <!-- Contenido del Modal - FLEXIBLE -->
+        <div class="modal-content">
+            <!-- Panel de Horarios (Izquierda) - SCROLLABLE -->
+            <div id="schedulePanel" class="schedule-panel">
+                <div id ="scheduleContent" class="schedule-content">
+
+                    <!-- Indicador de carga -->
+                    <div id="loadingSchedule" class="text-center py-8 hidden">
+                        <div class="inline-flex items-center">
+                            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mr-3"></div>
+                            <span class="text-gray-600 dark:text-gray-300">Cargando horarios...</span>
+                        </div>
+                    </div>
+
+                    <!-- Mensaje cuando no hay horarios disponibles -->
+                    <div id="noScheduleMessage" class="text-center py-8 hidden">
+                        <div class="text-gray-500 dark:text-gray-400">
+                            <i class="fas fa-calendar-times text-4xl mb-4"></i>
+                            <p class="text-lg font-medium">No hay horarios disponibles</p>
+                            <p class="text-sm">Este día no está habilitado para citas médicas</p>
+                        </div>
+                    </div>
+
+                    <!-- Horarios de Mañana -->
+                    <div id="morningSchedule" class="mb-8">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-secondary-custom flex items-center">
+                                <i class="fas fa-sun text-tertiary-custom mr-2"></i>
+                                Horarios de Mañana
+                            </h3>
+
+                        </div>
+                        <div id="morningGrid" class="schedule-grid">
+                            <!-- Los horarios de mañana se cargan dinámicamente -->
+                        </div>
+                    </div>
+
+                    <!-- Horarios de Tarde -->
+                    <div id="afternoonSchedule">
+                        <h3 class="text-lg font-semibold text-secondary-custom mb-4 flex items-center">
+                            <i class="fas fa-moon text-tertiary-custom mr-2"></i>
+                            Horarios de Tarde
+                        </h3>
+                        <div id="afternoonGrid" class="schedule-grid">
+                            <!-- Los horarios de tarde se cargan dinámicamente -->
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Botón Guardar - FIJO AL FONDO -->
+                <div class="schedule-footer flex justify-end gap-3">
+                    <button id="saveSchedule" class="save-button">
+                        <i class="fas fa-save"></i>
+                        Guardar Cambios
+                    </button>
+                    <button id="cancelSchedule" class="cancel-button">
+                        <i class="fas fa-times"></i>
+                        Cancelar
+                    </button>
+                </div>
+
+                <!-- Panel de Agregar Paciente - INICIALMENTE OCULTO -->
+                <div id="addPatientPanel" class="add-patient-panel hidden">
+                    <div class="add-patient-content">
+                        <div class="add-patient-header">
+                            <h3 class="text-xl font-bold text-gray-900 dark:text-white flex items-center">
+                                <i class="fas fa-user-plus text-blue-600 mr-2"></i>
+                                Agregar Nuevo Paciente
+                            </h3>
+                            <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">Complete los datos obligatorios del paciente</p>
+                        </div>
+
+                        <form id="addPatientForm" class="add-patient-form">
+                            {% csrf_token %}
+                            <!-- Información Personal -->
+                            <div class="form-section">
+                                <h4 class="form-section-title">
+                                    <i class="fas fa-user mr-2"></i>
+                                    Información Personal
+                                </h4>
+                                
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label for="nombres" class="form-label">Nombres *</label>
+                                        <input type="text" id="nombres" name="nombres" class="form-input" required maxlength="100">
+                                        <div class="form-error" id="nombres-error"></div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="apellidos" class="form-label">Apellidos *</label>
+                                        <input type="text" id="apellidos" name="apellidos" class="form-input" required maxlength="100">
+                                        <div class="form-error" id="apellidos-error"></div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="cedula_ecuatoriana" class="form-label">Cédula Ecuatoriana *</label>
+                                        <input type="text" id="cedula_ecuatoriana" name="cedula_ecuatoriana" class="form-input" required maxlength="10" pattern="[0-9]{10}">
+                                        <div class="form-help">Ingrese el número de cédula sin espacios ni guiones</div>
+                                        <div class="form-error" id="cedula_ecuatoriana-error"></div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="fecha_nacimiento" class="form-label">Fecha de Nacimiento *</label>
+                                        <input type="date" id="fecha_nacimiento" name="fecha_nacimiento" class="form-input" required>
+                                        <div class="form-error" id="fecha_nacimiento-error"></div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="telefono" class="form-label">Teléfono(s) *</label>
+                                        <input type="text" id="telefono" name="telefono" class="form-input" required maxlength="50">
+                                        <div class="form-help">Puede ingresar uno o más números separados por coma</div>
+                                        <div class="form-error" id="telefono-error"></div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="email" class="form-label">Correo Electrónico</label>
+                                        <input type="email" id="email" name="email" class="form-input">
+                                        <div class="form-help">Correo electrónico del paciente (opcional)</div>
+                                        <div class="form-error" id="email-error"></div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="estado_civil" class="form-label">Estado Civil *</label>
+                                        <select id="estado_civil" name="estado_civil" class="form-input" required>
+                                            <option value="">Seleccione...</option>
+                                            <option value="soltero">Soltero/a</option>
+                                            <option value="casado">Casado/a</option>
+                                            <option value="divorciado">Divorciado/a</option>
+                                            <option value="viudo">Viudo/a</option>
+                                            <option value="union_libre">Unión Libre</option>
+                                        </select>
+                                        <div class="form-error" id="estado_civil-error"></div>
+                                    </div>
+
+                                    <div class="form-group form-group-full">
+                                        <label for="direccion" class="form-label">Dirección Domiciliaria *</label>
+                                        <input type="text" id="direccion" name="direccion" class="form-input" required maxlength="255">
+                                        <div class="form-error" id="direccion-error"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Información Médica Opcional -->
+                            <div class="form-section">
+                                <h4 class="form-section-title">
+                                    <i class="fas fa-heartbeat mr-2"></i>
+                                    Información Médica (Opcional)
+                                </h4>
+                                
+                                <div class="form-grid">
+                                    <div class="form-group form-group-full">
+                                        <label for="antecedentes_personales" class="form-label">Antecedentes Personales</label>
+                                        <textarea id="antecedentes_personales" name="antecedentes_personales" class="form-textarea" rows="3" placeholder="Ej.: Diabetes tipo 2, hipertensión, asma, etc."></textarea>
+                                    </div>
+
+                                    <div class="form-group form-group-full">
+                                        <label for="alergias" class="form-label">Alergias</label>
+                                        <textarea id="alergias" name="alergias" class="form-textarea" rows="2" placeholder="Ej.: Penicilina, mariscos, polvo, etc."></textarea>
+                                    </div>
+
+                                    <div class="form-group form-group-full">
+                                        <label for="medicamentos_actuales" class="form-label">Medicamentos Actuales</label>
+                                        <textarea id="medicamentos_actuales" name="medicamentos_actuales" class="form-textarea" rows="2" placeholder="Nombre, dosis y frecuencia. Ej.: Losartán 50mg diario"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Botones de Acción - FIJOS AL FONDO -->
+                    <div class="add-patient-footer">
+                        <button type="submit" form="addPatientForm" id="savePatient" class="save-patient-button">
+                            <i class="fas fa-save mr-2"></i>
+                            Guardar Paciente
+                        </button>
+                        <button type="button" id="cancelAddPatient" class="cancel-button">
+                            <i class="fas fa-times mr-2"></i>
+                            Cancelar
+                        </button>
+                    
+                    </div>
+                </div>
+
+            </div>
+
+
+            <!-- Panel de Pacientes (Derecha) - ALTURA FIJA CON SCROLL -->
+            <div class="patients-panel">
+                <!-- Buscador de Pacientes y Botón Agregar - FIJO -->
+                <div class="patients-search sticky top-0 bg-white dark:bg-gray-900 z-10 p-2 border-b border-gray-200 dark:border-gray-700">
+                    <div class="flex items-center gap-2">
+                        <!-- Botón Agregar Paciente (a la izquierda) -->
+                        <button id="addPatientBtn" 
+                                class="flex items-center justify-center w-10 h-10 text-white bg-green-600 hover:bg-green-700 rounded-lg transition"
+                                title="Agregar Paciente">
+                            <i class="fas fa-user-plus"></i>
+                        </button>
+
+                        <!-- Cuadro de Búsqueda -->
+                        <div class="relative flex-1">
+                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-search text-gray-400"></i>
+                            </span>
+                            <input type="text" id="patientSearch" placeholder="Buscar pacientes..." 
+                                class="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Título - FIJO -->
+                <div class="patients-title">
+                    <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
+                        Pacientes Disponibles
+                    </h3>
+                </div>
+
+                <!-- Lista de Pacientes - SCROLLABLE -->
+                <div class="patients-list">
+                    <div id="patientsList" class="space-y-3">
+                        <!-- Los pacientes se cargan dinámicamente -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}
+
+{% block js %}
+<script src="{% static 'js/doctor/save_patient.js' %}"></script>
+<script>
+// Variables globales
+let currentDate = new Date();
+let selectedDate = null;
+let draggedPatient = null;
+let scheduleData = {};
+let patientsData = [];
+let filteredPatients = [];
+let pendingAppointments = {};
+let isAddingPatient = false; // AGREGADO: Control del estado del panel
+let isLoadingPatients = false; // Cargando pacientes desde el servicio
+
+// Configuración de horarios
+const weeklyScheduleConfig = [
+    { dia_semana: 'Lunes', hora_inicio: '08:00', hora_fin: '12:00', intervalo_desde: '14:00', intervalo_hasta: '18:00', activo: true },
+    { dia_semana: 'Martes', hora_inicio: '08:00', hora_fin: '12:00', intervalo_desde: '14:00', intervalo_hasta: '18:00', activo: true },
+    { dia_semana: 'Miércoles', hora_inicio: '08:00', hora_fin: '12:00', intervalo_desde: '14:00', intervalo_hasta: '18:00', activo: true },
+    { dia_semana: 'Jueves', hora_inicio: '08:00', hora_fin: '12:00', intervalo_desde: '14:00', intervalo_hasta: '18:00', activo: true },
+    { dia_semana: 'Viernes', hora_inicio: '08:00', hora_fin: '12:00', intervalo_desde: '14:00', intervalo_hasta: '18:00', activo: true },
+    { dia_semana: 'Sábado', hora_inicio: '08:00', hora_fin: '12:00', intervalo_desde: '00:00', intervalo_hasta: '00:00', activo: true },
+    { dia_semana: 'Domingo', hora_inicio: '00:00', hora_fin: '00:00', intervalo_desde: '00:00', intervalo_hasta: '00:00', activo: false }
+];
+
+const scheduleConfig = {
+    tiempo_atencion: 30,
+    limit_cita_dia: 16,
+    medico_id: 1,
+    especialidad_id: 2
+};
+
+const dayNames = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+const dailyLimits = {};
+
+// Datos simulados de pacientes
+const mockPatients = [
+    { id: 1, name: 'María García', age: 45, condition: 'Hipertensión', priority: 'normal', phone: '555-0101' },
+    { id: 2, name: 'Juan Pérez', age: 32, condition: 'Diabetes', priority: 'urgent', phone: '555-0102' },
+    { id: 3, name: 'Ana López', age: 28, condition: 'Control rutinario', priority: 'normal', phone: '555-0103' },
+    { id: 4, name: 'Carlos Ruiz', age: 55, condition: 'Cardiología', priority: 'urgent', phone: '555-0104' },
+    { id: 5, name: 'Elena Martín', age: 38, condition: 'Seguimiento', priority: 'follow-up', phone: '555-0105' },
+    { id: 6, name: 'Roberto Silva', age: 42, condition: 'Neurología', priority: 'normal', phone: '555-0106' },
+    { id: 7, name: 'Carmen Vega', age: 29, condition: 'Ginecología', priority: 'normal', phone: '555-0107' },
+    { id: 8, name: 'Miguel Torres', age: 51, condition: 'Ortopedia', priority: 'urgent', phone: '555-0108' },
+    { id: 9, name: 'Laura Jiménez', age: 35, condition: 'Dermatología', priority: 'normal', phone: '555-0109' },
+    { id: 10, name: 'Pedro Morales', age: 48, condition: 'Oftalmología', priority: 'follow-up', phone: '555-0110' }
+];
+
+// Validación de cédula ecuatoriana
+function validarCedulaEcuatoriana(cedula) {
+    if (!/^\d{10}$/.test(cedula)) {
+        return false;
+    }
+    
+    const provincia = parseInt(cedula.substring(0, 2));
+    if (provincia < 1 || provincia > 24) {
+        return false;
+    }
+    
+    const tercerDigito = parseInt(cedula.charAt(2));
+    if (tercerDigito > 6) {
+        return false;
+    }
+    
+    const coeficientes = [2, 1, 2, 1, 2, 1, 2, 1, 2];
+    let suma = 0;
+    
+    for (let i = 0; i < 9; i++) {
+        let valor = parseInt(cedula.charAt(i)) * coeficientes[i];
+        if (valor >= 10) {
+            valor = valor - 9;
+        }
+        suma += valor;
+    }
+    
+    const digitoVerificador = parseInt(cedula.charAt(9));
+    const modulo = suma % 10;
+    const resultado = modulo === 0 ? 0 : 10 - modulo;
+    
+    return resultado === digitoVerificador;
+}
+
+// Funciones de utilidad
+function getDayScheduleConfig(date) {
+    const dayOfWeek = dayNames[date.getDay()];
+    return weeklyScheduleConfig.find(config => config.dia_semana === dayOfWeek);
+}
+
+function isDayActive(date) {
+    const config = getDayScheduleConfig(date);
+    return config && config.activo;
+}
+
+function generateTimeSlotsForDay(date) {
+    const config = getDayScheduleConfig(date);
+    
+    if (!config || !config.activo) {
+        return { all: [], morning: [], afternoon: [] };
+    }
+    
+    const slots = [];
+    const morningSlots = [];
+    const afternoonSlots = [];
+    
+    if (config.hora_inicio !== '00:00' && config.hora_fin !== '00:00') {
+        let currentTime = parseTime(config.hora_inicio);
+        const endMorning = parseTime(config.hora_fin);
+        
+        while (currentTime < endMorning) {
+            const timeString = formatTime(currentTime);
+            slots.push(timeString);
+            morningSlots.push(timeString);
+            currentTime += scheduleConfig.tiempo_atencion;
+        }
+    }
+    
+    if (config.intervalo_desde !== '00:00' && config.intervalo_hasta !== '00:00') {
+        let currentTime = parseTime(config.intervalo_desde);
+        const endAfternoon = parseTime(config.intervalo_hasta);
+        
+        while (currentTime < endAfternoon) {
+            const timeString = formatTime(currentTime);
+            slots.push(timeString);
+            afternoonSlots.push(timeString);
+            currentTime += scheduleConfig.tiempo_atencion;
+        }
+    }
+    
+    return { all: slots, morning: morningSlots, afternoon: afternoonSlots };
+}
+
+function parseTime(timeString) {
+    const [hours, minutes] = timeString.split(':').map(Number);
+    return hours * 60 + minutes;
+}
+
+function formatTime(minutes) {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+}
+
+// MODIFICADO: Inicialización - Modal oculto por defecto
+document.addEventListener('DOMContentLoaded', function() {
+    initializeCalendar();
+    // cargar pacientes después de un breve retraso para simular una llamada a la API
+    setTimeout(() => {
+          loadPatients();
+    }, 2000);
+
+    setupEventListeners();
+    
+    // IMPORTANTE: Modal inicialmente oculto
+    document.getElementById('scheduleModal').classList.add('hidden');
+    
+    setTimeout(() => {
+        generateMockScheduleData();
+        generateDailyLimits();
+        renderCalendar();
+    }, 500);
+});
+
+function initializeCalendar() {
+    updateMonthDisplay();
+    renderCalendar();
+}
+
+// Carga de pacientes por defecto
+async function loadPatients() {
+    if (isLoadingPatients)  return; // Evitar múltiples cargas simultáneas
+    try {
+       
+        const params = {
+            limit: 50, 
+            order_by: '-id' 
+        };
+        csrfToken  = getCSRFToken();
+        const url = '/doctor/patients_search_api/'; 
+        isLoadingPatients = true;
+
+        result = await getPatientsService(csrfToken, params, url, 'GET');
+        if (result.success) {
+           filteredPatients = processPatientsData(result.data);
+        } else {
+            console.error('Error al cargar pacientes:', result.message);
+            filteredPatients = [];
+        }
+
+    } catch (error) {
+        console.error('Error al cargar pacientes:', error);
+    } finally {
+        isLoadingPatients = false;
+    }   
+}
+
+function renderPatients() {
+    const patientsList = document.getElementById('patientsList');
+    if (!patientsList) return;
+    
+    patientsList.innerHTML = '';
+    
+    if (filteredPatients.length === 0) {
+        patientsList.innerHTML = '<div class="text-center text-gray-500 py-4">No se encontraron pacientes</div>';
+        return;
+    }
+    
+    const dateKey = selectedDate ? selectedDate.toISOString().split('T')[0] : null;
+    const daySchedule = dateKey ? (scheduleData[dateKey] || []) : [];
+    const pendingForDay = dateKey ? (pendingAppointments[dateKey] || []) : [];
+    
+    const scheduledPatientIds = new Set([
+        ...daySchedule.map(apt => apt.patientId),
+        ...pendingForDay.map(apt => apt.patientId)
+    ]);
+    
+    const availablePatients = filteredPatients.filter(patient => !scheduledPatientIds.has(patient.id));
+    
+    if (availablePatients.length === 0) {
+        patientsList.innerHTML = '<div class="text-center text-gray-500 py-4">Todos los pacientes ya están agendados para este día</div>';
+        return;
+    }
+    
+    availablePatients.forEach(patient => {
+        const patientCard = document.createElement('div');
+        patientCard.className = `patient-card bg-white dark:bg-gray-600 border border-gray-200 dark:border-gray-500 rounded-lg p-3 shadow-sm hover:shadow-md transition-all`;
+        patientCard.draggable = true;
+        patientCard.dataset.patientId = patient.id;
+        
+        const priorityColor = {
+            'urgent': 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+            'normal': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+            'follow-up': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+        };
+        
+        const priorityText = {
+            'urgent': 'Urgente',
+            'normal': 'Normal',
+            'follow-up': 'Seguimiento'
+        };
+        
+        patientCard.innerHTML = `
+            <div class="flex items-start gap-3">
+                <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-semibold text-sm flex-shrink-0">
+                    ${patient.name.split(' ').map(n => n[0]).join('')}
+                </div>
+                <div class="flex-1 min-w-0">
+                    <h4 class="font-semibold text-gray-900 dark:text-white text-sm truncate">${patient.name}</h4>
+                    <p class="text-xs text-gray-600 dark:text-gray-300 truncate">${patient.condition}</p>
+                    <div class="flex items-center justify-between mt-2">
+                        <span class="text-xs text-gray-500">${patient.age} años</span>
+                        <span class="px-2 py-1 text-xs rounded-full ${priorityColor[patient.priority]}">
+                            ${priorityText[patient.priority]}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        patientCard.addEventListener('dragstart', handleDragStart);
+        patientCard.addEventListener('dragend', handleDragEnd);
+        
+        patientsList.appendChild(patientCard);
+    });
+}
+
+function updateMonthDisplay() {
+    const monthNames = [
+        'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+        'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+    ];
+    
+    const currentMonthElement = document.getElementById('currentMonth');
+    currentMonthElement.textContent = `${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
+}
+
+function renderCalendar() {
+    const calendarGrid = document.getElementById('calendarGrid');
+    calendarGrid.innerHTML = '';
+    
+    const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+    const startDate = new Date(firstDay);
+    const dayOfWeek = firstDay.getDay();
+    const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+    startDate.setDate(firstDay.getDate() - daysToSubtract);
+    
+    const today = new Date();
+    
+    for (let i = 0; i < 42; i++) {
+        const cellDate = new Date(startDate);
+        cellDate.setDate(startDate.getDate() + i);
+        
+        const dayCell = document.createElement('div');
+        dayCell.className = `calendar-day border border-gray-200 dark:border-gray-600 p-3`;
+        
+        const isCurrentMonth = cellDate.getMonth() === currentDate.getMonth();
+        const isToday = cellDate.toDateString() === today.toDateString();
+        const isActive = isDayActive(cellDate);
+        
+        if (!isCurrentMonth) {
+            dayCell.classList.add('text-gray-400', 'dark:text-gray-600');
+        }
+        
+        if (isToday) {
+            dayCell.classList.add('today');
+        }
+        
+        if (!isActive) {
+            dayCell.classList.add('inactive');
+        } else {
+            dayCell.classList.add('cursor-pointer');
+        }
+        
+        const dateKey = cellDate.toISOString().split('T')[0];
+        const daySchedule = scheduleData[dateKey] || [];
+        const dayLimit = dailyLimits[dateKey] || { limit_cita_dia: scheduleConfig.limit_cita_dia, num_citas_dia: daySchedule.length };
+        
+        const occupancyPercentage = dayLimit.limit_cita_dia > 0 ? (daySchedule.length / dayLimit.limit_cita_dia) * 100 : 0;
+        let progressClass = 'low';
+        if (occupancyPercentage >= 80) progressClass = 'high';
+        else if (occupancyPercentage >= 50) progressClass = 'medium';
+        
+        let dayContent = `
+            <div class="flex justify-between items-start mb-2">
+                <span class="font-semibold ${isCurrentMonth ? 'text-gray-900 dark:text-white' : ''}">${cellDate.getDate()}</span>
+                 ${daySchedule.length > 0 ? `<span class="text-xs bg-blue-600 dark:bg-blue-800 text-white px-2 py-1 rounded-full">${daySchedule.length}</span>` : ''}
+            </div>
+        `;
+        
+        if (isActive) {
+            dayContent += `
+                <div class="mb-3">
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="text-xs text-gray-500">${daySchedule.length}/${dayLimit.limit_cita_dia} citas</span>
+                        <span class="text-xs text-gray-500">${Math.round(occupancyPercentage)}%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill ${progressClass}" style="width: ${Math.min(occupancyPercentage, 100)}%"></div>
+                    </div>
+                </div>
+                
+                <div class="space-y-1">
+                    ${daySchedule.slice(0, 2).map(appointment => `
+                        <div class="text-xs p-1 rounded bg-blue-50 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 truncate">
+                            <span class="appointment-indicator ${appointment.priority}"></span>
+                            ${appointment.time} - ${appointment.patientName}
+                        </div>
+                    `).join('')}
+                    ${daySchedule.length > 2 ? `<div class="text-xs text-gray-500">+${daySchedule.length - 2} más...</div>` : ''}
+                </div>
+            `;
+        } else {
+            dayContent += `
+                <div class="text-center text-xs text-gray-400 mt-4">
+                    <i class="fas fa-ban mb-1"></i>
+                    <div>No disponible</div>
+                </div>
+            `;
+        }
+        
+        dayCell.innerHTML = dayContent;
+        
+        // MODIFICADO: Solo agregar evento click si el día está activo
+        if (isActive) {
+            dayCell.addEventListener('click', () => openScheduleModal(cellDate));
+        }
+        
+        calendarGrid.appendChild(dayCell);
+    }
+}
+
+// MODIFICADO: Función para abrir modal solo cuando se hace clic en un día
+function openScheduleModal(date) {
+    if (!isDayActive(date)) return;
+    
+    selectedDate = date;
+    const modal = document.getElementById('scheduleModal');
+    const modalDate = document.getElementById('modalDate');
+    const loadingSchedule = document.getElementById('loadingSchedule');
+    const noScheduleMessage = document.getElementById('noScheduleMessage');
+    
+    modalDate.textContent = date.toLocaleDateString('es-ES', { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+    });
+    
+    // IMPORTANTE: Mostrar modal
+    modal.classList.remove('hidden');
+    
+    // IMPORTANTE: Asegurar que el panel de agregar paciente esté oculto
+    hideAddPatientPanel();
+    
+    if (!isDayActive(date)) {
+        loadingSchedule.classList.add('hidden');
+        noScheduleMessage.classList.remove('hidden');
+        document.getElementById('morningSchedule').style.display = 'none';
+        document.getElementById('afternoonSchedule').style.display = 'none';
+        return;
+    }
+    
+    loadingSchedule.classList.remove('hidden');
+    noScheduleMessage.classList.add('hidden');
+    document.getElementById('morningSchedule').style.display = 'block';
+    document.getElementById('afternoonSchedule').style.display = 'block';
+    
+    document.getElementById('morningGrid').innerHTML = '';
+    document.getElementById('afternoonGrid').innerHTML = '';
+    
+    clearModalNotifications();
+    
+    const dateKey = date.toISOString().split('T')[0];
+    if (!pendingAppointments[dateKey]) {
+        pendingAppointments[dateKey] = [];
+    }
+    
+    setTimeout(() => {
+        loadingSchedule.classList.add('hidden');
+        renderScheduleGrid(date);
+        renderPatients(); // Renderizar pacientes cuando se abre el modal
+    }, 1000);
+}
+
+function renderScheduleGrid(date) {
+    const dateKey = date.toISOString().split('T')[0];
+    const daySchedule = scheduleData[dateKey] || [];
+    const pendingForDay = pendingAppointments[dateKey] || [];
+    const timeSlots = generateTimeSlotsForDay(date);
+    
+    const morningSection = document.getElementById('morningSchedule');
+    const afternoonSection = document.getElementById('afternoonSchedule');
+    
+    if (timeSlots.morning.length === 0) {
+        morningSection.style.display = 'none';
+    } else {
+        morningSection.style.display = 'block';
+        renderTimeSlots('morningGrid', timeSlots.morning, daySchedule, pendingForDay, dateKey);
+    }
+    
+    if (timeSlots.afternoon.length === 0) {
+        afternoonSection.style.display = 'none';
+    } else {
+        afternoonSection.style.display = 'block';
+        renderTimeSlots('afternoonGrid', timeSlots.afternoon, daySchedule, pendingForDay, dateKey);
+    }
+}
+
+function renderTimeSlots(gridId, slots, daySchedule, pendingForDay, dateKey) {
+    const grid = document.getElementById(gridId);
+    grid.innerHTML = '';
+    
+    if (slots.length === 0) {
+        grid.innerHTML = '<div class="text-center text-gray-500 py-4 col-span-full">No hay horarios configurados para este período</div>';
+        return;
+    }
+    
+    slots.forEach(time => {
+        const existingAppointment = daySchedule.find(apt => apt.time === time);
+        const pendingAppointment = pendingForDay.find(apt => apt.hora_cita === time);
+        
+        const timeSlot = document.createElement('div');
+        timeSlot.className = `time-slot`;
+        timeSlot.dataset.time = time;
+        timeSlot.dataset.date = dateKey;
+        
+        if (existingAppointment) {
+            timeSlot.classList.add('occupied');
+            timeSlot.innerHTML = `
+                <div class="font-semibold text-gray-900 dark:text-white mb-2 text-sm">${time}</div>
+                <div class="bg-white dark:bg-gray-700 rounded-lg p-2 shadow-sm">
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="appointment-indicator ${existingAppointment.priority}"></span>
+                        <span class="font-medium text-gray-900 dark:text-white text-sm">${existingAppointment.patientName}</span>
+                    </div>
+                    <div class="text-xs text-gray-600 dark:text-gray-300">${existingAppointment.condition}</div>
+                    <div class="text-xs text-green-600 dark:text-green-400 mt-1">✓ Guardado</div>
+                    <button onclick="removeExistingAppointment('${dateKey}', '${time}')" class="remove-appointment">
+                        <i class="fas fa-trash mr-1"></i>Eliminar
+                    </button>
+                </div>
+            `;
+        } else if (pendingAppointment) {
+            timeSlot.classList.add('pending');
+            timeSlot.innerHTML = `
+                <div class="font-semibold text-gray-900 dark:text-white mb-2 text-sm">${time}</div>
+                <div class="bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-700 rounded-lg p-2 shadow-sm">
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="appointment-indicator ${pendingAppointment.tipo_cita}"></span>
+                        <span class="font-medium text-gray-900 dark:text-white text-sm">${pendingAppointment.patientName}</span>
+                    </div>
+                    <div class="text-xs text-gray-600 dark:text-gray-300">${pendingAppointment.condition}</div>
+                    <div class="text-xs text-yellow-600 dark:text-yellow-400 mt-1">⏳ Pendiente</div>
+                    <button onclick="removePendingAppointment('${dateKey}', '${time}')" class="remove-appointment">
+                        <i class="fas fa-trash mr-1"></i>Quitar
+                    </button>
+                </div>
+            `;
+        } else {
+            timeSlot.innerHTML = `
+                <div class="font-semibold text-gray-700 dark:text-gray-300 mb-2 text-sm">${time}</div>
+                <div class="text-gray-500 dark:text-gray-400 text-xs">Disponible</div>
+                <div class="mt-2 text-xs text-gray-400">Arrastra un paciente aquí</div>
+            `;
+            
+            timeSlot.addEventListener('dragover', handleDragOver);
+            timeSlot.addEventListener('drop', handleDrop);
+            timeSlot.addEventListener('dragleave', handleDragLeave);
+        }
+        
+        grid.appendChild(timeSlot);
+    });
+}
+
+function setupEventListeners() {
+    // Navegación del calendario
+    document.getElementById('prevMonth').addEventListener('click', () => {
+        currentDate.setMonth(currentDate.getMonth() - 1);
+        updateMonthDisplay();
+        renderCalendar();
+    });
+    
+    document.getElementById('nextMonth').addEventListener('click', () => {
+        currentDate.setMonth(currentDate.getMonth() + 1);
+        updateMonthDisplay();
+        renderCalendar();
+    });
+    
+    document.getElementById('todayBtn').addEventListener('click', () => {
+        currentDate = new Date();
+        updateMonthDisplay();
+        renderCalendar();
+    });
+    
+    // MODIFICADO: Modal de horarios - cerrar y resetear estado
+    // Función reutilizable
+    function closeModalAndReset() {
+        document.getElementById('scheduleModal').classList.add('hidden');
+        clearModalNotifications();
+        hideAddPatientPanel();
+    }
+    // Aplicar a múltiples elementos
+    document.getElementById('closeModal').addEventListener('click', closeModalAndReset);
+    document.getElementById('cancelSchedule').addEventListener('click', closeModalAndReset);
+    
+    
+    // Buscador de pacientes de la lista local
+    document.getElementById('patientSearch').addEventListener('input', function(e) {
+        return; // Evitar que se ejecute si el panel de agregar paciente está visible
+        const searchTerm = e.target.value.toLowerCase();
+        filteredPatients = patientsData.filter(patient => 
+            patient.name.toLowerCase().includes(searchTerm) ||
+            patient.condition.toLowerCase().includes(searchTerm)
+        );
+        renderPatients();
+    });
+
+      // Buscador de pacientes de la lista remota
+    document.getElementById('patientSearch').addEventListener('keyup', async function(e) {
+        if (e.key !== 'Enter') return;
+        if (isAddingPatient || isLoadingPatients) return;
+
+        const searchTerm = (e.target.value || '').toLowerCase().trim();
+        if (searchTerm.length < 3) {
+            showModalNotification('Por favor ingresa al menos 3 caracteres para buscar.', 'info');
+            return;
+        }
+
+
+        setLoadingState(e, true);
+        isLoadingPatients = true;
+        const url = '/doctor/patients_search_api/'; // URL del servicio de búsqueda
+        const csrfToken = getCSRFToken();
+
+        try {
+            searchData = { search: searchTerm };
+                 result = await getPatientsService(csrfToken, searchData, url, 'GET');
+
+            if (!result.success) {
+                throw new Error(result.message || 'Error al buscar pacientes');
+            }
+
+            filteredPatients = processPatientsData(result.data);
+            renderPatients(); 
+
+        } catch (error) {
+            await handleError('[ERR:884]Error al consultar pacientes: ' + error.message, 7000);
+        } finally {
+            setLoadingState(e, false);
+            isLoadingPatients = false; 
+        }
+
+    });
+    
+
+    // Botón guardar
+    document.getElementById('saveSchedule').addEventListener('click', saveAllAppointments);
+    
+    // MODIFICADO: Botón agregar paciente
+    document.getElementById('addPatientBtn').addEventListener('click', showAddPatientPanel);
+    
+    // MODIFICADO: Botón cancelar agregar paciente
+    document.getElementById('cancelAddPatient').addEventListener('click', hideAddPatientPanel);
+    
+    // Formulario de agregar paciente
+    document.getElementById('addPatientForm').addEventListener('submit', handleAddPatientSubmit);
+    
+    // Validación en tiempo real
+    setupFormValidation();
+}
+
+  // convierte los datos crudos de pacientes en un formato más manejable
+function processPatientsData(rawPatients) {
+    if (!Array.isArray(rawPatients)) {
+        console.warn('processPatientsData recibió un tipo de dato no array:', rawPatients);
+        return []; // Retorna un array vacío si no es un array válido
+    }
+
+    return rawPatients.map(patient => {
+        // Asegúrate de que capitalizeFirstLetter y calculateAge estén definidas globalmente o importadas
+        const nombreCapitalizado = patient.nombres ? capitalizeFirstLetter(patient.nombres.split(' ')[0]) : '';
+        const apellidoCapitalizado = patient.apellidos ? capitalizeFirstLetter(patient.apellidos.split(' ')[0]) : '';
+        const fullName = `${nombreCapitalizado} ${apellidoCapitalizado}`.trim();
+
+        const age = calculateAge(patient.fecha_nacimiento);
+        
+        return {
+            ...patient, // Copia todas las propiedades originales
+            name: fullName, // Añade la propiedad 'name' formateada
+            age: age // Añade la propiedad 'age' calculada
+        };
+    });
+}
+
+// MODIFICADO: Función para mostrar panel de agregar paciente
+function showAddPatientPanel() {
+    if (isAddingPatient) return;
+    
+    isAddingPatient = true;
+    const schedulePanel = document.getElementById('schedulePanel');
+    const addPatientPanel = document.getElementById('addPatientPanel');
+    
+    // Animar transición
+    schedulePanel.classList.add('slide-left');
+    addPatientPanel.classList.remove('hidden');
+    addPatientPanel.classList.add('show');
+    
+    // Limpiar formulario
+    document.getElementById('addPatientForm').reset();
+    clearFormErrors();
+    
+    // Enfocar primer campo
+    setTimeout(() => {
+        document.getElementById('nombres').focus();
+    }, 100);
+}
+
+// MODIFICADO: Función para ocultar panel de agregar paciente
+function hideAddPatientPanel() {
+    if (!isAddingPatient) return;
+    
+    const schedulePanel = document.getElementById('schedulePanel');
+    const addPatientPanel = document.getElementById('addPatientPanel');
+    
+    // Animar transición de vuelta
+    schedulePanel.classList.remove('slide-left');
+    addPatientPanel.classList.remove('show');
+ 
+    
+    // Resetear estado después de la animación
+    setTimeout(() => {
+        isAddingPatient = false;
+        addPatientPanel.classList.add('hidden');
+    }, 1000);
+}
+
+function setupFormValidation() {
+    const form = document.getElementById('addPatientForm');
+    const inputs = form.querySelectorAll('input, select, textarea');
+    
+    inputs.forEach(input => {
+        input.addEventListener('blur', () => validateField(input));
+        input.addEventListener('input', () => clearFieldError(input));
+    });
+    
+    // Validación especial para cédula
+    document.getElementById('cedula_ecuatoriana').addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, '');
+        if (value.length > 10) {
+            value = value.substring(0, 10);
+        }
+        e.target.value = value;
+    });
+}
+
+function validateField(field) {
+    const fieldName = field.name;
+    const value = field.value.trim();
+    let isValid = true;
+    let errorMessage = '';
+    
+    // Validaciones por campo
+    switch (fieldName) {
+        case 'nombres':
+        case 'apellidos':
+            if (!value) {
+                isValid = false;
+                errorMessage = 'Este campo es obligatorio';
+            } else if (value.length < 2) {
+                isValid = false;
+                errorMessage = 'Debe tener al menos 2 caracteres';
+            }
+            break;
+            
+        case 'cedula_ecuatoriana':
+            if (!value) {
+                isValid = false;
+                errorMessage = 'La cédula es obligatoria';
+            } else if (!/^\d{10}$/.test(value)) {
+                isValid = false;
+                errorMessage = 'La cédula debe tener 10 dígitos';
+            } else if (!validarCedulaEcuatoriana(value)) {
+                isValid = false;
+                errorMessage = 'Cédula ecuatoriana inválida';
+            }
+            break;
+            
+        case 'fecha_nacimiento':
+            if (!value) {
+                isValid = false;
+                errorMessage = 'La fecha de nacimiento es obligatoria';
+            } else {
+                const birthDate = new Date(value);
+                const today = new Date();
+                const age = today.getFullYear() - birthDate.getFullYear();
+                if (age < 0 || age > 120) {
+                    isValid = false;
+                    errorMessage = 'Fecha de nacimiento inválida';
+                }
+            }
+            break;
+            
+        case 'telefono':
+            if (!value) {
+                isValid = false;
+                errorMessage = 'El teléfono es obligatorio';
+            } else if (!/^[\d\s,+-]+$/.test(value)) {
+                isValid = false;
+                errorMessage = 'Formato de teléfono inválido';
+            }
+            break;
+            
+        case 'email':
+            if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+                isValid = false;
+                errorMessage = 'Formato de email inválido';
+            }
+            break;
+            
+        case 'estado_civil':
+        case 'direccion':
+            if (!value) {
+                isValid = false;
+                errorMessage = 'Este campo es obligatorio';
+            }
+            break;
+    }
+    
+    // Mostrar/ocultar error
+    if (!isValid) {
+        showFieldError(field, errorMessage);
+    } else {
+        clearFieldError(field);
+    }
+    
+    return isValid;
+}
+
+function showFieldError(field, message) {
+    field.classList.add('error');
+    const errorElement = document.getElementById(`${field.name}-error`);
+    if (errorElement) {
+        errorElement.textContent = message;
+    }
+}
+
+function clearFieldError(field) {
+    field.classList.remove('error');
+    const errorElement = document.getElementById(`${field.name}-error`);
+    if (errorElement) {
+        errorElement.textContent = '';
+    }
+}
+
+function clearFormErrors() {
+    const form = document.getElementById('addPatientForm');
+    const inputs = form.querySelectorAll('input, select, textarea');
+    inputs.forEach(input => clearFieldError(input));
+}
+
+function validateForm() {
+    const form = document.getElementById('addPatientForm');
+    const requiredFields = ['nombres', 'apellidos', 'cedula_ecuatoriana', 'fecha_nacimiento', 'telefono', 'estado_civil', 'direccion'];
+    let isValid = true;
+    
+    requiredFields.forEach(fieldName => {
+        const field = form.querySelector(`[name="${fieldName}"]`);
+        if (field && !validateField(field)) {
+            isValid = false;
+        }
+    });
+    
+    return isValid;
+}
+
+async function handleAddPatientSubmit(e) {
+    e.preventDefault();
+    
+    // 1. Validar formulario
+    if (!validateForm()) {
+        showModalNotification('Por favor, corrija los errores en el formulario', 'error');
+        return;
+    }
+    
+    const saveButton = document.getElementById('savePatient');
+    const originalButtonContent = saveButton.innerHTML;
+    
+    try {
+        // 2. Mostrar estado de carga
+        isAddingPatient = true;
+        clearFormErrors();
+        setLoadingState(saveButton, true);
+        showModalNotification('Enviando datos al servidor...', 'info');
+        
+        // 3. Preparar datos del formulario
+        const formData = new FormData(e.target);
+        const patientPayload = preparePatientPayload(formData);
+        
+        // 4. Obtener token CSRF y API endpoint
+        const csrfToken = getCSRFToken();
+        const api = '/doctor/patient_create_api/';
+        
+        // 5. Enviar al servidor
+        const result = await savePatientService(csrfToken, patientPayload, api, 'POST');
+
+        if (result.success) {
+            // 6. Manejar éxito
+            await handleSuccess(result, patientPayload);
+        } else {
+            // 7. Manejar error del servicio
+            await handleError(result.message, 5000);
+        }
+        
+    } catch (error) {
+        // 8. Manejar errores inesperados
+        await handleError('[ERR:1129]Error inesperado al procesar la solicitud' + error, 7000);
+    } finally {
+        // 9. Restaurar botón siempre
+        setLoadingState(saveButton, false, originalButtonContent);
+        isAddingPatient = false; // Restaurar estado
+    }
+}
+
+function preparePatientPayload(formData) {
+    return {
+        // Datos para el servidor (sin campos calculados)
+        nombres: formData.get('nombres'),
+        apellidos: formData.get('apellidos'),
+        cedula_ecuatoriana: formData.get('cedula_ecuatoriana'),
+        fecha_nacimiento: formData.get('fecha_nacimiento'),
+        email: formData.get('email'),
+        telefono: formData.get('telefono'),
+        estado_civil: formData.get('estado_civil'),
+        direccion: formData.get('direccion'),
+        antecedentes_personales: formData.get('antecedentes_personales'),
+        alergias: formData.get('alergias'),
+        medicamentos_actuales: formData.get('medicamentos_actuales')
+    };
+}
+
+function createPatientDisplayData(serverResponse, patientPayload) {
+    const patientId = serverResponse.data ? serverResponse.data.id : 0; 
+    const nombresArray = patientPayload.nombres.split(' ');
+    const apellidosArray = patientPayload.apellidos.split(' ');
+
+    const nombreCapitalizado = capitalizeFirstLetter(nombresArray[0]);
+    const apellidoCapitalizado = capitalizeFirstLetter(apellidosArray[0]);
+
+    return {
+         id: patientId,
+
+        // Datos calculados para la UI, primera letra con mayuscula 
+        name: `${nombreCapitalizado} ${apellidoCapitalizado}`,
+        age: calculateAge(patientPayload.fecha_nacimiento),
+        condition: 'Nuevo paciente',
+        priority: 'normal',
+        phone: patientPayload.telefono,
+        
+        // // Datos originales del formulario
+        ...patientPayload,
+        
+        // // Cualquier dato adicional del servidor
+        ...serverResponse
+    };
+}
+
+function capitalizeFirstLetter(string) {
+    if (typeof string !== 'string' || string.length === 0) {
+        return ''; // Manejar casos de entrada no válida o vacía
+    }
+    return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
+}
+
+function setLoadingState(button, isLoading, originalContent = null) {
+    if (isLoading) {
+        button.disabled = true;
+        button.innerHTML = `
+            <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+            Guardando...
+        `;
+    } else {
+        button.disabled = false;
+        button.innerHTML = originalContent || `
+            <i class="fas fa-save mr-2"></i>
+            Guardar Paciente
+        `;
+    }
+}
+
+async function handleSuccess(result, patientPayload) {
+    // Crear objeto paciente completo para la UI
+    const patientData = createPatientDisplayData(result.data, patientPayload);
+    // Actualizar lista local
+    if (patientsData) {
+        patientsData.unshift(patientData);
+        filteredPatients = [...patientsData];
+    }
+    
+    showModalNotification(`Paciente ${patientData.name} agregado exitosamente`, 'success');
+    
+    // Ocultar panel y actualizar lista después de un breve delay
+    setTimeout(() => {
+        if (typeof hideAddPatientPanel === 'function') {
+            hideAddPatientPanel();
+        }
+        if (typeof renderPatients === 'function') {
+            renderPatients();
+        }
+    }, 1000);
+}
+
+async function handleError(errorMessage, duration = 5000) {
+    await showModalNotification(`${errorMessage}`, 'error', duration);
+}
+
+function getCSRFToken() {
+    const tokenElement = document.querySelector('[name=csrfmiddlewaretoken]');
+    if (!tokenElement) {
+        console.warn('Token CSRF no encontrado');
+        return '';
+    }
+    return tokenElement.value;
+}
+
+function calculateAge(birthDate) {
+    const today = new Date();
+    const birth = new Date(birthDate);
+    let age = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+    
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+        age--;
+    }
+    
+    return age;
+}
+
+
+
+// Funciones de drag and drop
+function handleDragStart(e) {
+    draggedPatient = {
+        id: e.target.dataset.patientId,
+        data: filteredPatients.find(p => p.id == e.target.dataset.patientId)
+    };
+    e.target.classList.add('dragging');
+}
+
+function handleDragEnd(e) {
+    e.target.classList.remove('dragging');
+    draggedPatient = null;
+}
+
+function handleDragOver(e) {
+    e.preventDefault();
+    e.currentTarget.classList.add('drag-over');
+}
+
+function handleDragLeave(e) {
+    e.currentTarget.classList.remove('drag-over');
+}
+
+function handleDrop(e) {
+    e.preventDefault();
+    e.currentTarget.classList.remove('drag-over');
+    
+    if (!draggedPatient) return;
+    
+    const time = e.currentTarget.dataset.time;
+    const date = e.currentTarget.dataset.date;
+    
+    const daySchedule = scheduleData[date] || [];
+    const pendingForDay = pendingAppointments[date] || [];
+    const totalAppointments = daySchedule.length + pendingForDay.length;
+    const dayLimit = dailyLimits[date] || { limit_cita_dia: scheduleConfig.limit_cita_dia };
+    
+    if (totalAppointments >= dayLimit.limit_cita_dia) {
+        showModalNotification('No se pueden agregar más citas. Límite diario alcanzado.', 'warning');
+        return;
+    }
+    
+    addAppointmentDirectly(draggedPatient.data, date, time);
+}
+
+
+
+
+
+function addAppointmentDirectly(patient, date, time) {
+    
+
+    if (!pendingAppointments[date]) {
+        pendingAppointments[date] = [];
+    }
+    
+    const timeSlots = generateTimeSlotsForDay(selectedDate);
+    const orden = timeSlots.all.indexOf(time) + 1;
+    
+    const appointmentData = {
+        orden: orden,
+        hora_cita: time,
+        paciente_id: patient.id,
+        patientName: patient.name,
+        condition: patient.condition,
+        fecha_atencion: date,
+        tipo_cita: patient.priority === 'urgent' ? 'urgente' : patient.priority === 'follow-up' ? 'seguimiento' : 'normal',
+        medico_id: scheduleConfig.medico_id,
+        especialidad_id: scheduleConfig.especialidad_id
+    };
+    
+    pendingAppointments[date].push(appointmentData);
+
+    console.log('Agregando cita directamente:', appointmentData);
+    if (selectedDate && selectedDate.toISOString().split('T')[0] === date) {
+        renderScheduleGrid(selectedDate);
+        renderPatients();
+    }
+    
+    showModalNotification(`${patient.name} agendado para las ${time}`, 'success');
+}
+
+function removePendingAppointment(date, time) {
+    if (pendingAppointments[date]) {
+        const removedAppointment = pendingAppointments[date].find(apt => apt.hora_cita === time);
+        pendingAppointments[date] = pendingAppointments[date].filter(apt => apt.hora_cita !== time);
+        if (pendingAppointments[date].length === 0) {
+            delete pendingAppointments[date];
+        }
+        
+        if (removedAppointment) {
+            showModalNotification(`${removedAppointment.patientName} removido del horario`, 'info');
+        }
+    }
+    
+    if (selectedDate && selectedDate.toISOString().split('T')[0] === date) {
+        renderScheduleGrid(selectedDate);
+        renderPatients();
+    }
+}
+
+function removeExistingAppointment(date, time) {
+    if (scheduleData[date]) {
+        const removedAppointment = scheduleData[date].find(apt => apt.time === time);
+        scheduleData[date] = scheduleData[date].filter(apt => apt.time !== time);
+        
+        if (scheduleData[date].length === 0) {
+            delete scheduleData[date];
+        }
+        
+        if (dailyLimits[date]) {
+            dailyLimits[date].num_citas_dia = scheduleData[date] ? scheduleData[date].length : 0;
+        }
+        
+        renderCalendar();
+        if (selectedDate && selectedDate.toISOString().split('T')[0] === date) {
+            renderScheduleGrid(selectedDate);
+            renderPatients();
+        }
+        
+        showModalNotification(`Cita de ${removedAppointment ? removedAppointment.patientName : 'paciente'} eliminada`, 'info');
+    }
+}
+
+function saveAllAppointments() {
+    const dateKey = selectedDate.toISOString().split('T')[0];
+    const pendingForDay = pendingAppointments[dateKey] || [];
+    
+    if (pendingForDay.length === 0) {
+        showModalNotification('No hay cambios pendientes para guardar', 'info');
+        return;
+    }
+    
+    const saveButton = document.getElementById('saveSchedule');
+    saveButton.disabled = true;
+    saveButton.innerHTML = `
+        <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+        Guardando...
+    `;
+    
+    showModalNotification('Enviando datos al servidor...', 'info');
+    
+    setTimeout(() => {
+        console.log('Datos enviados al servidor:', pendingForDay);
+        
+        const serverResponse = {
+            success: true,
+            message: 'Citas guardadas exitosamente',
+            saved_appointments: pendingForDay.length
+        };
+        
+        if (serverResponse.success) {
+            if (!scheduleData[dateKey]) {
+                scheduleData[dateKey] = [];
+            }
+            
+            pendingForDay.forEach(appointment => {
+                scheduleData[dateKey].push({
+                    id: Date.now() + Math.random(),
+                    patientId: appointment.paciente_id,
+                    patientName: appointment.patientName,
+                    condition: appointment.condition,
+                    time: appointment.hora_cita,
+                    priority: appointment.tipo_cita === 'urgente' ? 'urgent' : appointment.tipo_cita === 'seguimiento' ? 'follow-up' : 'normal',
+                    date: dateKey
+                });
+            });
+            
+            delete pendingAppointments[dateKey];
+            
+            if (!dailyLimits[dateKey]) {
+                dailyLimits[dateKey] = { limit_cita_dia: scheduleConfig.limit_cita_dia, num_citas_dia: 0 };
+            }
+            dailyLimits[dateKey].num_citas_dia = scheduleData[dateKey].length;
+            
+            renderCalendar();
+            renderScheduleGrid(selectedDate);
+            renderPatients();
+            
+            showModalNotification(`${pendingForDay.length} cita(s) guardada(s) exitosamente`, 'success');
+            
+            setTimeout(() => {
+                document.getElementById('scheduleModal').classList.add('hidden');
+                clearModalNotifications();
+                hideAddPatientPanel();
+            }, 1000);
+            
+        } else {
+            showModalNotification('Error al guardar las citas. Intenta nuevamente.', 'error');
+        }
+        
+        saveButton.disabled = false;
+        saveButton.innerHTML = `
+            <i class="fas fa-save"></i>
+            Guardar Cambios
+        `;
+        
+    }, 1000);
+}
+
+
+function showModalNotification(message, type = 'info', duration = 3000) {
+
+    return new Promise(resolve => {
+        const container = document.getElementById('notificationContainer');
+
+        container.classList.remove('hidden'); 
+        
+        const notification = document.createElement('div');
+        notification.className = `modal-notification ${type}`;
+        notification.classList.remove('hidden'); 
+        
+        const icons = {
+            success: 'fas fa-check-circle',
+            error: 'fas fa-times-circle',
+            info: 'fas fa-info-circle',
+            warning: 'fas fa-exclamation-triangle'
+        };
+        
+        notification.innerHTML = `
+            <i class="${icons[type]}"></i>
+            <span>${message}</span>
+        `;
+        
+        container.appendChild(notification);
+
+        setTimeout(() => {
+
+            if (container.contains(notification)) {
+
+                notification.style.animation = 'slideOutRight 0.3s ease-out forwards';
+
+                setTimeout(() => {
+                    if (container.contains(notification)) {
+                        container.removeChild(notification);
+                    }
+
+                    if (container.children.length === 0) {
+                        container.classList.add('hidden');
+                    }
+ 
+                    resolve(); 
+                }, 300); 
+            } else {
+                resolve(); 
+            }
+        }, duration);
+    });
+}
+function clearModalNotifications() {
+    const container = document.getElementById('notificationContainer');
+    if (container) {
+        container.innerHTML = '';
+    }
+}
+
+function generateDailyLimits() {
+    const today = new Date();
+    
+    for (let i = 0; i < 60; i++) {
+        const date = new Date(today);
+        date.setDate(today.getDate() + i);
+        const dateKey = date.toISOString().split('T')[0];
+        
+        const dayConfig = getDayScheduleConfig(date);
+        if (!dayConfig || !dayConfig.activo) {
+            continue;
+        }
+        
+        const timeSlots = generateTimeSlotsForDay(date);
+        const dayLimit = timeSlots.all.length;
+        
+        const currentCitas = scheduleData[dateKey] ? scheduleData[dateKey].length : 0;
+        
+        dailyLimits[dateKey] = {
+            limit_cita_dia: dayLimit,
+            num_citas_dia: currentCitas
+        };
+    }
+}
+
+function generateMockScheduleData() {
+    const today = new Date();
+    const dates = [];
+    
+    for (let i = 0; i < 30; i++) {
+        const date = new Date(today);
+        date.setDate(today.getDate() + i);
+        
+        if (isDayActive(date)) {
+            dates.push(date.toISOString().split('T')[0]);
+        }
+    }
+    
+    dates.forEach(date => {
+        if (Math.random() > 0.6) {
+            const dateObj = new Date(date);
+            const timeSlots = generateTimeSlotsForDay(dateObj);
+            
+            if (timeSlots.all.length === 0) return;
+            
+            const maxAppointments = Math.min(
+                Math.floor(Math.random() * 8) + 2,
+                timeSlots.all.length
+            );
+            
+            scheduleData[date] = [];
+            
+            const usedTimes = new Set();
+            
+            for (let i = 0; i < maxAppointments && usedTimes.size < timeSlots.all.length; i++) {
+                let randomTime;
+                do {
+                    randomTime = timeSlots.all[Math.floor(Math.random() * timeSlots.all.length)];
+                } while (usedTimes.has(randomTime));
+                
+                usedTimes.add(randomTime);
+                
+                const randomPatient = mockPatients[Math.floor(Math.random() * mockPatients.length)];
+                
+                scheduleData[date].push({
+                    id: Date.now() + Math.random(),
+                    patientId: randomPatient.id,
+                    patientName: randomPatient.name,
+                    condition: randomPatient.condition,
+                    time: randomTime,
+                    priority: randomPatient.priority,
+                    date: date
+                });
+            }
+            
+            scheduleData[date].sort((a, b) => a.time.localeCompare(b.time));
+        }
+    });
+}
+
+
+</script>
+{% endblock %}
