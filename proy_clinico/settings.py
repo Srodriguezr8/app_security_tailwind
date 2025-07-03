@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'widget_tweaks', #para pagos html 
 ]
 # Aplicaciones de terceros
 THIRD_PARTY_APPS = [

@@ -1,4 +1,5 @@
 from django.urls import path
+
 from applications.doctor.views.agenda_cita import (
     AgendaCitaMedicaListView,
     add_patient_api,
@@ -26,6 +27,13 @@ from applications.doctor.views.servicio_adicional import (
     ServicioAdicionalListView,
     ServicioAdicionaloUpdateView
 )
+from applications.doctor.views.ordenpago import (
+    OrdenPagoCreateView,
+    crear_servicio_adicional,
+    get_valor_consulta,
+    get_costo_servicio_adicional,
+    guardar_detalle_pago
+)
 
 app_name = 'doctor'  # define un espacio de nombre para la aplicación
 
@@ -38,8 +46,8 @@ urlpatterns = [
 
     # Rutas para Citas
     path('agenda_cita/', AgendaCitaMedicaListView.as_view(), name="agenda_cita"),
-    path('patient_create_api/', add_patient_api, name="patient_create_api"),   # crea nuevo paciente desde panel de agendar
-    path('patients_search_api/', patients_search_api, name="patients_search_api"),  # busca pacientes
+    path('patient_create_api/', add_patient_api, name="patient_create_api"),
+    path('patients_search_api/', patients_search_api, name="patients_search_api"),
     path('appointments_create_api/', add_appointments_api, name="appointments_create_api"),
     path('appointments_list/', get_appointments_api, name="appointments_list"),
     path('doctors_list/', get_doctors_api, name="doctors_list"),
@@ -56,4 +64,13 @@ urlpatterns = [
     path('servicio_adicional_create/', ServicioAdicionalCreateView.as_view(), name="servicio_adicional_create"),
     path('servicio_adicional_update/<int:pk>/', ServicioAdicionaloUpdateView.as_view(), name="servicio_adicional_update"),
     path('servicio_adicional_delete/<int:pk>/', ServicioAdicionalDeleteView.as_view(), name="servicio_adicional_delete"),
+
+    # Orden de pago
+    path('pagos/crear/', OrdenPagoCreateView.as_view(), name='pagos_crear'),
+
+    # API Servicio adicional
+    path('api/servicio_adicional/crear/', crear_servicio_adicional, name='crear_servicio_adicional'),
+    path('api/get_valor_consulta/<int:pago_id>/', get_valor_consulta, name='get_valor_consulta'),
+    path('api/get_costo_servicio/<int:servicio_id>/', get_costo_servicio_adicional, name='get_costo_servicio'),
+    path('api/guardar_detalle_pago/', guardar_detalle_pago, name='guardar_detalle_pago'),
 ]
