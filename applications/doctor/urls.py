@@ -44,6 +44,7 @@ urlpatterns = [
     path('atencion_create/', AtencionCreateView.as_view(), name="atencion_create"),
     path('atencion_update/<int:pk>/', AtencionUpdateView.as_view(), name="atencion_update"),
     path('atencion_delete/<int:pk>/', AtencionDeleteView.as_view(), name="atencion_delete"),
+    path('atencion_genera_deuda/<int:pk>/', AtencionDeleteView.as_view(), name="atencion_genera_deuda"),
 
     # Rutas para agendar Citas
     path('agenda_cita/', AgendaCitaMedicaListView.as_view(), name="agenda_cita"),

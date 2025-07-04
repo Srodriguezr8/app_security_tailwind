@@ -1372,10 +1372,7 @@ class GestorAtencionMedica {
                 return;
             }
 
-            // Preparar objeto con todos los datos
-            const datosAtencion = this.obtenerDatosCompletos();
-            console.log('📦 Datos preparados para envío:', datosAtencion);
-
+    
             // Enviar datos al backend
             this.enviarDatosAlBackend(datosAtencion);
 

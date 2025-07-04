@@ -1,4 +1,4 @@
-# 🏥 Clinic Management System
+a# 🏥 Clinic Management System
 
 ## 📌 Description
 A comprehensive clinic management system designed to streamline healthcare operations. This web application facilitates secure user role-based access, efficient management of doctors, patients, appointments, and medical examinations. Built with modern web technologies to provide a responsive and intuitive interface.

@@ -1,4 +1,4 @@
-from decimal import Decimal
+from decimal import ROUND_HALF_UP, Decimal
 from django.utils import timezone
 from django.db import models
 from applications.core.models import Doctor, Especialidad
@@ -431,7 +431,7 @@ class DetallePago(models.Model):
     descuento_porcentaje = models.DecimalField(
         max_digits=5,
         decimal_places=2,
-        default=0,
+        default= 0,
         verbose_name="Descuento %",
         help_text="Descuento aplicado sobre el precio base. Ejemplo: 10 para 10%."
     )
@@ -460,20 +460,32 @@ class DetallePago(models.Model):
     )
 
     def save(self, *args, **kwargs):
-        # Precio base es precio_unitario + valor_consulta (si existe)
-        precio_base = self.precio_unitario or Decimal(0)
-        if self.valor_consulta:
-            precio_base += self.valor_consulta
-        # Si aplica seguro, el valor base es el seguro (+ valor_consulta si existe)
-        if self.aplica_seguro and self.valor_seguro is not None:
-            precio_base = self.valor_seguro
-            if self.valor_consulta:
-                precio_base += self.valor_consulta
+        # cantidad = self.cantidad or 1
+        # precio_unitario = self.precio_unitario or Decimal('0.00')
+        # valor_consulta = self.valor_consulta or Decimal('0.00')
+        # valor_seguro = self.valor_seguro if self.aplica_seguro and self.valor_seguro is not None else Decimal('0.00')
+        # descuento_pct = self.descuento_porcentaje or Decimal('0.00')
+
+        # Calcula precio base: precio_unitario + valor_consulta
+        # precio_base = precio_unitario + valor_consulta
+
+        # Si aplica seguro, base es valor_seguro + valor_consulta
+        # if self.aplica_seguro and self.valor_seguro is not None:
+        #     precio_base = valor_seguro + valor_consulta
+
         # Aplica descuento
-        descuento = (self.descuento_porcentaje / Decimal(100)) * precio_base
-        precio_con_descuento = precio_base - descuento
-        # Calcula subtotal
-        self.subtotal = round(precio_con_descuento * self.cantidad, 2)
+        # descuento = (descuento_pct / Decimal('100.00')) * precio_base
+        # precio_con_descuento = precio_base - descuento
+
+        # Calcula subtotal: precio con descuento * cantidad
+        # subtotal_calc = precio_con_descuento * cantidad
+
+        # Aplica mínimo 0 (no negativo)
+        # subtotal_final = max(Decimal('0.00'), subtotal_calc)
+
+        # Guarda subtotal redondeado a 2 decimales
+        # self.subtotal = subtotal_final.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+
         super().save(*args, **kwargs)
 
     def __str__(self):

@@ -9,7 +9,8 @@ from django.utils import timezone
 
 from applications.core.models import Paciente, Medicamento, Diagnostico
 from applications.doctor.forms.atencion import AtencionForm
-from applications.doctor.models import Atencion, DetalleAtencion
+from applications.doctor.models import Atencion, DetalleAtencion, DetallePago, Pago, ServiciosAdicionales
+from applications.doctor.utils.pago import EstadoPagoChoices, MetodoPagoChoices
 from applications.security.components.mixin_crud import CreateViewMixin, DeleteViewMixin, ListViewMixin, \
     PermissionMixin, SessionGroupMixin, UpdateViewMixin
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
@@ -59,9 +60,13 @@ class AtencionCreateView(SessionGroupMixin,PermissionMixin, CreateViewMixin, Cre
             .only('id', 'nombre', 'concentracion', 'via_administracion',
                   'precio', 'cantidad', 'tipo__nombre', 'marca_medicamento__nombre'
                   ).order_by('nombre'))
+        
+        context['servicios'] = (ServiciosAdicionales.objects.filter(activo=True)
+        .only('id', 'nombre_servicio', 'costo_servicio').order_by('nombre_servicio'))
 
         context['paciente_json'] = 'null'
         context['medicamentos_json'] = '[]'  # Array vacío
+        context['servicios_json'] = '[]'  # Array vacío
         context['modo_edicion'] = False
         return context
 
@@ -75,7 +80,10 @@ class AtencionCreateView(SessionGroupMixin,PermissionMixin, CreateViewMixin, Cre
         evaluacion_clinica = data.get('evaluacionClinica', {})
         plan_terapeutico = data.get('planTerapeutico', {})
         medicamentos = data.get('medicamentos', [])
-
+        servicios = data.get('servicios', [])
+        atencion_gratuita = data.get('atencion_gratuita', False)
+        
+        print ('fffffffffffffffffffffffffffffff', servicios,atencion_gratuita )
         # Conversiones simples (el frontend ya validó)
         def to_int(value):
             return int(value) if value is not None and value != '' else None
@@ -130,6 +138,59 @@ class AtencionCreateView(SessionGroupMixin,PermissionMixin, CreateViewMixin, Cre
                         duracion_tratamiento=to_int(medicamento.get('duracion')),
                         frecuencia_diaria=to_int(medicamento.get('frecuencia'))
                     )
+                    
+                # Si no es atención gratuita, crear el Pago y sus detalles
+                if not atencion_gratuita and servicios:
+                    pago = Pago.objects.create(
+                        atencion=atencion,
+                        fecha_pago=timezone.now(),
+                        monto_total=Decimal('0.00'),  # Se actualizará luego
+                        observaciones='Pago generado automáticamente desde atención médica',
+                        estado  = EstadoPagoChoices.PENDIENTE,
+                        metodo_pago =  MetodoPagoChoices.EFECTIVO,
+                        
+                    )
+
+                    total_pago = Decimal('0.00')
+
+                    for servicio in servicios:
+                        cantidad = to_int(servicio.get('cantidad'))
+                        precio_unitario = to_decimal(servicio.get('valor_unitario'))
+                        descuento = to_decimal(servicio.get('descuento') or 0)
+                        aplica_seguro = servicio.get('aplica_seguro', False)
+                        valor_seguro = to_decimal(servicio.get('valor_seguro') or 0)
+                        descripcion_seguro = servicio.get('descripcion_seguro') or None
+                        
+                 
+                        # Calculate base price after discount
+                        base = precio_unitario - (precio_unitario * descuento / 100)
+                        
+                        # Calculate subtotal, applying insurance value
+                        current_subtotal = (base * cantidad) - valor_seguro
+
+                        # Apply the Math.max(0, subtotal) equivalent from frontend
+                        # Use max(Decimal('0.00'), current_subtotal) for Decimal type
+                        final_subtotal_for_detail = max(Decimal('0.00'), current_subtotal)
+
+                        detalle = DetallePago.objects.create(
+                            pago=pago,
+                            servicio_adicional_id=to_int(servicio.get('servicio_id')),
+                            cantidad=cantidad,
+                            precio_unitario=precio_unitario,
+                            descuento_porcentaje=  descuento,
+                            aplica_seguro=aplica_seguro,
+                            valor_consulta = 0,
+                            subtotal= current_subtotal,
+                            valor_seguro=valor_seguro if aplica_seguro else None,
+                            descripcion_seguro=descripcion_seguro if aplica_seguro else None,
+                        )
+
+                        # Subtotal ya se calcula en save()
+                        total_pago += final_subtotal_for_detail
+
+                    # Actualizar el total del pago
+                    pago.monto_total = total_pago
+                    pago.save()
 
                 # Guardar auditoría
                 save_audit(request, atencion, "ADICION")
@@ -150,6 +211,7 @@ class AtencionCreateView(SessionGroupMixin,PermissionMixin, CreateViewMixin, Cre
             return JsonResponse({
                 "msg": f"Error al registrar la atención médica: {str(e)}"
             }, status=500)
+
 
 
 class AtencionUpdateView(SessionGroupMixin,PermissionMixin, UpdateViewMixin, UpdateView):
