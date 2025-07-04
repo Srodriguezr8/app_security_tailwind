@@ -83,8 +83,7 @@ class AtencionCreateView(SessionGroupMixin,PermissionMixin, CreateViewMixin, Cre
         servicios = data.get('servicios', [])
         atencion_gratuita = data.get('atencion_gratuita', False)
         
-        print ('fffffffffffffffffffffffffffffff', servicios,atencion_gratuita )
-        # Conversiones simples (el frontend ya validó)
+         # Conversiones simples (el frontend ya validó)
         def to_int(value):
             return int(value) if value is not None and value != '' else None
 
