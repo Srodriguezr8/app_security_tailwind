@@ -1,5 +1,4 @@
-from decimal import Decimal
-
+from decimal import ROUND_HALF_UP, Decimal
 from django.utils import timezone
 from django.db import models
 from applications.core.models import Doctor, Especialidad
@@ -332,16 +331,16 @@ class ServiciosAdicionales(models.Model):
 class Pago(models.Model):
     # Relación con la atención médica (opcional para servicios independientes)
     atencion = models.ForeignKey(Atencion, on_delete=models.PROTECT,
-                                 verbose_name="Atención", related_name="pagos",
-                                 null=True, blank=True)
+                                verbose_name="Atención", related_name="pagos",
+                                null=True, blank=True)
 
     # Información del pago
     metodo_pago = models.CharField(max_length=20, choices=MetodoPagoChoices.choices,
-                                   verbose_name="Método de Pago")
+                                verbose_name="Método de Pago")
     monto_total = models.DecimalField(max_digits=10, decimal_places=2,
-                                      verbose_name="Monto Total")
+                                    verbose_name="Monto Total")
     estado = models.CharField(max_length=20, choices=EstadoPagoChoices.choices,
-                              default=EstadoPagoChoices.PENDIENTE, verbose_name="Estado")
+                            default=EstadoPagoChoices.PENDIENTE, verbose_name="Estado")
 
     # Fechas
     fecha_pago = models.DateTimeField(verbose_name="Fecha de Pago", null=True, blank=True)
@@ -381,6 +380,7 @@ class Pago(models.Model):
         verbose_name = "Pago"
         verbose_name_plural = "Pagos"
 
+
 class DetallePago(models.Model):
     # Relación con el pago principal
     pago = models.ForeignKey(
@@ -400,14 +400,12 @@ class DetallePago(models.Model):
         help_text="Servicio adicional cobrado (ej. Radiografía, Laboratorio)."
     )
 
-    # Cantidad del servicio prestado
     cantidad = models.PositiveIntegerField(
         default=1,
         verbose_name="Cantidad",
         help_text="Cantidad del servicio facturado (ej. 1 examen, 2 procedimientos, etc.)."
     )
 
-    # Precio normal sin seguro
     precio_unitario = models.DecimalField(
         max_digits=10,
         decimal_places=2,
@@ -415,7 +413,13 @@ class DetallePago(models.Model):
         help_text="Precio normal por unidad del servicio, sin considerar seguros."
     )
 
-    # Subtotal calculado (automático)
+    # Nuevo campo
+    valor_consulta = models.DecimalField(
+        "Valor de consulta",
+        max_digits=10, decimal_places=2, null=True, blank=True,
+        help_text="Valor de consulta proveniente del pago seleccionado."
+    )
+
     subtotal = models.DecimalField(
         max_digits=10,
         decimal_places=2,
@@ -424,23 +428,20 @@ class DetallePago(models.Model):
         help_text="Subtotal calculado automáticamente, considerando seguro y descuento."
     )
 
-    # Porcentaje de descuento aplicado
     descuento_porcentaje = models.DecimalField(
         max_digits=5,
         decimal_places=2,
-        default=0,
+        default= 0,
         verbose_name="Descuento %",
         help_text="Descuento aplicado sobre el precio base. Ejemplo: 10 para 10%."
     )
 
-    # Indica si se aplica seguro
     aplica_seguro = models.BooleanField(
         default=False,
         verbose_name="Aplica Seguro",
         help_text="Marca si el servicio tiene cobertura por seguro médico."
     )
 
-    # Valor real que cubre el seguro (reemplaza precio_unitario)
     valor_seguro = models.DecimalField(
         max_digits=10,
         decimal_places=2,
@@ -450,7 +451,6 @@ class DetallePago(models.Model):
         help_text="Valor real cubierto por el seguro. Se usará en lugar del precio normal si se aplica seguro."
     )
 
-    # Descripción del seguro utilizado
     descripcion_seguro = models.CharField(
         max_length=255,
         null=True,
@@ -460,26 +460,36 @@ class DetallePago(models.Model):
     )
 
     def save(self, *args, **kwargs):
-        # Determinar precio base (seguro o normal)
-        precio_base = self.valor_seguro if self.aplica_seguro and self.valor_seguro is not None else self.precio_unitario
+        # cantidad = self.cantidad or 1
+        # precio_unitario = self.precio_unitario or Decimal('0.00')
+        # valor_consulta = self.valor_consulta or Decimal('0.00')
+        # valor_seguro = self.valor_seguro if self.aplica_seguro and self.valor_seguro is not None else Decimal('0.00')
+        # descuento_pct = self.descuento_porcentaje or Decimal('0.00')
 
-        # Aplicar descuento
-        descuento = (self.descuento_porcentaje / Decimal(100)) * precio_base
-        precio_con_descuento = precio_base - descuento
+        # Calcula precio base: precio_unitario + valor_consulta
+        # precio_base = precio_unitario + valor_consulta
 
-        # Calcular subtotal final
-        self.subtotal = round(precio_con_descuento * self.cantidad, 2)
+        # Si aplica seguro, base es valor_seguro + valor_consulta
+        # if self.aplica_seguro and self.valor_seguro is not None:
+        #     precio_base = valor_seguro + valor_consulta
+
+        # Aplica descuento
+        # descuento = (descuento_pct / Decimal('100.00')) * precio_base
+        # precio_con_descuento = precio_base - descuento
+
+        # Calcula subtotal: precio con descuento * cantidad
+        # subtotal_calc = precio_con_descuento * cantidad
+
+        # Aplica mínimo 0 (no negativo)
+        # subtotal_final = max(Decimal('0.00'), subtotal_calc)
+
+        # Guarda subtotal redondeado a 2 decimales
+        # self.subtotal = subtotal_final.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
 
         super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.servicio_adicional} - Cantidad: {self.cantidad} - Subtotal: {self.subtotal}"
-
-    class Meta:
-        verbose_name = "Detalle de Pago"
-        verbose_name_plural = "Detalles de Pagos"
-
-
 
     def actualizar_total_pago(self):
         """Actualiza el monto total del pago basado en todos los detalles"""
@@ -492,3 +502,69 @@ class DetallePago(models.Model):
     class Meta:
         verbose_name = "Detalle de Pago"
         verbose_name_plural = "Detalles de Pago"
+
+#########Modelo Wrapper Orden de pago#########
+class OrdenPago:
+    """
+    Wrapper para crear y mostrar una orden de pago con sus detalles.
+    """
+    def __init__(self, pago=None):
+        self.pago = pago  # Pago ya existente o None (nuevo)
+        # Lista de detalles actuales (si es edición)
+        if self.pago:
+            self.detalles = list(self.pago.detalles.select_related('servicio_adicional').all())
+        else:
+            self.detalles = []
+        # Todos los servicios activos para elegir en el formulario
+        self.servicios_adicionales = ServiciosAdicionales.objects.filter(activo=True).order_by('nombre_servicio')
+
+    def crear_pago(self, atencion, metodo_pago, nombre_pagador=None, observaciones=None,
+                estado=None, fecha_pago=None, referencia_externa=None, evidencia_pago=None):
+        self.pago = Pago.objects.create(
+            atencion=atencion,
+            metodo_pago=metodo_pago,
+            nombre_pagador=nombre_pagador,
+            observaciones=observaciones,
+            estado=estado if estado else 'pendiente',
+            fecha_pago=fecha_pago,
+            referencia_externa=referencia_externa,
+            evidencia_pago=evidencia_pago
+        )
+        self.detalles = []
+
+    def agregar_detalle(
+        self,
+        servicio_adicional,
+        cantidad=1,
+        precio_unitario=None,
+        descuento_porcentaje=0,
+        aplica_seguro=False,
+        valor_seguro=None,
+        descripcion_seguro=None
+    ):
+        if not self.pago:
+            raise ValueError("¡Primero debes crear el Pago principal con .crear_pago()!")
+        if precio_unitario is None:
+            precio_unitario = servicio_adicional.costo_servicio
+        detalle = DetallePago.objects.create(
+            pago=self.pago,
+            servicio_adicional=servicio_adicional,
+            cantidad=cantidad,
+            precio_unitario=precio_unitario,
+            descuento_porcentaje=Decimal(descuento_porcentaje),
+            aplica_seguro=aplica_seguro,
+            valor_seguro=valor_seguro,
+            descripcion_seguro=descripcion_seguro or ""
+        )
+        self.detalles.append(detalle)
+        self.actualizar_total()
+
+    def actualizar_total(self):
+        if not self.pago:
+            return
+        total = sum([d.subtotal for d in self.pago.detalles.all()])
+        self.pago.monto_total = total
+        self.pago.save()
+
+    def __str__(self):
+        return f"Orden de Pago: {self.pago} ({len(self.detalles)} detalles)"

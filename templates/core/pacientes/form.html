@@ -1,0 +1,1413 @@
+{% extends 'base.html' %} 
+<title>{% block title %}{{title}}{% endblock %}</title>
+{% load static %}
+{% include 'fragments/messages.html' %}
+{% block content %}
+<section class="dark:bg-principal py-8">
+    <div class="container mx-auto px-4 text-center" data-aos="fade" data-aos-delay="200">
+        <!-- Header Section -->
+        <div class="sm:pt-28 lg:pt-4">
+            <h1 class="rounded-2xl bg-indigo-500 px-2 py-1 text-white uppercase text-4xl">
+                {{ title1 }}
+            </h1>
+        </div>
+
+        <!-- Error Messages -->
+        {% if form.non_field_errors %}
+        <div class="max-w-4xl mx-auto mb-8" data-aos="fade-up">
+            <div class="bg-red-50 dark:bg-red-900/30 border-l-4 border-red-500 p-4 rounded-lg">
+                <div class="flex items-start">
+                    <div class="flex-shrink-0 pt-1">
+                        <i class="fa-solid fa-exclamation-triangle text-red-500 text-lg"></i>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-red-800 dark:text-red-200 font-medium">
+                            Se encontraron errores en el formulario:
+                        </h3>
+                        <div class="mt-2 text-red-700 dark:text-red-300">
+                            <ul class="list-disc list-inside space-y-1">
+                                {% for error in form.non_field_errors %}
+                                <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Form Section -->
+        <form method="post" class="space-y-6" enctype="multipart/form-data" id="pacienteForm">
+            <div class="bg-white dark:bg-secundario rounded-3xl p-6 md:p-8 max-w-4xl mx-auto shadow-lg"
+                data-aos="fade-up" data-aos-delay="200">
+                {% csrf_token %}
+                
+                <!-- Tabs Navigation -->
+                <div class="mb-6 border-b border-gray-200 dark:border-gray-700">
+                    <ul class="flex flex-wrap -mb-px" id="formTabs" role="tablist">
+                        <li class="mr-2" role="presentation">
+                            <button class="inline-block p-4 border-b-2 rounded-t-lg" 
+                                    id="info-basica-tab" 
+                                    data-tabs-target="#info-basica" 
+                                    type="button" 
+                                    role="tab" 
+                                    aria-controls="info-basica" 
+                                    aria-selected="true">
+                                <i class="fas fa-user-circle mr-2"></i>Información Básica
+                            </button>
+                        </li>
+                        <li class="mr-2" role="presentation">
+                            <button class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" 
+                                    id="contacto-tab" 
+                                    data-tabs-target="#contacto" 
+                                    type="button" 
+                                    role="tab" 
+                                    aria-controls="contacto" 
+                                    aria-selected="false">
+                                <i class="fas fa-address-book mr-2"></i>Contacto
+                            </button>
+                        </li>
+                        <li class="mr-2" role="presentation">
+                            <button class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" 
+                                    id="foto-tab" 
+                                    data-tabs-target="#foto" 
+                                    type="button" 
+                                    role="tab" 
+                                    aria-controls="foto" 
+                                    aria-selected="false">
+                                <i class="fas fa-camera mr-2"></i>Fotografía
+                            </button>
+                        </li>
+                        <li class="mr-2" role="presentation">
+                            <button class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" 
+                                    id="antecedentes-tab" 
+                                    data-tabs-target="#antecedentes" 
+                                    type="button" 
+                                    role="tab" 
+                                    aria-controls="antecedentes" 
+                                    aria-selected="false">
+                                <i class="fas fa-file-medical mr-2"></i>Antecedentes
+                            </button>
+                        </li>
+                        <li role="presentation">
+                            <button class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" 
+                                    id="estado-tab" 
+                                    data-tabs-target="#estado" 
+                                    type="button" 
+                                    role="tab" 
+                                    aria-controls="estado" 
+                                    aria-selected="false">
+                                <i class="fas fa-toggle-on mr-2"></i>Estado
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Tabs Content -->
+                <div id="formTabsContent">
+                    <!-- Tab 1: Información Básica -->
+                    <div class="hidden p-4 rounded-lg bg-gray-50 dark:bg-gray-800" 
+                         id="info-basica" 
+                         role="tabpanel" 
+                         aria-labelledby="info-basica-tab">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Nombres Field -->
+                            <div class="field-container {% if form.nombres.errors %}has-error{% endif %}">
+                                <label for="{{ form.nombres.id_for_label }}"
+                                    class="block mb-2 font-bold text-gray-700 dark:text-blue-300 uppercase text-sm">
+                                    {{ form.nombres.label }}
+                                    {% if form.nombres.field.required %}<span class="text-red-500">*</span>{% endif %}
+                                </label>
+                                <div class="relative">
+                                    {{ form.nombres }}
+                                    {% if form.nombres.errors %}
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <i class="fa-solid fa-exclamation-circle text-red-500"></i>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% if form.nombres.errors %}
+                                <div class="mt-2 text-red-600 dark:text-red-400 text-sm">
+                                    {% for error in form.nombres.errors %}
+                                    <div class="flex items-center mt-1">
+                                        <i class="fa-solid fa-circle-exclamation text-xs mr-2"></i>
+                                        {{ error }}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Apellidos Field -->
+                            <div class="field-container {% if form.apellidos.errors %}has-error{% endif %}">
+                                <label for="{{ form.apellidos.id_for_label }}"
+                                    class="block mb-2 font-bold text-gray-700 dark:text-blue-300 uppercase text-sm">
+                                    {{ form.apellidos.label }}
+                                    {% if form.apellidos.field.required %}<span class="text-red-500">*</span>{% endif %}
+                                </label>
+                                <div class="relative">
+                                    {{ form.apellidos }}
+                                    {% if form.apellidos.errors %}
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <i class="fa-solid fa-exclamation-circle text-red-500"></i>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% if form.apellidos.errors %}
+                                <div class="mt-2 text-red-600 dark:text-red-400 text-sm">
+                                    {% for error in form.apellidos.errors %}
+                                    <div class="flex items-center mt-1">
+                                        <i class="fa-solid fa-circle-exclamation text-xs mr-2"></i>
+                                        {{ error }}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Documentos -->
+                            <div class="field-container {% if form.cedula_ecuatoriana.errors %}has-error{% endif %}">
+                                <label for="{{ form.cedula_ecuatoriana.id_for_label }}"
+                                    class="block mb-2 font-bold text-gray-700 dark:text-blue-300 uppercase text-sm">
+                                    {{ form.cedula_ecuatoriana.label }}
+                                    {% if form.cedula_ecuatoriana.field.required %}<span class="text-red-500">*</span>{% endif %}
+                                </label>
+                                <div class="relative">
+                                    {{ form.cedula_ecuatoriana }}
+                                    {% if form.cedula_ecuatoriana.errors %}
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <i class="fa-solid fa-exclamation-circle text-red-500"></i>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% if form.cedula_ecuatoriana.errors %}
+                                <div class="mt-2 text-red-600 dark:text-red-400 text-sm">
+                                    {% for error in form.cedula_ecuatoriana.errors %}
+                                    <div class="flex items-center mt-1">
+                                        <i class="fa-solid fa-circle-exclamation text-xs mr-2"></i>
+                                        {{ error }}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="field-container {% if form.dni.errors %}has-error{% endif %}">
+                                <label for="{{ form.dni.id_for_label }}"
+                                    class="block mb-2 font-bold text-gray-700 dark:text-blue-300 uppercase text-sm">
+                                    {{ form.dni.label }}
+                                    {% if form.dni.field.required %}<span class="text-red-500">*</span>{% endif %}
+                                </label>
+                                <div class="relative">
+                                    {{ form.dni }}
+                                    {% if form.dni.errors %}
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <i class="fa-solid fa-exclamation-circle text-red-500"></i>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% if form.dni.errors %}
+                                <div class="mt-2 text-red-600 dark:text-red-400 text-sm">
+                                    {% for error in form.dni.errors %}
+                                    <div class="flex items-center mt-1">
+                                        <i class="fa-solid fa-circle-exclamation text-xs mr-2"></i>
+                                        {{ error }}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Fecha Nacimiento Field -->
+                            <div class="field-container {% if form.fecha_nacimiento.errors %}has-error{% endif %}">
+                                <label for="{{ form.fecha_nacimiento.id_for_label }}"
+                                    class="block mb-2 font-bold text-gray-700 dark:text-blue-300 uppercase text-sm">
+                                    {{ form.fecha_nacimiento.label }}
+                                    {% if form.fecha_nacimiento.field.required %}<span class="text-red-500">*</span>{% endif %}
+                                </label>
+                                <div class="relative">
+                                    {{ form.fecha_nacimiento }}
+                                    
+                                    {% if form.fecha_nacimiento.errors %}
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <i class="fa-solid fa-exclamation-circle text-red-500"></i>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% if form.fecha_nacimiento.errors %}
+                                <div class="mt-2 text-red-600 dark:text-red-400 text-sm">
+                                    {% for error in form.fecha_nacimiento.errors %}
+                                    <div class="flex items-center mt-1">
+                                        <i class="fa-solid fa-circle-exclamation text-xs mr-2"></i>
+                                        {{ error }}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            
+
+                            <!-- Sexo Field -->
+                            <div class="field-container {% if form.sexo.errors %}has-error{% endif %}">
+                                <label for="{{ form.sexo.id_for_label }}"
+                                    class="block mb-2 font-bold text-gray-700 dark:text-blue-300 uppercase text-sm">
+                                    {{ form.sexo.label }}
+                                    {% if form.sexo.field.required %}<span class="text-red-500">*</span>{% endif %}
+                                </label>
+                                <div class="relative">
+                                    {{ form.sexo }}
+                                    {% if form.sexo.errors %}
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <i class="fa-solid fa-exclamation-circle text-red-500"></i>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% if form.sexo.errors %}
+                                <div class="mt-2 text-red-600 dark:text-red-400 text-sm">
+                                    {% for error in form.sexo.errors %}
+                                    <div class="flex items-center mt-1">
+                                        <i class="fa-solid fa-circle-exclamation text-xs mr-2"></i>
+                                        {{ error }}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Estado Civil -->
+                            <div class="field-container {% if form.estado_civil.errors %}has-error{% endif %}">
+                                <label for="{{ form.estado_civil.id_for_label }}"
+                                    class="block mb-2 font-bold text-gray-700 dark:text-blue-300 uppercase text-sm">
+                                    {{ form.estado_civil.label }}
+                                    {% if form.estado_civil.field.required %}<span class="text-red-500">*</span>{% endif %}
+                                </label>
+                                <div class="relative">
+                                    {{ form.estado_civil }}
+                                    {% if form.estado_civil.errors %}
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <i class="fa-solid fa-exclamation-circle text-red-500"></i>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% if form.estado_civil.errors %}
+                                <div class="mt-2 text-red-600 dark:text-red-400 text-sm">
+                                    {% for error in form.estado_civil.errors %}
+                                    <div class="flex items-center mt-1">
+                                        <i class="fa-solid fa-circle-exclamation text-xs mr-2"></i>
+                                        {{ error }}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Tipo de Sangre -->
+                            <div class="field-container {% if form.tipo_sangre.errors %}has-error{% endif %}">
+                                <label for="{{ form.tipo_sangre.id_for_label }}"
+                                    class="block mb-2 font-bold text-gray-700 dark:text-blue-300 uppercase text-sm">
+                                    {{ form.tipo_sangre.label }}
+                                    {% if form.tipo_sangre.field.required %}<span class="text-red-500">*</span>{% endif %}
+                                </label>
+                                <div class="relative">
+                                    {{ form.tipo_sangre }}
+                                    {% if form.tipo_sangre.errors %}
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <i class="fa-solid fa-exclamation-circle text-red-500"></i>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% if form.tipo_sangre.errors %}
+                                <div class="mt-2 text-red-600 dark:text-red-400 text-sm">
+                                    {% for error in form.tipo_sangre.errors %}
+                                    <div class="flex items-center mt-1">
+                                        <i class="fa-solid fa-circle-exclamation text-xs mr-2"></i>
+                                        {{ error }}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                        </div>
+                        <div id="edad_container" class="w-full flex mt-8 items-center justify-center gap-2 text-base text-gray-700 dark:text-gray-300 mt-2">
+                                  <i class="fa-solid fa-cake-candles text-pink-600"></i>
+                                <span>Edad: <span class="font-semibold" id="view-age">—</span></span>
+                            </div>
+
+                    </div>
+
+                    <!-- Tab 2: Información de Contacto -->
+                    <div class="hidden p-4 rounded-lg bg-gray-50 dark:bg-gray-800" 
+                         id="contacto" 
+                         role="tabpanel" 
+                         aria-labelledby="contacto-tab">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Teléfono Field -->
+                            <div class="field-container {% if form.telefono.errors %}has-error{% endif %}">
+                                <label for="{{ form.telefono.id_for_label }}"
+                                    class="block mb-2 font-bold text-gray-700 dark:text-blue-300 uppercase text-sm">
+                                    {{ form.telefono.label }}
+                                    {% if form.telefono.field.required %}<span class="text-red-500">*</span>{% endif %}
+                                </label>
+                                <div class="relative">
+                                    {{ form.telefono }}
+                                    {% if form.telefono.errors %}
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <i class="fa-solid fa-exclamation-circle text-red-500"></i>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% if form.telefono.errors %}
+                                <div class="mt-2 text-red-600 dark:text-red-400 text-sm">
+                                    {% for error in form.telefono.errors %}
+                                    <div class="flex items-center mt-1">
+                                        <i class="fa-solid fa-circle-exclamation text-xs mr-2"></i>
+                                        {{ error }}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Email Field -->
+                            <div class="field-container {% if form.email.errors %}has-error{% endif %}">
+                                <label for="{{ form.email.id_for_label }}"
+                                    class="block mb-2 font-bold text-gray-700 dark:text-blue-300 uppercase text-sm">
+                                    {{ form.email.label }}
+                                    {% if form.email.field.required %}<span class="text-red-500">*</span>{% endif %}
+                                </label>
+                                <div class="relative">
+                                    {{ form.email }}
+                                    {% if form.email.errors %}
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <i class="fa-solid fa-exclamation-circle text-red-500"></i>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% if form.email.errors %}
+                                <div class="mt-2 text-red-600 dark:text-red-400 text-sm">
+                                    {% for error in form.email.errors %}
+                                    <div class="flex items-center mt-1">
+                                        <i class="fa-solid fa-circle-exclamation text-xs mr-2"></i>
+                                        {{ error }}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Dirección Field (Full Width) -->
+                            <div class="md:col-span-2 field-container {% if form.direccion.errors %}has-error{% endif %}">
+                                <label for="{{ form.direccion.id_for_label }}"
+                                    class="block mb-2 font-bold text-gray-700 dark:text-blue-300 uppercase text-sm">
+                                    {{ form.direccion.label }}
+                                    {% if form.direccion.field.required %}<span class="text-red-500">*</span>{% endif %}
+                                </label>
+                                <div class="relative">
+                                    {{ form.direccion }}
+                                    {% if form.direccion.errors %}
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <i class="fa-solid fa-exclamation-circle text-red-500"></i>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% if form.direccion.errors %}
+                                <div class="mt-2 text-red-600 dark:text-red-400 text-sm">
+                                    {% for error in form.direccion.errors %}
+                                    <div class="flex items-center mt-1">
+                                        <i class="fa-solid fa-circle-exclamation text-xs mr-2"></i>
+                                        {{ error }}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Coordenadas -->
+                            <div class="field-container {% if form.latitud.errors %}has-error{% endif %}">
+                                <label for="{{ form.latitud.id_for_label }}"
+                                    class="block mb-2 font-bold text-gray-700 dark:text-blue-300 uppercase text-sm">
+                                    {{ form.latitud.label }}
+                                    {% if form.latitud.field.required %}<span class="text-red-500">*</span>{% endif %}
+                                </label>
+                                <div class="relative">
+                                    {{ form.latitud }}
+                                    {% if form.latitud.errors %}
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <i class="fa-solid fa-exclamation-circle text-red-500"></i>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% if form.latitud.errors %}
+                                <div class="mt-2 text-red-600 dark:text-red-400 text-sm">
+                                    {% for error in form.latitud.errors %}
+                                    <div class="flex items-center mt-1">
+                                        <i class="fa-solid fa-circle-exclamation text-xs mr-2"></i>
+                                        {{ error }}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="field-container {% if form.longitud.errors %}has-error{% endif %}">
+                                <label for="{{ form.longitud.id_for_label }}"
+                                    class="block mb-2 font-bold text-gray-700 dark:text-blue-300 uppercase text-sm">
+                                    {{ form.longitud.label }}
+                                    {% if form.longitud.field.required %}<span class="text-red-500">*</span>{% endif %}
+                                </label>
+                                <div class="relative">
+                                    {{ form.longitud }}
+                                    {% if form.longitud.errors %}
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <i class="fa-solid fa-exclamation-circle text-red-500"></i>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% if form.longitud.errors %}
+                                <div class="mt-2 text-red-600 dark:text-red-400 text-sm">
+                                    {% for error in form.longitud.errors %}
+                                    <div class="flex items-center mt-1">
+                                        <i class="fa-solid fa-circle-exclamation text-xs mr-2"></i>
+                                        {{ error }}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab 3: Foto del Paciente -->
+                    <div class="hidden p-4 rounded-lg bg-gray-50 dark:bg-gray-800" 
+                         id="foto" 
+                         role="tabpanel" 
+                         aria-labelledby="foto-tab">
+                        <div class="md:col-span-2 field-container {% if form.foto.errors %}has-error{% endif %}">
+                            <label for="{{ form.foto.id_for_label }}"
+                                class="block mb-2 font-bold text-gray-700 dark:text-blue-300 uppercase text-sm">
+                                {{ form.foto.label }}
+                                {% if form.foto.field.required %}<span class="text-red-500">*</span>{% endif %}
+                            </label>
+                            <div>
+                                <div class="file-upload-wrapper ">
+                                    {{ form.foto }}
+                                    <div class="container-file-upload">
+                                         <button type="button" id="remove-image-btn"
+                                            class="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center shadow-md hover:bg-red-600 z-10">
+                                            &times;
+                                        </button>
+                                        
+                                        <div class="file-upload-overlay ">
+                                            {% if form.instance.foto %}
+                                            <div class="preview-container relative"  >
+                                                <img src="{{ form.instance.foto.url }}" alt="Foto actual"
+                                                    class="preview-image rounded-lg shadow-lg mb-3 max-h-40 mx-auto " >
+                                                <p class="text-lg font-semibold text-slate-700 dark:text-white">Foto actual</p>
+                                                <p class="text-sm text-slate-500 dark:text-white mt-1">Arrastra una nueva imagen o haz clic para cambiar</p>
+                                            </div>
+                                            {% else %}
+                                            <P><i class="fa-solid fa-cloud-arrow-up text-4xl text-blue-500 mb-3"></i></P>
+                                            <p class="text-lg font-semibold text-slate-700 dark:text-white">Arrastra tu imagen aquí</p>
+                                            <p class="text-sm text-slate-500 dark:text-white mt-1">o haz clic para seleccionar</p>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {% if form.foto.errors %}
+                                <div class="absolute top-4 right-4 pointer-events-none">
+                                    <i class="fa-solid fa-exclamation-circle text-red-500 text-xl animate-pulse"></i>
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% if form.foto.errors %}
+                            <div class="mt-2 text-red-600 dark:text-red-400 text-sm">
+                                {% for error in form.foto.errors %}
+                                <div class="flex items-center mt-1">
+                                    <i class="fa-solid fa-circle-exclamation text-xs mr-2"></i>
+                                    {{ error }}
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Tab 4: Antecedentes Médicos -->
+                    <div class="hidden p-4 rounded-lg bg-gray-50 dark:bg-gray-800" 
+                         id="antecedentes" 
+                         role="tabpanel" 
+                         aria-labelledby="antecedentes-tab">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Antecedentes Personales -->
+                            <div class="field-container {% if form.antecedentes_personales.errors %}has-error{% endif %}">
+                                <label for="{{ form.antecedentes_personales.id_for_label }}"
+                                    class="block mb-2 font-bold text-gray-700 dark:text-blue-300 uppercase text-sm">
+                                    {{ form.antecedentes_personales.label }}
+                                    {% if form.antecedentes_personales.field.required %}<span class="text-red-500">*</span>{% endif %}
+                                </label>
+                                <div class="relative">
+                                    {{ form.antecedentes_personales }}
+                                    {% if form.antecedentes_personales.errors %}
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <i class="fa-solid fa-exclamation-circle text-red-500"></i>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% if form.antecedentes_personales.errors %}
+                                <div class="mt-2 text-red-600 dark:text-red-400 text-sm">
+                                    {% for error in form.antecedentes_personales.errors %}
+                                    <div class="flex items-center mt-1">
+                                        <i class="fa-solid fa-circle-exclamation text-xs mr-2"></i>
+                                        {{ error }}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Antecedentes Quirúrgicos -->
+                            <div class="field-container {% if form.antecedentes_quirurgicos.errors %}has-error{% endif %}">
+                                <label for="{{ form.antecedentes_quirurgicos.id_for_label }}"
+                                    class="block mb-2 font-bold text-gray-700 dark:text-blue-300 uppercase text-sm">
+                                    {{ form.antecedentes_quirurgicos.label }}
+                                    {% if form.antecedentes_quirurgicos.field.required %}<span class="text-red-500">*</span>{% endif %}
+                                </label>
+                                <div class="relative">
+                                    {{ form.antecedentes_quirurgicos }}
+                                    {% if form.antecedentes_quirurgicos.errors %}
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <i class="fa-solid fa-exclamation-circle text-red-500"></i>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% if form.antecedentes_quirurgicos.errors %}
+                                <div class="mt-2 text-red-600 dark:text-red-400 text-sm">
+                                    {% for error in form.antecedentes_quirurgicos.errors %}
+                                    <div class="flex items-center mt-1">
+                                        <i class="fa-solid fa-circle-exclamation text-xs mr-2"></i>
+                                        {{ error }}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Antecedentes Familiares -->
+                            <div class="field-container {% if form.antecedentes_familiares.errors %}has-error{% endif %}">
+                                <label for="{{ form.antecedentes_familiares.id_for_label }}"
+                                    class="block mb-2 font-bold text-gray-700 dark:text-blue-300 uppercase text-sm">
+                                    {{ form.antecedentes_familiares.label }}
+                                    {% if form.antecedentes_familiares.field.required %}<span class="text-red-500">*</span>{% endif %}
+                                </label>
+                                <div class="relative">
+                                    {{ form.antecedentes_familiares }}
+                                    {% if form.antecedentes_familiares.errors %}
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <i class="fa-solid fa-exclamation-circle text-red-500"></i>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% if form.antecedentes_familiares.errors %}
+                                <div class="mt-2 text-red-600 dark:text-red-400 text-sm">
+                                    {% for error in form.antecedentes_familiares.errors %}
+                                    <div class="flex items-center mt-1">
+                                        <i class="fa-solid fa-circle-exclamation text-xs mr-2"></i>
+                                        {{ error }}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Alergias -->
+                            <div class="field-container {% if form.alergias.errors %}has-error{% endif %}">
+                                <label for="{{ form.alergias.id_for_label }}"
+                                    class="block mb-2 font-bold text-gray-700 dark:text-blue-300 uppercase text-sm">
+                                    {{ form.alergias.label }}
+                                    {% if form.alergias.field.required %}<span class="text-red-500">*</span>{% endif %}
+                                </label>
+                                <div class="relative">
+                                    {{ form.alergias }}
+                                    {% if form.alergias.errors %}
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <i class="fa-solid fa-exclamation-circle text-red-500"></i>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% if form.alergias.errors %}
+                                <div class="mt-2 text-red-600 dark:text-red-400 text-sm">
+                                    {% for error in form.alergias.errors %}
+                                    <div class="flex items-center mt-1">
+                                        <i class="fa-solid fa-circle-exclamation text-xs mr-2"></i>
+                                        {{ error }}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Medicamentos Actuales -->
+                            <div class="field-container {% if form.medicamentos_actuales.errors %}has-error{% endif %}">
+                                <label for="{{ form.medicamentos_actuales.id_for_label }}"
+                                    class="block mb-2 font-bold text-gray-700 dark:text-blue-300 uppercase text-sm">
+                                    {{ form.medicamentos_actuales.label }}
+                                    {% if form.medicamentos_actuales.field.required %}<span class="text-red-500">*</span>{% endif %}
+                                </label>
+                                <div class="relative">
+                                    {{ form.medicamentos_actuales }}
+                                    {% if form.medicamentos_actuales.errors %}
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <i class="fa-solid fa-exclamation-circle text-red-500"></i>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% if form.medicamentos_actuales.errors %}
+                                <div class="mt-2 text-red-600 dark:text-red-400 text-sm">
+                                    {% for error in form.medicamentos_actuales.errors %}
+                                    <div class="flex items-center mt-1">
+                                        <i class="fa-solid fa-circle-exclamation text-xs mr-2"></i>
+                                        {{ error }}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Hábitos Tóxicos -->
+                            <div class="field-container {% if form.habitos_toxicos.errors %}has-error{% endif %}">
+                                <label for="{{ form.habitos_toxicos.id_for_label }}"
+                                    class="block mb-2 font-bold text-gray-700 dark:text-blue-300 uppercase text-sm">
+                                    {{ form.habitos_toxicos.label }}
+                                    
+                                    {% if form.habitos_toxicos.field.required %}<span class="text-red-500">*</span>{% endif %}
+                                </label>
+                                <div class="relative">
+                                    {{ form.habitos_toxicos }}
+                                    {% if form.habitos_toxicos.errors %}
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <i class="fa-solid fa-exclamation-circle text-red-500"></i>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% if form.habitos_toxicos.errors %}
+                                <div class="mt-2 text-red-600 dark:text-red-400 text-sm">
+                                    {% for error in form.habitos_toxicos.errors %}
+                                    <div class="flex items-center mt-1">
+                                        <i class="fa-solid fa-circle-exclamation text-xs mr-2"></i>
+                                        {{ error }}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Vacunas -->
+                            <div class="field-container {% if form.vacunas.errors %}has-error{% endif %}">
+                                <label for="{{ form.vacunas.id_for_label }}"
+                                    class="block mb-2 font-bold text-gray-700 dark:text-blue-300 uppercase text-sm">
+                                    {{ form.vacunas.label }}
+                                    {% if form.vacunas.field.required %}<span class="text-red-500">*</span>{% endif %}
+                                </label>
+                                <div class="relative">
+                                    {{ form.vacunas }}
+                                    {% if form.vacunas.errors %}
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <i class="fa-solid fa-exclamation-circle text-red-500"></i>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% if form.vacunas.errors %}
+                                <div class="mt-2 text-red-600 dark:text-red-400 text-sm">
+                                    {% for error in form.vacunas.errors %}
+                                    <div class="flex items-center mt-1">
+                                        <i class="fa-solid fa-circle-exclamation text-xs mr-2"></i>
+                                        {{ error }}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Antecedentes Gineco-Obstétricos (Full Width) -->
+                        <div class="mt-8" id="container-gineco-obstetricos">
+                            <h3 class="text-lg font-bold text-gray-800 dark:text-blue-300 mb-4">
+                                <i class="fas fa-baby mr-2"></i>Antecedentes Gineco-Obstétricos
+                            </h3>
+                            <div class="field-container {% if form.antecedentes_gineco_obstetricos.errors %}has-error{% endif %}">
+                                <div class="relative">
+                                    {{ form.antecedentes_gineco_obstetricos }}
+                                    {% if form.antecedentes_gineco_obstetricos.field.required %}<span class="text-red-500">*</span>{% endif %}
+                                    {% if form.antecedentes_gineco_obstetricos.errors %}
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <i class="fa-solid fa-exclamation-circle text-red-500"></i>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% if form.antecedentes_gineco_obstetricos.errors %}
+                                <div class="mt-2 text-red-600 dark:text-red-400 text-sm">
+                                    {% for error in form.antecedentes_gineco_obstetricos.errors %}
+                                    <div class="flex items-center mt-1">
+                                        <i class="fa-solid fa-circle-exclamation text-xs mr-2"></i>
+                                        {{ error }}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab 5: Estado -->
+                    <div class="hidden p-4 rounded-lg bg-gray-50 dark:bg-gray-800" 
+                         id="estado" 
+                         role="tabpanel" 
+                         aria-labelledby="estado-tab">
+                        <div class="md:col-span-2 field-container {% if form.activo.errors %}has-error{% endif %}">
+                            <div class="flex items-center space-x-3 p-3 rounded-lg {% if form.activo.errors %}bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800{% endif %}">
+                                {{ form.activo }}
+                                <label for="{{ form.activo.id_for_label }}"
+                                    class="font-bold text-gray-700 dark:text-blue-300 uppercase text-sm">
+                                    {{ form.activo.label }}
+                                </label>
+                            </div>
+                            {% if form.activo.errors %}
+                            <div class="mt-2 text-red-600 dark:text-red-400 text-sm">
+                                {% for error in form.activo.errors %}
+                                <div class="flex items-center mt-1">
+                                    <i class="fa-solid fa-circle-exclamation text-xs mr-2"></i>
+                                    {{ error }}
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botones de Acción (fuera de las pestañas) -->
+                <div class="flex flex-col md:flex-row justify-center items-center mt-8 space-y-3 md:space-y-0 md:space-x-8">
+                    <button type="submit"
+                        id="btn-paciente-save"
+                        class="w-full md:w-auto bg-blue-700 hover:bg-blue-800 text-white py-3 px-8 rounded-lg flex items-center justify-center transition-all duration-300 font-medium shadow-lg hover:shadow-xl">
+                        <i class="fa-solid fa-save mr-2"></i>Guardar Paciente
+                    </button>
+                    <a class="w-full md:w-auto bg-red-700 hover:bg-red-800 text-white py-3 px-8 rounded-lg flex items-center justify-center transition-all duration-300 font-medium shadow-lg hover:shadow-xl"
+                        href="{% url 'core:paciente_list' %}">
+                        <i class="fa-solid fa-xmark mr-2"></i>Cancelar
+                    </a>
+                </div>
+            </div>
+        </form>
+        <div id="formErrorsContainer" class="messages-container hidden">
+            <!-- Los mensajes de error se insertarán aquí dinámicamente -->
+        </div>
+    </div>
+</section>
+
+
+
+<style>
+/* File Upload Styles */
+.file-upload-wrapper {
+    position: relative;
+    display: block;
+    min-height: 180px;
+}
+
+.file-upload-wrapper input[type="file"] {
+    position: absolute;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    z-index: 2;
+}
+
+.file-upload-overlay {
+    @apply border-2 border-dashed border-gray-300 dark:border-gray-600 
+           rounded-xl p-8 text-center 
+           bg-gray-50/50 dark:bg-gray-800/50 
+           hover:border-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-900/20
+           transition-all duration-300 cursor-pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 180px;
+}
+
+.file-upload-wrapper:hover .file-upload-overlay {
+    transform: scale(1.01);
+}
+
+/* Preview Image Styles */
+.preview-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.preview-image {
+    max-width: 100%;
+    height: auto;
+    max-height: 150px;
+    object-fit: contain;
+    border: 2px solid #e2e8f0;
+    border-radius: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.file-upload-overlay:hover .preview-image {
+    transform: scale(1.03);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+/* Drag and Drop Effects */
+.file-upload-overlay.drag-over {
+    @apply border-blue-500 bg-blue-100/50 dark:bg-blue-900/30;
+}
+
+/* Error Field Styling */
+.field-container.has-error input,
+.field-container.has-error select,
+.field-container.has-error textarea {
+    border-color: #ef4444 !important;
+    background-color: rgba(254, 242, 242, 0.5) !important;
+    color: #991b1b !important;
+}
+
+.field-container.has-error input:focus,
+.field-container.has-error select:focus,
+.field-container.has-error textarea:focus {
+    border-color: #dc2626 !important;
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2) !important;
+    outline: none !important;
+}
+
+/* Dark mode styles */
+.dark .field-container.has-error input,
+.dark .field-container.has-error select,
+.dark .field-container.has-error textarea {
+    background-color: rgba(153, 27, 27, 0.2) !important;
+    color: #fca5a5 !important;
+    border-color: #ef4444 !important;
+}
+
+.dark .field-container.has-error input:focus,
+.dark .field-container.has-error select:focus,
+.dark .field-container.has-error textarea:focus {
+    box-shadow: 0 0 0 2px rgba(185, 28, 28, 0.4) !important;
+}
+
+.field-container.has-error input[type="checkbox"] {
+    border-color: #ef4444 !important;
+    accent-color: #ef4444 !important;
+}
+
+/* Animation for error fields */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-2px); }
+    20%, 40%, 60%, 80% { transform: translateX(2px); }
+}
+
+.field-container.has-error {
+    animation: shake 0.5s ease-in-out;
+}
+
+/* Form input styling */
+input, select, textarea {
+    @apply w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 transition-all duration-200;
+}
+
+/* Checkbox styling */
+input[type="checkbox"] {
+    @apply w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600;
+}
+
+/* Estilos mejorados para el checkbox */
+input[type="checkbox"] {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    width: 1.25rem;
+    height: 1.25rem;
+    border: 2px solid #d1d5db;
+    border-radius: 0.25rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    position: relative;
+}
+
+input[type="checkbox"]:checked {
+    background-color: #4f46e5;
+    border-color: #4f46e5;
+}
+
+input[type="checkbox"]:checked::after {
+    content: "✓";
+    position: absolute;
+    color: white;
+    font-size: 0.75rem;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+input[type="checkbox"]:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.3);
+}
+
+.dark input[type="checkbox"] {
+    border-color: #4b5563;
+    background-color: #374151;
+}
+
+.dark input[type="checkbox"]:checked {
+    background-color: #4f46e5;
+    border-color: #4f46e5;
+}
+
+/* Animación sutil para errores */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-2px); }
+    20%, 40%, 60%, 80% { transform: translateX(2px); }
+}
+
+.field-container.has-error {
+    animation: shake 0.5s ease-in-out;
+}
+img {
+  pointer-events: none;
+}
+
+
+</style>
+
+
+
+<script src="{% static 'js/message_validations.js' %}"></script>
+<script>
+ document.addEventListener('DOMContentLoaded', function () {
+    // File Upload Handling
+    const fileInput = document.querySelector('input[type="file"]');
+    const overlay = document.querySelector('.file-upload-overlay');
+    const overlayContainer = document.querySelector('.container-file-upload');
+    const originalContent = overlayContainer.innerHTML;
+
+
+    const tabs = document.querySelectorAll('[role="tab"]');
+    const tabPanels = document.querySelectorAll('[role="tabpanel"]');
+    const spanAge = document.getElementById('view-age')
+    const dateInput = document.getElementById('id_fecha_nacimiento')
+    const fecha = new Date(dateInput.value)
+
+    //ocultar input Antecedentes Gineco-Obstétricos para pacientes varones
+    const containerGinecoObstétricos = document.getElementById('container-gineco-obstetricos')
+    const inputSexo = document.getElementById('id_sexo')
+
+
+    function hiddenInputGineco(){
+        const valor = inputSexo.value;
+        if(valor == 'masculino'){
+            containerGinecoObstétricos.style.display='none'
+        }else{
+            containerGinecoObstétricos.style.display='block'
+        }
+    }
+
+    hiddenInputGineco()
+
+    inputSexo.addEventListener('change', hiddenInputGineco)
+
+
+
+
+
+
+    age=getAge(fecha)
+    spanAge.innerHTML= age >= 0 ? age + ' años' : '—';
+    
+
+    dateInput.addEventListener('change', function(){
+        const fecha = new Date(dateInput.value)
+       
+        if (isNaN(fecha)) return
+
+        if (isNaN(fecha) || fecha > new Date()) {
+            spanAge.innerHTML = '—';
+            return;
+        }
+
+        age = getAge(fecha)
+
+        console.log(age)
+
+        if (age < 0 || age > 130) {
+            spanAge.innerHTML = '—';
+            return;
+        }
+        spanAge.innerHTML= age >= 0 ? animarContador(spanAge, age, 3000) : '—';
+    })
+
+    function getAge(fechaNacimiento){
+        today = new Date()
+
+        age = today.getFullYear() - fechaNacimiento.getFullYear();
+        const month = today.getMonth() - fechaNacimiento.getMonth();
+
+        if (month < 0 || (month === 0 && today.getDate() < fechaNacimiento.getDate())) {
+            age--;
+        }
+        return age
+    }
+
+    function animarContador(elemento, valorFinal, duracion = 2000) {
+        let inicio = 0;
+        const incremento = valorFinal / (duracion / 50); // actualiza cada 50ms
+        const intervalo = setInterval(() => {
+        inicio += incremento;
+        if (inicio >= valorFinal) {
+            inicio = valorFinal;
+            clearInterval(intervalo);
+        }
+        elemento.textContent = `${Math.floor(inicio)} años`;
+        }, 50);
+}
+
+    
+    // Función para cambiar de pestaña
+    function switchTab(clickedTab) {
+        // Desactivar todas las pestañas
+        tabs.forEach(tab => {
+            tab.setAttribute('aria-selected', 'false');
+            tab.classList.remove('border-blue-600', 'text-blue-600', 'dark:text-blue-500', 'dark:border-blue-500');
+            tab.classList.add('border-transparent', 'hover:text-gray-600', 'hover:border-gray-300', 'dark:hover:text-gray-300');
+        });
+        
+        // Activar la pestaña clickeada
+        clickedTab.setAttribute('aria-selected', 'true');
+        clickedTab.classList.add('border-blue-600', 'text-blue-600', 'dark:text-blue-500', 'dark:border-blue-500');
+        clickedTab.classList.remove('border-transparent', 'hover:text-gray-600', 'hover:border-gray-300', 'dark:hover:text-gray-300');
+        
+        // Ocultar todos los paneles
+        tabPanels.forEach(panel => {
+            panel.classList.add('hidden');
+        });
+        
+        // Mostrar el panel correspondiente
+        const panelId = clickedTab.getAttribute('data-tabs-target');
+        const activePanel = document.querySelector(panelId);
+        activePanel.classList.remove('hidden');
+    }
+    
+    // Agregar evento click a cada pestaña
+    tabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            switchTab(this);
+        });
+    });
+    
+    // Activar la primera pestaña por defecto
+    const firstTab = document.querySelector('[aria-selected="true"]');
+    if (firstTab) {
+        switchTab(firstTab);
+    }
+    
+
+
+
+    // Manejar el botón de eliminar imagen
+    const removeImageBtn = document.getElementById('remove-image-btn');
+    if (removeImageBtn) {
+        removeImageBtn.addEventListener('click', function() {
+            const fileInput = document.querySelector('input[type="file"]');
+            const previewContainer = document.querySelector('.preview-container');
+            const fileUploadOverlay = document.querySelector('.file-upload-overlay');
+            
+            if (fileInput && previewContainer && fileUploadOverlay) {
+                fileInput.value = '';
+                previewContainer.remove();
+                
+                // Mostrar el overlay por defecto
+                fileUploadOverlay.innerHTML = `
+
+                    <P><i class="fa-solid fa-cloud-arrow-up text-4xl text-blue-500 mb-3"></i></P>
+                    <p class="text-lg font-semibold text-slate-700 dark:text-white">Arrastra tu imagen aquí</p>
+                    <p class="text-sm text-slate-500 dark:text-white mt-1">o haz clic para seleccionar</p>
+                `;
+                console.log('Preview foto')
+            }
+        });
+    }
+
+    // Función para mostrar u ocultar botón X
+    function toggleRemoveBtn(show) {
+        const removeBtn = document.getElementById('remove-image-btn');
+        if (removeBtn) {
+            removeBtn.style.display = show ? 'flex' : 'none';
+        }
+    }
+
+    // Función para eliminar la imagen
+    function removeImage() {
+        console.log('entra')
+        fileInput.value = '';
+
+        const existingPreview = overlayContainer.querySelector('.preview-image');
+        
+       
+        if (existingPreview && !fileInput.files.length) {
+
+            overlayContainer.innerHTML = ` 
+                <p><i class="fa-solid fa-cloud-arrow-up text-4xl text-blue-500 mb-3"></i></p>
+                <p class="text-lg font-semibold text-slate-700 dark:text-white">Arrastra tu imagen aquí</p>
+                <p class="text-sm text-slate-500 dark:text-white mt-1">o haz clic para seleccionar</p>
+            `;  
+        } else {
+
+            overlayContainer.innerHTML = originalContent;
+        }
+
+        toggleRemoveBtn(false);
+        
+        // Restablecer eventos
+        setupEventListeners();
+    }
+
+    function setupEventListeners() {
+        const newRemoveBtn = document.getElementById('remove-image-btn');
+        if (newRemoveBtn) {
+            console.log('asigna escuchador')
+            newRemoveBtn.addEventListener('click', removeImage);
+        }
+    }
+
+    // Mostrar botón si ya hay imagen cargada (modo edición)
+    toggleRemoveBtn(document.querySelector('.preview-image'));
+    console.log('Escucha')
+    if (fileInput && overlay) {
+        // Handle file selection
+        fileInput.addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            handleFileSelection(file);
+        });
+
+        // Drag and drop functionality
+        overlay.addEventListener('dragover', function (e) {
+            e.preventDefault();
+            this.classList.add('drag-over');
+        });
+
+        overlay.addEventListener('dragleave', function (e) {
+            e.preventDefault();
+            this.classList.remove('drag-over');
+        });
+
+        overlay.addEventListener('drop', function (e) {
+            e.preventDefault();
+            this.classList.remove('drag-over');
+
+            if (e.dataTransfer.files.length) {
+                fileInput.files = e.dataTransfer.files;
+                handleFileSelection(e.dataTransfer.files[0]);
+            }
+        });
+
+        function handleFileSelection(file) {
+            if (file) {
+                // Validate image type
+                const validImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+                if (!validImageTypes.includes(file.type)) {
+                    // Show error message
+                    overlay.innerHTML = `
+                    <i class="fa-solid fa-ban text-4xl text-red-500 mb-3"></i>
+                    <p class="text-lg font-semibold text-red-700 dark:text-red-400">Tipo de archivo no válido</p>
+                    <p class="text-sm text-slate-600 dark:text-white mt-1">Solo se permiten imágenes (JPEG, PNG, GIF, WEBP)</p>
+                `;
+                    overlay.classList.add('border-red-400', 'bg-red-50/50');
+                    overlay.classList.remove('border-gray-300', 'bg-gray-50/50');
+
+                    // Clear file input
+                    fileInput.value = '';
+                    return;
+                }
+
+                // Show image preview
+                const reader = new FileReader();
+                reader.onload = function (event) {
+                    overlayContainer.innerHTML = `
+                    <button type="button" id="remove-image-btn"
+                        class="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center shadow-md hover:bg-red-600 z-10">
+                        &times;
+                    </button>
+                    <div class="file-upload-overlay ">
+                        <div class="preview-container " >
+                            <img src="${event.target.result}" alt="Previsualización" class="preview-image rounded-lg shadow-lg mb-3 max-h-40 mx-auto">
+                            <p class="text-lg font-semibold text-green-700 dark:text-green-400">Imagen seleccionada</p>
+                            <p class="text-sm text-slate-600 dark:text-white mt-1">${file.name}</p>
+                        </div> 
+                    </div>
+                `;
+                setupEventListeners();
+                toggleRemoveBtn(true);
+                };
+                
+                reader.readAsDataURL(file);
+            }
+        }
+    }
+
+    // Inicializar listeners
+    setupEventListeners();
+
+
+
+
+    // Form validation
+    const form = document.getElementById('pacienteForm');
+        if (form) {
+             form.noValidate = true; 
+        form.addEventListener('submit', function (e) {
+             e.preventDefault();
+            
+            // Activar todas las pestañas temporalmente para validación
+            tabPanels.forEach(panel => panel.classList.remove('hidden'));
+            
+            // Validar todos los campos requeridos
+            const allRequiredFields = Array.from(document.querySelectorAll('[required]'));
+            const invalidFields = allRequiredFields.filter(field => !field.value.trim());
+            
+            // Restaurar visibilidad de pestañas
+            switchTab(document.querySelector('[aria-selected="true"]'));
+            
+            if (invalidFields.length > 0) {
+                // Agrupar errores por pestaña
+                const errorsByTab = {};
+                
+                invalidFields.forEach(field => {
+                    const tabPanel = field.closest('[role="tabpanel"]');
+                    const tabId = tabPanel ? tabPanel.id : 'general';
+                    
+                    if (!errorsByTab[tabId]) {
+                        const tabButton = document.querySelector(`[aria-controls="${tabId}"]`);
+                        errorsByTab[tabId] = {
+                            name: tabButton ? tabButton.textContent.trim() : 'General',
+                            fields: []
+                        };
+                    }
+                    
+                    const label = document.querySelector(`label[for="${field.id}"]`);
+                    errorsByTab[tabId].fields.push(
+                        label ? label.textContent.trim().replace(/\s*\*$/, '') : field.name
+                    );
+                });
+                
+                // Construir mensaje de error
+                let errorMessage = 'Complete los campos requeridos:<br><ul class="list-disc pl-5 mt-2">';
+                
+                for (const tabId in errorsByTab) {
+                    errorMessage += `<li><strong>${errorsByTab[tabId].name}:</strong> ${errorsByTab[tabId].fields.join(', ')}</li>`;
+                }
+                
+                errorMessage += '</ul>';
+                
+                showCustomMessage(errorMessage, 'error');
+                
+                // Ir a la primera pestaña con errores
+                const firstErrorTab = Object.keys(errorsByTab)[0];
+                if (firstErrorTab) {
+                    const tabButton = document.querySelector(`[aria-controls="${firstErrorTab}"]`);
+                    if (tabButton) {
+                        switchTab(tabButton);
+                        // Enfocar el primer campo inválido en esa pestaña
+                        const firstInvalidField = invalidFields.find(
+                            field => field.closest('[role="tabpanel"]').id === firstErrorTab
+                        );
+                        if (firstInvalidField) {
+                            firstInvalidField.focus();
+                        }
+                    }
+                }
+                
+                return false;
+            }
+
+
+            const fileInput = this.querySelector('input[type="file"]');
+            const formData = new FormData(form);
+            if (fileInput && fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                const validImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+
+                if (!validImageTypes.includes(file.type)) {
+                    e.preventDefault();
+                    alert('Por favor, sube solo archivos de imagen (JPEG, PNG, GIF, WEBP)');
+                    return false;
+                }
+
+                
+            }else{
+                formData.append('borrar_imagen','true')
+            }
+            
+            
+            
+            const saveBtn = document.getElementById('btn-paciente-save');
+            const originalText = saveBtn.textContent;
+            const currentPacienteId = {{ form.id|default:"null" }}
+            console.log(currentPacienteId)
+            saveBtn.textContent = 'Guardando...';
+            saveBtn.disabled = true;
+            formData.append('paciente_id',currentPacienteId)
+
+            async function savePermissions() {
+                try{
+                    const response = await fetch('/core/save/paciente/', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                        }
+
+                    })
+
+                    const data = await response.json();
+                    console.log('message:', data)
+                }
+                catch(error){
+                    console.error('Error al enviar:', error);
+                }
+                finally{
+                    saveBtn.textContent = originalText
+                    saveBtn.disabled = false
+
+                }
+
+            }   
+            savePermissions()
+                    this.submit();
+
+            return true;
+
+        });
+    }
+
+    
+
+
+});
+</script>
+{% endblock %}
+
+
+
+
+
