@@ -50,10 +50,9 @@
                 class="bg-white border border-gray-300 rounded-lg px-4 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 shadow-md hover:shadow-lg">
                 <option value="">Seleccionar Grupo</option>
                 {% for group in group_list %}
-                    {# Aquí usamos selected_group_id para el atributo 'selected' #}
                     <option value="{{ group.id }}" {% if selected_group_id and group.id == selected_group_id %}selected{% endif %}>{{ group.name }}</option>
                 {% empty %}
-                <option value="" disabled>Sin grupos asignados</option>
+                    <option value="" disabled>Sin grupos asignados</option>
                 {% endfor %}
             </select>
         </div>

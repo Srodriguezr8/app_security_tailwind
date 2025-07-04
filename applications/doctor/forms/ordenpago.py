@@ -44,10 +44,13 @@ class DetallePagoForm(forms.ModelForm):
         }
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields['pago'].queryset = Pago.objects.all()
+        self.fields['pago'].empty_label = "-- Seleccione un Pago --"
         self.fields['servicio_adicional'].queryset = ServiciosAdicionales.objects.filter(activo=True)
         # Si ya tiene pago, carga el monto
         if self.instance and self.instance.pago_id:
             self.fields['monto_pago'].initial = self.instance.pago.monto_total
+
 
 # Importante: ¡el Formset!
 from django.forms import modelformset_factory
@@ -56,5 +59,5 @@ DetallePagoFormSet = modelformset_factory(
     DetallePago,
     form=DetallePagoForm,
     extra=3,    # Número de filas a mostrar por defecto
-    can_delete=True, # Para permitir eliminar detalles en edición
+    can_delete=False, # Para permitir eliminar detalles en edición
 )

@@ -1,6 +1,7 @@
 {% extends 'home.html' %} 
 <title>{% block title %}{{title}}{% endblock %}</title>
 {% load static %}
+{% include 'fragments/messages.html' %}
 {% block content %}
 <section class="dark:bg-principal">
     <div class="text-center" data-aos="fade" data-aos-delay="200">
@@ -195,31 +196,62 @@
 .field-container.has-error {
     animation: shake 0.5s ease-in-out;
 }
+/* Estilos mejorados para el checkbox */
+input[type="checkbox"] {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    width: 1.25rem;
+    height: 1.25rem;
+    border: 2px solid #d1d5db;
+    border-radius: 0.25rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    position: relative;
+}
+
+input[type="checkbox"]:checked {
+    background-color: #4f46e5;
+    border-color: #4f46e5;
+}
+
+input[type="checkbox"]:checked::after {
+    content: "✓";
+    position: absolute;
+    color: white;
+    font-size: 0.75rem;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+input[type="checkbox"]:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.3);
+}
+
+.dark input[type="checkbox"] {
+    border-color: #4b5563;
+    background-color: #374151;
+}
+
+.dark input[type="checkbox"]:checked {
+    background-color: #4f46e5;
+    border-color: #4f46e5;
+}
+
+/* Animación sutil para errores */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-2px); }
+    20%, 40%, 60%, 80% { transform: translateX(2px); }
+}
+
+.field-container.has-error {
+    animation: shake 0.5s ease-in-out;
+}
 </style>
 
-<script>
-// Vista previa del ícono
-document.addEventListener('DOMContentLoaded', function() {
-    const iconInput = document.getElementById('{{ form.icon.id_for_label }}');
-    const iconPreview = document.getElementById('iconPreview');
-    
-    function updateIconPreview() {
-        const iconClass = iconInput.value.trim();
-        if (iconClass) {
-            iconPreview.className = iconClass + ' text-3xl text-blue-600 dark:text-blue-400';
-        } else {
-            iconPreview.className = 'bi bi-x-octagon text-3xl text-gray-400';
-        }
-    }
-    
-    // Actualizar vista previa al cargar la página (para edición)
-    updateIconPreview();
-    
-    // Actualizar vista previa cuando cambie el input
-    iconInput.addEventListener('input', updateIconPreview);
-    iconInput.addEventListener('keyup', updateIconPreview);
-    iconInput.addEventListener('change', updateIconPreview);
-});
-</script>
+
 
 {% endblock %}

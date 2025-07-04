@@ -1,4 +1,4 @@
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import CreateView
@@ -7,6 +7,9 @@ from applications.doctor.models import Pago, OrdenPago, ServiciosAdicionales
 from applications.security.components.mixin_crud import PermissionMixin
 from django.http import JsonResponse
 from applications.doctor.models import Pago
+from decimal import Decimal
+from django.http import HttpResponseRedirect
+from django.utils import timezone
 
 class OrdenPagoCreateView(LoginRequiredMixin, PermissionMixin, CreateView):
     model = Pago
@@ -18,9 +21,9 @@ class OrdenPagoCreateView(LoginRequiredMixin, PermissionMixin, CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         if self.request.POST:
-            context['formset'] = DetallePagoFormSet(self.request.POST)
+            context['formset'] = DetallePagoFormSet(self.request.POST, queryset=DetallePago.objects.none())
         else:
-            context['formset'] = DetallePagoFormSet()
+            context['formset'] = DetallePagoFormSet(queryset=DetallePago.objects.none())
         context['title'] = "Registrar Pago"
         context['title1'] = "REGISTRO DE PAGO"
         return context
@@ -43,10 +46,15 @@ class OrdenPagoCreateView(LoginRequiredMixin, PermissionMixin, CreateView):
             if self.object.detalles.exists():
                 orden.actualizar_total()
             self.object.refresh_from_db()
-            # Para mostrar el mensaje una sola vez
-            messages.success(self.request, "Registrado correctamente.")
-            # Devuelve el formulario con los datos escritos
-            return self.render_to_response(self.get_context_data(form=form, formset=formset, just_registered=True))
+            #messages.success(self.request, "Registrado correctamente.")
+
+            # --- AJAX (no cambies esta parte) ---
+            if self.request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({"ok": True, "pago_id": self.object.id})
+
+            # --- REDIRECT limpio en caso normal ---
+            return HttpResponseRedirect(self.request.path)
+
         else:
             messages.error(self.request, "Hay errores en el formulario o los detalles.")
             return self.render_to_response(self.get_context_data(form=form))
@@ -61,28 +69,69 @@ DetallePagoFormSet = modelformset_factory(
     can_delete=True,
 )
 
-## API PARA SERVICIOS ADICIONALES ##
-from django.http import JsonResponse
-#from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
+from django.shortcuts import render, get_object_or_404
 import json
 
-#@csrf_exempt
+@csrf_exempt
+@require_http_methods(["POST"])
 def crear_servicio_adicional(request):
-    if request.method == "POST":
+    """
+    API para crear un nuevo servicio adicional
+    """
+    try:
+        # Validar Content-Type
+        if request.content_type != 'application/json':
+            return JsonResponse({"error": "Content-Type debe ser application/json"}, status=400)
+        
+        # Parsear JSON
+        if not request.body:
+            return JsonResponse({"error": "No se enviaron datos."}, status=400)
+            
         data = json.loads(request.body.decode("utf-8"))
-        nombre = data.get("nombre_servicio")
+        
+        # Validar campos
+        nombre = data.get("nombre_servicio", "").strip()
         costo = data.get("costo_servicio")
-        descripcion = data.get("descripcion")
-        if not (nombre and costo):
-            return JsonResponse({"error": "Faltan campos obligatorios."}, status=400)
-        serv = ServiciosAdicionales.objects.create(
+        descripcion = data.get("descripcion", "").strip()
+        
+        if not nombre:
+            return JsonResponse({"error": "El nombre del servicio es obligatorio."}, status=400)
+        
+        if not costo:
+            return JsonResponse({"error": "El costo del servicio es obligatorio."}, status=400)
+        
+        # Validar y convertir costo
+        try:
+            costo_decimal = float(costo)
+            if costo_decimal <= 0:
+                return JsonResponse({"error": "El costo debe ser mayor a 0."}, status=400)
+        except (ValueError, TypeError):
+            return JsonResponse({"error": "El costo debe ser un número válido."}, status=400)
+        
+        # Crear servicio
+        servicio = ServiciosAdicionales.objects.create(
             nombre_servicio=nombre,
-            costo_servicio=costo,
-            descripcion=descripcion or "",
+            costo_servicio=costo_decimal,
+            descripcion=descripcion,
             activo=True
         )
-        return JsonResponse({"id": serv.id, "nombre_servicio": serv.nombre_servicio})
-    return JsonResponse({"error": "Solo POST permitido"}, status=405)
+        
+        # Respuesta exitosa
+        response_data = {
+            "id": servicio.id,
+            "nombre_servicio": servicio.nombre_servicio,
+            "costo_servicio": float(servicio.costo_servicio),
+            "descripcion": servicio.descripcion
+        }
+        
+        return JsonResponse(response_data, status=201)
+        
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "Datos JSON inválidos."}, status=400)
+    except Exception as e:
+        return JsonResponse({"error": f"Error interno del servidor: {str(e)}"}, status=500)
 
 #valor consulta
 def get_valor_consulta(request, pago_id):
@@ -105,9 +154,18 @@ def get_costo_servicio_adicional(request, servicio_id):
 
 from django.views.decorators.http import require_POST
 
+from decimal import Decimal, InvalidOperation
+
+def safe_decimal(val):
+    try:
+        return Decimal(str(val)) if str(val).strip() not in ["", None] else Decimal(0)
+    except (InvalidOperation, TypeError, ValueError):
+        return Decimal(0)
+
 @require_POST
 def guardar_detalle_pago(request):
     data = json.loads(request.body.decode('utf-8'))
+    print('DEBUG data recibida:', data)
     try:
         from applications.doctor.models import DetallePago, Pago, ServiciosAdicionales
         pago = Pago.objects.get(pk=data['pago'])
@@ -115,14 +173,22 @@ def guardar_detalle_pago(request):
         detalle = DetallePago.objects.create(
             pago=pago,
             servicio_adicional=servicio,
-            cantidad=data.get('cantidad', 1),
-            precio_unitario=data.get('precio_unitario', 0),
-            valor_consulta=data.get('valor_consulta', 0),
-            descuento_porcentaje=data.get('descuento_porcentaje', 0),
-            aplica_seguro=data.get('aplica_seguro', False),
-            valor_seguro=data.get('valor_seguro', 0),
+            cantidad=int(data.get('cantidad', 1) or 1),
+            precio_unitario=safe_decimal(data.get('precio_unitario', 0)),
+            valor_consulta=safe_decimal(data.get('valor_consulta', 0)),
+            descuento_porcentaje=safe_decimal(data.get('descuento_porcentaje', 0)),
+            aplica_seguro=bool(data.get('aplica_seguro', False)),
+            valor_seguro=safe_decimal(data.get('valor_seguro', 0)),
             descripcion_seguro=data.get('descripcion_seguro', ''),
         )
         return JsonResponse({'ok': True, 'id': detalle.id})
     except Exception as e:
         return JsonResponse({'ok': False, 'error': str(e)})
+#AJAX PARA DETALLE DE PAGO
+from django.shortcuts import render, get_object_or_404
+
+def detalles_pago_tbody_ajax(request, pago_id):
+    pago = get_object_or_404(Pago, id=pago_id)
+    detalles = pago.detalles.all()
+    html = render(request, "core/pago/partials/detalles_pago_tbody.html", {"detalles": detalles}).content.decode("utf-8")
+    return JsonResponse({"html": html})

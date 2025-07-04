@@ -38,6 +38,8 @@ class HorarioAtencion(models.Model):
         verbose_name_plural = "Horarios de Atención"
         unique_together = ('dia_semana', 'hora_inicio', 'hora_fin')  # Evita duplicados exactos
 
+
+
 class CitaMedica(models.Model):
     paciente = models.ForeignKey('core.Paciente', on_delete=models.CASCADE, verbose_name="Paciente", related_name="citas")
     fecha = models.DateField(verbose_name="Fecha de la Cita")
@@ -328,7 +330,7 @@ class ServiciosAdicionales(models.Model):
 # Pago de atencion y servicios varios
 class Pago(models.Model):
     # Relación con la atención médica (opcional para servicios independientes)
-    atencion = models.ForeignKey(Atencion, on_delete=models.PROTECT,
+    atencion = models.ForeignKey(Atencion, on_delete=models.CASCADE,
                                 verbose_name="Atención", related_name="pagos",
                                 null=True, blank=True)
 
@@ -554,3 +556,81 @@ class OrdenPago:
 
     def __str__(self):
         return f"Orden de Pago: {self.pago} ({len(self.detalles)} detalles)"
+
+# Modelo simplificado para pagos procesados desde el modal
+class Pago_global(models.Model):
+    # Relación directa con el pago principal existente
+    pago = models.OneToOneField(
+        'Pago',
+        on_delete=models.CASCADE,
+        verbose_name="Pago",
+        related_name="pago_global",
+        help_text="Pago principal asociado a este registro global."
+    )
+    
+    # Información adicional específica del modal
+    procesado_desde_modal = models.BooleanField(
+        default=True,
+        verbose_name="Procesado desde Modal",
+        help_text="Indica si este pago fue procesado desde el modal de gestión."
+    )
+    
+    # Para pagos digitales adicionales
+    datos_procesamiento = models.JSONField(
+        default=dict,
+        blank=True,
+        verbose_name="Datos de Procesamiento",
+        help_text="Información adicional del procesamiento (PayPal, etc.)"
+    )
+    
+    # Referencia externa específica del pago global
+    referencia_externa = models.CharField(
+        max_length=100,
+        verbose_name="Referencia Externa Global",
+        blank=True,
+        null=True,
+        help_text="Referencia externa específica del pago global"
+    )
+
+    # Control de auditoría
+    activo = models.BooleanField(default=True, verbose_name="Activo")
+    
+    def __str__(self):
+        return f"Pago Global #{self.id} - {self.pago.atencion.paciente.nombre_completo if self.pago.atencion else 'Sin atención'}"
+    
+    @property
+    def paciente(self):
+        """Acceso directo al paciente a través del pago y atención"""
+        if self.pago and self.pago.atencion:
+            return self.pago.atencion.paciente
+        return None
+    
+    @property
+    def atencion(self):
+        """Acceso directo a la atención"""
+        return self.pago.atencion if self.pago else None
+    
+    @property
+    def estado(self):
+        """Estado del pago principal"""
+        return self.pago.estado if self.pago else 'sin_estado'
+    
+    @property
+    def metodo_pago(self):
+        """Método de pago del pago principal"""
+        return self.pago.metodo_pago if self.pago else 'no_especificado'
+    
+    @property
+    def monto_total(self):
+        """Monto total del pago principal"""
+        return self.pago.monto_total if self.pago else 0
+    
+    @property
+    def fecha_pago(self):
+        """Fecha del pago principal"""
+        return self.pago.fecha_pago if self.pago else None
+    
+    class Meta:
+        verbose_name = "Pago Global"
+        verbose_name_plural = "Pagos Globales"
+        ordering = ['-pago__fecha_creacion']
