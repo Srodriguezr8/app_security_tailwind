@@ -44,24 +44,25 @@
                             <th scope="col" class="px-4 py-4">Síntomas</th>
                             <th scope="col" class="px-4 py-4">Diagnósticos</th>
                             <th scope="col" class="px-4 py-4">Tratamiento</th>
+                            <th scope="col" class="px-4 py-4">Estado de Pago</th>
                             <th scope="col" class="px-4 py-4">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% for atencion in atenciones %}
+                        {% for item in atenciones_expandidas %}
                         <tr
                             class="dark:text-gray-300 bg-white border-b dark:bg-[#0b1121] dark:border-secundario hover:bg-emerald-50 dark:hover:bg-[#121c33] transition-colors duration-200">
                             <td class="px-4 py-4 font-medium text-emerald-600 dark:text-emerald-400">
-                                #{{ atencion.id }}
+                                #{{ item.atencion.id }}
                             </td>
 
                             <td class="px-4 py-4">
                                 <div class="flex flex-col">
                                     <span class="font-semibold text-gray-900 dark:text-gray-100">
-                                        {{ atencion.paciente.nombres }} {{ atencion.paciente.apellidos }}
+                                        {{ item.atencion.paciente.nombres }} {{ item.atencion.paciente.apellidos }}
                                     </span>
                                     <span class="text-xs text-gray-500 dark:text-gray-400">
-                                        {{ atencion.paciente.numero_identificacion }}
+                                        {{ item.atencion.paciente.numero_identificacion }}
                                     </span>
                                 </div>
                             </td>
@@ -69,19 +70,19 @@
                             <td class="px-4 py-4">
                                 <div class="flex flex-col">
                                     <span class="font-medium text-gray-900 dark:text-gray-100">
-                                        {{ atencion.fecha_atencion|date:"d/m/Y" }}
+                                        {{ item.atencion.fecha_atencion|date:"d/m/Y" }}
                                     </span>
                                     <span class="text-xs text-gray-500 dark:text-gray-400">
-                                        {{ atencion.fecha_atencion|time:"H:i" }}
+                                        {{ item.atencion.fecha_atencion|time:"H:i" }}
                                     </span>
                                 </div>
                             </td>
 
                             <td class="px-4 py-4">
                                 <div class="max-w-xs">
-                                    {% if atencion.motivo_consulta %}
+                                    {% if item.atencion.motivo_consulta %}
                                     <p class="text-sm text-gray-700 dark:text-gray-300 text-left">
-                                        {{ atencion.motivo_consulta|truncatechars:80 }}
+                                        {{ item.atencion.motivo_consulta|truncatechars:80 }}
                                     </p>
                                     {% else %}
                                     <span class="text-gray-400 italic text-xs">Sin especificar</span>
@@ -91,9 +92,9 @@
 
                             <td class="px-4 py-4">
                                 <div class="max-w-xs">
-                                    {% if atencion.sintomas %}
+                                    {% if item.atencion.sintomas %}
                                     <p class="text-sm text-gray-700 dark:text-gray-300 text-left">
-                                        {{ atencion.sintomas|truncatechars:60 }}
+                                        {{ item.atencion.sintomas|truncatechars:60 }}
                                     </p>
                                     {% else %}
                                     <span class="text-gray-400 italic text-xs">Sin registrar</span>
@@ -103,7 +104,7 @@
 
                             <td class="px-4 py-4">
                                 <div class="flex flex-wrap gap-1 justify-center">
-                                    {% for diagnostico in atencion.diagnostico.all %}
+                                    {% for diagnostico in item.atencion.diagnostico.all %}
                                     <span
                                         class="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded-full text-xs">
                                         {{ diagnostico.codigo }}
@@ -116,12 +117,39 @@
 
                             <td class="px-4 py-4">
                                 <div class="max-w-xs">
-                                    {% if atencion.tratamiento %}
+                                    {% if item.atencion.tratamiento %}
                                     <p class="text-sm text-gray-700 dark:text-gray-300 text-left">
-                                        {{ atencion.tratamiento|truncatechars:60 }}
+                                        {{ item.atencion.tratamiento|truncatechars:60 }}
                                     </p>
                                     {% else %}
                                     <span class="text-gray-400 italic text-xs">Sin tratamiento</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+
+                            <td class="px-4 py-4">
+                                <div class="flex justify-center">
+                                    {% if item.tiene_pago %}
+                                        <span class="px-3 py-1 rounded-full text-xs font-medium
+                                            {% if item.estado_pago == 'pagado' %}
+                                                bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200
+                                            {% elif item.estado_pago == 'pendiente' %}
+                                                bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200
+                                            {% elif item.estado_pago == 'parcial' %}
+                                                bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200
+                                            {% elif item.estado_pago == 'cancelado' %}
+                                                bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200
+                                            {% elif item.estado_pago == 'reembolsado' %}
+                                                bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200
+                                            {% else %}
+                                                bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200
+                                            {% endif %}">
+                                            {{ item.estado_pago|title }}
+                                        </span>
+                                    {% else %}
+                                        <span class="px-3 py-1 bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400 rounded-full text-xs font-medium">
+                                            Sin Pago
+                                        </span>
                                     {% endif %}
                                 </div>
                             </td>
@@ -137,17 +165,25 @@
                                     {% endif %}
 
                                     {% if permissions.change_atencion %}
-                                    <a href="{% url 'doctor:atencion_update' atencion.id %}"
+                                    <a href="{% url 'doctor:atencion_update' item.atencion.id %}"
                                         class="text-blue-600 dark:text-blue-500 hover:text-blue-800 p-1 rounded transition-colors"
                                         title="Editar">
                                         <i class="fa-solid fa-edit text-lg"></i>
                                     </a>
                                     {% endif %}
 
+                                    <!-- Botón de Pago -->
+                                    <a href="#"
+                                        class="text-green-600 dark:text-green-500 hover:text-green-800 p-1 rounded transition-colors"
+                                        onclick="abrirPago('{{ item.atencion.id }}', '{{ item.atencion.paciente.nombres }} {{ item.atencion.paciente.apellidos }}', {{ item.monto_pago }}, {% if item.pago %}{{ item.pago.id }}{% else %}null{% endif %})"
+                                        title="Gestionar Pago">
+                                        <i class="fa-solid fa-credit-card text-lg"></i>
+                                    </a>
+
                                     {% if permissions.delete_atencion %}
                                     <a href="#"
                                         class="text-red-600 dark:text-red-500 hover:text-red-800 p-1 rounded transition-colors"
-                                        onclick="openDeleteModal('{{ atencion.id }}', '{{ atencion.paciente.nombres }} {{ atencion.paciente.apellidos }}')"
+                                        onclick="openDeleteModal('{{ item.atencion.id }}', '{{ item.atencion.paciente.nombres }} {{ item.atencion.paciente.apellidos }}')"
                                         title="Eliminar">
                                         <i class="fa-solid fa-trash text-lg"></i>
                                     </a>
@@ -157,7 +193,7 @@
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="8" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+                            <td colspan="9" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
                                 <div class="flex flex-col items-center">
                                     <i class="fa-solid fa-stethoscope text-4xl mb-2 text-gray-300"></i>
                                     <p class="text-lg">No se encontraron atenciones médicas</p>
@@ -251,7 +287,7 @@
                             Mostrando
                         </h4>
                         <p class="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                            {{ atenciones|length }} registros
+                            {{ atenciones_expandidas|length }} registros
                         </p>
                     </div>
                 </div>
@@ -262,7 +298,249 @@
 
 {% include 'fragments/delete.html' %}
 
+<!-- Modal de Pago Dinámico -->
+<div id="modalPago" class="fixed inset-0 backdrop-blur-md z-50 hidden items-center justify-center">
+    <div id="contenidoModalPago" class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-8 max-w-md w-full mx-4 transform scale-90 opacity-0 transition-all duration-300 border border-gray-200 dark:border-gray-700 glassmorphism">
+        <!-- Header del Modal -->
+        <div class="flex justify-between items-center mb-8">
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center">
+                <i class="fa-solid fa-credit-card mr-3 text-green-600"></i>
+                <span id="tituloModal">Gestionar Pago</span>
+            </h2>
+            <button onclick="cerrarModalPago()" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+                <i class="fa-solid fa-times text-xl"></i>
+            </button>
+        </div>
+
+        <!-- Contenido Principal -->
+        <div id="modalContent" class="transition-all duration-300">
+            <!-- Vista del Formulario -->
+            <div id="vistaFormulario" class="opacity-100 transition-all duration-300">
+                <!-- Información de la Atención -->
+                <div class="glass-inner rounded-lg p-4 mb-6 border border-green-200 dark:border-gray-500">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3 flex items-center">
+                        <i class="fa-solid fa-clipboard-list mr-2 text-green-600"></i>
+                        Detalles de la Atención
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div class="bg-white bg-opacity-70 dark:bg-gray-800 dark:bg-opacity-70 rounded-lg p-3 border border-green-100 dark:border-gray-600">
+                            <p class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Atención ID</p>
+                            <p class="text-lg font-bold text-green-600">#<span id="atencionId"></span></p>
+                        </div>
+                        <div class="bg-white bg-opacity-70 dark:bg-gray-800 dark:bg-opacity-70 rounded-lg p-3 border border-green-100 dark:border-gray-600">
+                            <p class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Pago ID</p>
+                            <p class="text-lg font-bold text-blue-600">#<span id="pagoId"></span></p>
+                        </div>
+                    </div>
+                    <div class="mt-3 bg-white bg-opacity-70 dark:bg-gray-800 dark:bg-opacity-70 rounded-lg p-3 border border-green-100 dark:border-gray-600">
+                        <p class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Paciente</p>
+                        <p class="text-lg font-semibold text-gray-900 dark:text-gray-100"><span id="pacienteNombre"></span></p>
+                    </div>
+                </div>
+
+                <!-- Formulario de Pago -->
+                <div class="space-y-6">
+                    <div>
+                        <label for="metodoPago" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 flex items-center">
+                            <i class="fa-solid fa-wallet mr-2 text-green-600"></i>
+                            Método de Pago
+                        </label>
+                        <select id="metodoPago" onchange="actualizarVistaSegunMetodo()" class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent dark:bg-gray-700 dark:text-gray-100 transition-all duration-200">
+                            <option value="">Seleccione un método</option>
+                            <option value="Efectivo">💵 Efectivo</option>
+                            <option value="Tarjeta de Crédito/Débito">💳 Tarjeta de Crédito/Débito</option>
+                            <option value="PayPal">🌐 PayPal</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label for="montoPago" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 flex items-center">
+                            <i class="fa-solid fa-dollar-sign mr-2 text-green-600"></i>
+                            Monto a Pagar
+                        </label>
+                        <input type="number" id="montoPago" step="0.01" min="0" 
+                            class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent dark:bg-gray-700 dark:text-gray-100 text-lg font-semibold transition-all duration-200"
+                            placeholder="0.00">
+                    </div>
+
+                    <div>
+                        <label for="observacionesPago" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 flex items-center">
+                            <i class="fa-solid fa-sticky-note mr-2 text-green-600"></i>
+                            Observaciones (Opcional)
+                        </label>
+                        <textarea id="observacionesPago" rows="3" 
+                                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent dark:bg-gray-700 dark:text-gray-100 transition-all duration-200"
+                                placeholder="Notas adicionales sobre el pago..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Botones de Acción -->
+                <div class="flex justify-end space-x-4 mt-8">
+                    <button onclick="cerrarModalPago()" 
+                            class="px-6 py-3 text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-600 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500 transition-all duration-200 flex items-center">
+                        <i class="fa-solid fa-times mr-2"></i>Cancelar
+                    </button>
+                    <button id="btnProcesarPago" onclick="procesarPago()" 
+                            class="px-8 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center">
+                        <i class="fa-solid fa-credit-card mr-2"></i>Procesar Pago
+                    </button>
+                </div>
+            </div>
+
+            <!-- Vista de Procesamiento Digital (oculta inicialmente) -->
+            <div id="vistaProcesamientoDigital" class="opacity-0 scale-95 transition-all duration-300 hidden">
+                <div class="glass-inner rounded-lg p-6 border border-blue-200 dark:border-gray-500">
+                    <div class="text-center mb-6">
+                        <div id="iconoMetodo" class="text-6xl mb-4">💳</div>
+                        <h3 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+                            <span id="tituloMetodo">Procesamiento Digital</span>
+                        </h3>
+                        <p class="text-gray-600 dark:text-gray-400">Complete el pago utilizando el método seleccionado</p>
+                    </div>
+                    
+                    <div class="bg-white bg-opacity-60 dark:bg-gray-800 dark:bg-opacity-60 rounded-lg p-4 mb-6 border border-blue-100 dark:border-gray-600">
+                        <div class="flex justify-between items-center">
+                            <span class="text-lg font-medium text-gray-700 dark:text-gray-300">Monto total:</span>
+                            <span class="text-3xl font-bold text-green-600" id="montoProcesamientoDigital">$0.00</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Contenedor de botones de PayPal -->
+                    <div id="paypal-btn-container" class="mb-6">
+                        <!-- Los botones se cargarán aquí dinámicamente -->
+                    </div>
+                    
+                    <!-- Botón de procesamiento manual para tarjetas -->
+                    <div id="procesamiento-tarjeta" class="mb-6 hidden">
+                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+                            <div class="flex items-center">
+                                <i class="fa-solid fa-credit-card text-yellow-600 mr-2"></i>
+                                <span class="text-sm text-yellow-800">Procesamiento manual de tarjeta</span>
+                            </div>
+                            <p class="text-xs text-yellow-700 mt-1">Confirme que el pago con tarjeta ha sido procesado exitosamente</p>
+                        </div>
+                        <button onclick="procesarPagoManualTarjeta()" 
+                                class="w-full px-6 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-lg font-semibold transition-all duration-200 shadow-lg transform hover:scale-105">
+                            <i class="fa-solid fa-check mr-2"></i>Confirmar Pago con Tarjeta
+                        </button>
+                    </div>
+                    
+                    <button onclick="volverAlFormulario()" 
+                            class="w-full px-6 py-3 text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-600 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500 transition-all duration-200 flex items-center justify-center">
+                        <i class="fa-solid fa-arrow-left mr-2"></i>Volver al Formulario
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Estilos adicionales para el glassmorphism -->
+<style>
+.glassmorphism {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+}
+
+.dark .glassmorphism {
+    background: rgba(31, 41, 55, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+/* Efecto de desenfoque mejorado para el fondo del modal */
+#modalPago {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+/* Animación de pulso verde para botones de éxito */
+@keyframes pulse-green {
+    0%, 100% { 
+        box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+        transform: scale(1);
+    }
+    50% { 
+        box-shadow: 0 0 0 10px rgba(34, 197, 94, 0);
+        transform: scale(1.02);
+    }
+}
+
+.pulse-green {
+    animation: pulse-green 2s infinite;
+}
+
+/* Efectos adicionales para hacer el modal más atractivo */
+.modal-backdrop {
+    background: linear-gradient(45deg, 
+        rgba(255, 255, 255, 0.1) 0%, 
+        rgba(255, 255, 255, 0.05) 50%, 
+        rgba(255, 255, 255, 0.1) 100%);
+}
+
+.dark .modal-backdrop {
+    background: linear-gradient(45deg, 
+        rgba(0, 0, 0, 0.2) 0%, 
+        rgba(0, 0, 0, 0.1) 50%, 
+        rgba(0, 0, 0, 0.2) 100%);
+}
+
+/* Mejora del glassmorphism para los elementos internos */
+.glass-inner {
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.dark .glass-inner {
+    background: rgba(31, 41, 55, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Animación suave para la apertura del modal */
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        backdrop-filter: blur(0px);
+        -webkit-backdrop-filter: blur(0px);
+    }
+    to {
+        opacity: 1;
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+    }
+}
+
+.modal-fade-in {
+    animation: modalFadeIn 0.3s ease-out;
+}
+</style>
+
+<!-- Campos ocultos para PayPal -->
+<input type="hidden" id="campo-metodo-pago" name="metodo_pago" value="">
+<input type="hidden" id="campo-transaccion-paypal" name="referencia_externa" value="">
+
+<!-- Token CSRF para requests AJAX -->
+{% csrf_token %}
+
+<!-- SDK de PayPal con client-id de sandbox público -->
+<script src="https://www.paypal.com/sdk/js?client-id=AZDxjDScFpQtjWTOUtWKbyN_bDt4OgqaF4eYXlewfBP4-8aqX3PiV8e1GWU6liB2CUXlkA59kJXE7M6R&currency=USD&components=buttons&enable-funding=venmo,paylater&disable-funding=credit,sepa"></script>
+
 <script>
+    // Verificar que el token CSRF esté disponible
+    document.addEventListener('DOMContentLoaded', function() {
+        const csrfToken = getCookie('csrftoken');
+        if (!csrfToken) {
+            console.warn('⚠️ Token CSRF no encontrado. Los pagos pueden fallar.');
+        } else {
+            console.log('✅ Token CSRF disponible para requests AJAX.');
+        }
+    });
+
     function openDeleteModal(id, patientName) {
         const deleteForm = document.getElementById('deleteForm');
         deleteForm.action = `{% url 'doctor:atencion_delete' 0 %}`.replace('0', id);
@@ -272,6 +550,706 @@
 
     function closeModal() {
         document.getElementById('deleteModal').classList.add('hidden');
+    }
+
+    // Función para abrir el modal de pago
+    function abrirPago(atencionId, pacienteNombre, montoPago = 0, pagoId = null) {
+        const modal = document.getElementById('modalPago');
+        const contenidoModal = document.getElementById('contenidoModalPago');
+        
+        // Asegurar que el modal inicie en vista de formulario
+        mostrarVistaFormulario();
+        
+        // Llenar los datos del modal
+        document.getElementById('atencionId').textContent = atencionId;
+        document.getElementById('pacienteNombre').textContent = pacienteNombre;
+        document.getElementById('pagoId').textContent = pagoId || 'Sin asignar';
+        
+        // Guardar el ID del pago para uso posterior
+        modal.setAttribute('data-pago-id', pagoId);
+        modal.setAttribute('data-atencion-id', atencionId);
+        
+        // Prellenar el monto del pago si existe
+        const campoMonto = document.getElementById('montoPago');
+        if (montoPago > 0) {
+            campoMonto.value = montoPago.toFixed(2);
+            campoMonto.readOnly = true;
+            campoMonto.classList.add('bg-gray-100', 'dark:bg-gray-600', 'cursor-not-allowed');
+            campoMonto.title = 'El monto del pago existente no puede ser modificado';
+        } else {
+            campoMonto.value = '';
+            campoMonto.readOnly = false;
+            campoMonto.classList.remove('bg-gray-100', 'dark:bg-gray-600', 'cursor-not-allowed');
+            campoMonto.title = 'Ingrese el monto del pago';
+        }
+        
+        // Mostrar el modal
+        modal.classList.remove('hidden');
+        modal.classList.add('flex', 'modal-fade-in');
+        
+        // Animación de entrada
+        setTimeout(() => {
+            contenidoModal.style.transform = 'scale(1)';
+            contenidoModal.style.opacity = '1';
+        }, 10);
+    }
+
+    // Función para cerrar el modal de pago
+    function cerrarModalPago() {
+        const modal = document.getElementById('modalPago');
+        const contenidoModal = document.getElementById('contenidoModalPago');
+        
+        // Animación de salida
+        contenidoModal.style.transform = 'scale(0.9)';
+        contenidoModal.style.opacity = '0';
+        
+        setTimeout(() => {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex', 'modal-fade-in');
+            
+            // Limpiar el formulario
+            limpiarFormulario();
+            
+            // Volver a la vista de formulario
+            mostrarVistaFormulario();
+            
+            // Limpiar atributos del modal
+            modal.removeAttribute('data-pago-id');
+            modal.removeAttribute('data-atencion-id');
+            
+            // Limpiar variables globales
+            limpiarVariablesGlobales();
+        }, 300);
+    }
+
+    // Función para limpiar el formulario
+    function limpiarFormulario() {
+        const campoMonto = document.getElementById('montoPago');
+        document.getElementById('metodoPago').value = '';
+        campoMonto.value = '';
+        document.getElementById('observacionesPago').value = '';
+        
+        // Restaurar el estado editable del campo monto
+        campoMonto.readOnly = false;
+        campoMonto.classList.remove('bg-gray-100', 'dark:bg-gray-600', 'cursor-not-allowed');
+        campoMonto.title = 'Ingrese el monto del pago';
+    }
+
+    // Función para mostrar la vista de formulario
+    function mostrarVistaFormulario() {
+        const vistaFormulario = document.getElementById('vistaFormulario');
+        const vistaDigital = document.getElementById('vistaProcesamientoDigital');
+        const titulo = document.getElementById('tituloModal');
+        
+        // Mostrar formulario, ocultar vista digital
+        vistaFormulario.classList.remove('hidden', 'opacity-0', 'scale-95');
+        vistaFormulario.classList.add('opacity-100', 'scale-100');
+        
+        vistaDigital.classList.remove('opacity-100', 'scale-100');
+        vistaDigital.classList.add('opacity-0', 'scale-95', 'hidden');
+        
+        titulo.textContent = 'Gestionar Pago';
+        
+        // Limpiar contenedor de PayPal
+        document.getElementById('paypal-btn-container').innerHTML = '';
+    }
+
+    // Función para mostrar la vista de procesamiento digital
+    function mostrarVistaProcesamientoDigital(metodo, monto) {
+        const vistaFormulario = document.getElementById('vistaFormulario');
+        const vistaDigital = document.getElementById('vistaProcesamientoDigital');
+        const titulo = document.getElementById('tituloModal');
+        const iconoMetodo = document.getElementById('iconoMetodo');
+        const tituloMetodo = document.getElementById('tituloMetodo');
+        const montoDigital = document.getElementById('montoProcesamientoDigital');
+        
+        // Ocultar formulario
+        vistaFormulario.classList.remove('opacity-100', 'scale-100');
+        vistaFormulario.classList.add('opacity-0', 'scale-95');
+        
+        setTimeout(() => {
+            vistaFormulario.classList.add('hidden');
+            
+            // Configurar contenido según el método
+            if (metodo === 'PayPal') {
+                iconoMetodo.textContent = '🌐';
+                tituloMetodo.textContent = 'Pago con PayPal';
+                titulo.textContent = 'Procesando con PayPal';
+                document.getElementById('procesamiento-tarjeta').classList.add('hidden');
+                configurarPayPal(monto);
+            } else if (metodo === 'Tarjeta de Crédito/Débito') {
+                iconoMetodo.textContent = '💳';
+                tituloMetodo.textContent = 'Pago con Tarjeta';
+                titulo.textContent = 'Procesando con Tarjeta';
+                document.getElementById('procesamiento-tarjeta').classList.remove('hidden');
+                document.getElementById('paypal-btn-container').innerHTML = '';
+            }
+            
+            montoDigital.textContent = `$${parseFloat(monto).toFixed(2)}`;
+            
+            // Mostrar vista digital
+            vistaDigital.classList.remove('hidden', 'opacity-0', 'scale-95');
+            vistaDigital.classList.add('opacity-100', 'scale-100');
+        }, 150);
+    }
+
+    // Función para volver al formulario
+    function volverAlFormulario() {
+        const vistaFormulario = document.getElementById('vistaFormulario');
+        const vistaDigital = document.getElementById('vistaProcesamientoDigital');
+        const titulo = document.getElementById('tituloModal');
+        
+        // Ocultar vista digital
+        vistaDigital.classList.remove('opacity-100', 'scale-100');
+        vistaDigital.classList.add('opacity-0', 'scale-95');
+        
+        setTimeout(() => {
+            vistaDigital.classList.add('hidden');
+            
+            // Mostrar formulario
+            vistaFormulario.classList.remove('hidden', 'opacity-0', 'scale-95');
+            vistaFormulario.classList.add('opacity-100', 'scale-100');
+            
+            titulo.textContent = 'Gestionar Pago';
+            
+            // Limpiar contenedor de PayPal
+            document.getElementById('paypal-btn-container').innerHTML = '';
+        }, 150);
+    }
+
+    // Función para actualizar vista según el método seleccionado
+    function actualizarVistaSegunMetodo() {
+        const metodo = document.getElementById('metodoPago').value;
+        const btnProcesar = document.getElementById('btnProcesarPago');
+        
+        if (metodo === 'Efectivo') {
+            btnProcesar.innerHTML = '<i class="fa-solid fa-money-bill mr-2"></i>Procesar Pago en Efectivo';
+            btnProcesar.className = 'px-8 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center';
+        } else if (metodo === 'PayPal') {
+            btnProcesar.innerHTML = '<i class="fa-brands fa-paypal mr-2"></i>Continuar con PayPal';
+            btnProcesar.className = 'px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center';
+        } else if (metodo === 'Tarjeta de Crédito/Débito') {
+            btnProcesar.innerHTML = '<i class="fa-solid fa-credit-card mr-2"></i>Continuar con Tarjeta';
+            btnProcesar.className = 'px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center';
+        } else {
+            btnProcesar.innerHTML = '<i class="fa-solid fa-credit-card mr-2"></i>Procesar Pago';
+            btnProcesar.className = 'px-8 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center';
+        }
+    }
+
+    // Función para procesar el pago
+    function procesarPago() {
+        const modal = document.getElementById('modalPago');
+        const metodoPago = document.getElementById('metodoPago').value;
+        const montoPago = document.getElementById('montoPago').value;
+        const observaciones = document.getElementById('observacionesPago').value;
+        const atencionId = document.getElementById('atencionId').textContent;
+        const pagoId = modal.getAttribute('data-pago-id');
+        
+        // Validaciones
+        if (!metodoPago || !montoPago || montoPago <= 0) {
+            mostrarToast('Por favor completa todos los campos correctamente', 'warning');
+            return;
+        }
+        
+        // Guardar datos globales
+        datosPayPal = {
+            atencionId: atencionId,
+            pagoId: pagoId,
+            metodoPago: metodoPago,
+            montoPago: montoPago,
+            observaciones: observaciones
+        };
+        
+        // Si es efectivo, procesar inmediatamente
+        if (metodoPago === 'Efectivo') {
+            procesarPagoEfectivo();
+        } 
+        // Si es PayPal o Tarjeta, mostrar vista de procesamiento digital
+        else if (metodoPago === 'PayPal' || metodoPago === 'Tarjeta de Crédito/Débito') {
+            mostrarVistaProcesamientoDigital(metodoPago, montoPago);
+        }
+    }
+
+    // Función para procesar pago en efectivo
+    function procesarPagoEfectivo() {
+        const btnProcesar = document.getElementById('btnProcesarPago');
+        const textoOriginal = btnProcesar.innerHTML;
+        
+        // Mostrar estado de carga
+        btnProcesar.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Procesando...';
+        btnProcesar.disabled = true;
+        
+        const datos = {
+            atencion_id: datosPayPal.atencionId,
+            pago_id: datosPayPal.pagoId,
+            metodo_pago: datosPayPal.metodoPago,
+            monto_procesado: datosPayPal.montoPago,
+            observaciones: datosPayPal.observaciones,
+            referencia_externa: 'EFECTIVO-' + new Date().getTime()
+        };
+        
+        fetch('{% url "doctor:procesar_pago" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify(datos)
+        })
+        .then(response => {
+            console.log('Response status:', response.status);
+            console.log('Response headers:', response.headers);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Response data:', data);
+            if (data.success) {
+                mostrarToast('Pago procesado exitosamente', 'success');
+                cerrarModalPago();
+                location.reload(); // Recargar para ver los cambios
+            } else {
+                mostrarToast(data.error || 'Error al procesar el pago', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error completo:', error);
+            mostrarToast(`Error de conexión: ${error.message}`, 'error');
+        })
+        .finally(() => {
+            btnProcesar.innerHTML = textoOriginal;
+            btnProcesar.disabled = false;
+        });
+    }
+
+    // Función para procesar pago manual con tarjeta
+    function procesarPagoManualTarjeta() {
+        const datos = {
+            atencion_id: datosPayPal.atencionId,
+            pago_id: datosPayPal.pagoId,
+            metodo_pago: datosPayPal.metodoPago,
+            monto_procesado: datosPayPal.montoPago,
+            observaciones: datosPayPal.observaciones,
+            referencia_externa: 'TARJETA-' + new Date().getTime()
+        };
+        
+        fetch('{% url "doctor:procesar_pago" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify(datos)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                mostrarToast('Pago con tarjeta procesado exitosamente', 'success');
+                cerrarModalPago();
+                location.reload();
+            } else {
+                mostrarToast(data.error || 'Error al procesar el pago', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            mostrarToast('Error de conexión al procesar el pago', 'error');
+        });
+    }
+
+    // Función para limpiar variables globales
+    function limpiarVariablesGlobales() {
+        if (typeof metodoSeleccionado !== 'undefined') metodoSeleccionado = null;
+        if (typeof totalActual !== 'undefined') totalActual = 0;
+        if (typeof datosPayPal !== 'undefined') datosPayPal = {};
+    }
+    
+    // Variables globales para PayPal
+    let metodoSeleccionado = null;
+    let totalActual = 0;
+    let datosPayPal = {};
+    
+    // Función para configurar PayPal
+    function configurarPayPal(monto) {
+        if (!verificarPayPalCargado()) {
+            mostrarToast('Error: PayPal no se cargó correctamente', 'error');
+            return;
+        }
+        
+        totalActual = parseFloat(monto);
+        
+        // Limpiar contenedor anterior
+        document.getElementById('paypal-btn-container').innerHTML = '';
+        
+        // Configurar botones de PayPal
+        paypal.Buttons({
+            createOrder: function(data, actions) {
+                return actions.order.create({
+                    purchase_units: [{
+                        amount: {
+                            value: totalActual.toFixed(2)
+                        }
+                    }]
+                });
+            },
+            onApprove: function(data, actions) {
+                return actions.order.capture().then(function(details) {
+                    console.log('Pago completado:', details);
+                    
+                    // Procesar el pago con los datos de PayPal
+                    const datos = {
+                        atencion_id: datosPayPal.atencionId,
+                        pago_id: datosPayPal.pagoId,
+                        metodo_pago: datosPayPal.metodoPago,
+                        monto_procesado: datosPayPal.montoPago,
+                        observaciones: datosPayPal.observaciones,
+                        referencia_externa: details.id
+                    };
+                    
+                    fetch('{% url "doctor:procesar_pago" %}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCookie('csrftoken')
+                        },
+                        body: JSON.stringify(datos)
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            mostrarToast('Pago con PayPal procesado exitosamente', 'success');
+                            cerrarModalPago();
+                            location.reload();
+                        } else {
+                            mostrarToast(data.error || 'Error al procesar el pago', 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        mostrarToast('Error de conexión al procesar el pago', 'error');
+                    });
+                });
+            },
+            onError: function(err) {
+                console.error('Error en PayPal:', err);
+                mostrarToast('Error en el procesamiento con PayPal', 'error');
+            }
+        }).render('#paypal-btn-container');
+    }
+    
+    // Verificar que PayPal esté cargado
+    function verificarPayPalCargado() {
+        if (typeof paypal === 'undefined') {
+            console.error('PayPal no está definido');
+            return false;
+        }
+        
+        if (!paypal.Buttons) {
+            console.error('PayPal.Buttons no está disponible');
+            return false;
+        }
+        
+        return true;
+    }
+    
+    // Función para expandir modal y mostrar la sección de pago
+    function expandirModalYMostrarPago(metodo, monto) {
+        metodoSeleccionado = metodo;
+        totalActual = parseFloat(monto);
+        
+        console.log('Expandiendo modal para método:', metodo);
+        console.log('Monto:', totalActual);
+        
+        // Guardar datos para usar después del pago
+        const modal = document.getElementById('modalPago');
+        datosPayPal = {
+            atencionId: document.getElementById('atencionId').textContent,
+            pagoId: modal.getAttribute('data-pago-id'),
+            metodoPago: metodo,
+            montoPago: monto,
+            observaciones: document.getElementById('observacionesPago').value
+        };
+        
+        // Expandir modal hacia la derecha
+        const contenidoModal = document.getElementById('contenidoModalPago');
+        const seccionPayPal = document.getElementById('seccionPayPal');
+        const tituloPayPal = document.getElementById('tituloPayPal');
+        const montoPayPal = document.getElementById('montoPayPal');
+        
+        // Actualizar título y mostrar monto según el método
+        if (metodo === 'PayPal') {
+            tituloPayPal.innerHTML = '<i class="fa-brands fa-paypal mr-2 text-blue-600"></i>Pago con PayPal';
+        } else {
+            tituloPayPal.innerHTML = '<i class="fa-solid fa-credit-card mr-2 text-green-600"></i>Pago con Tarjeta';
+        }
+        
+        // Mostrar monto
+        montoPayPal.textContent = `$${totalActual.toFixed(2)}`;
+        
+        // Expandir modal
+        contenidoModal.classList.remove('max-w-md');
+        contenidoModal.classList.add('max-w-6xl');
+        seccionPayPal.classList.remove('w-0', 'ml-0');
+        seccionPayPal.classList.add('w-96', 'ml-8');
+        
+        // Ocultar procesamiento manual inicialmente
+        document.getElementById('procesamiento-manual').classList.add('hidden');
+        document.getElementById('paypal-btn-container').style.display = 'block';
+        
+        // Verificar si PayPal está cargado
+        if (!verificarPayPalCargado()) {
+            console.error('PayPal no está cargado, usando procesamiento manual');
+            mostrarToast('PayPal no está disponible. Usando procesamiento manual.', 'warning');
+            
+            // Mostrar procesamiento manual después de un delay
+            setTimeout(() => {
+                mostrarProcesamientoManual();
+            }, 1000);
+        } else {
+            // Crear botones de PayPal según el método seleccionado
+            setTimeout(() => {
+                crearBotonesPayPal(metodo);
+            }, 500);
+        }
+    }
+    
+    // Función para crear los botones de PayPal según el método
+    function crearBotonesPayPal(metodo) {
+        const container = document.getElementById('paypal-btn-container');
+        container.innerHTML = '';
+        
+        console.log('Creando botones para método:', metodo);
+        
+        // Verificar que PayPal esté disponible
+        if (typeof paypal === 'undefined') {
+            console.error('PayPal no está disponible');
+            mostrarToast('PayPal no está disponible. Usando procesamiento manual.', 'warning');
+            mostrarProcesamientoManual();
+            return;
+        }
+        
+        // Configuración base común
+        const baseConfig = {
+            createOrder: function(data, actions) {
+                console.log('Creando orden de pago...');
+                return actions.order.create({
+                    purchase_units: [{
+                        amount: { 
+                            value: totalActual.toFixed(2)
+                        }
+                    }]
+                });
+            },
+            onApprove: function(data, actions) {
+                console.log('Pago aprobado:', data);
+                return actions.order.capture().then(function(details) {
+                    console.log('Pago capturado:', details);
+                    procesarPagoPayPal(details);
+                });
+            },
+            onCancel: function(data) {
+                console.log('Pago cancelado:', data);
+                mostrarToast("Pago cancelado por el usuario", 'warning');
+            },
+            onError: function(err) {
+                console.error('Error de PayPal:', err);
+                mostrarToast("Error al procesar el pago. Usando procesamiento manual.", 'error');
+                mostrarProcesamientoManual();
+            }
+        };
+        
+        // Configuración específica según el método
+        if (metodo === 'PayPal') {
+            baseConfig.style = {
+                layout: 'vertical',
+                color: 'blue',
+                shape: 'rect',
+                label: 'paypal',
+                height: 50
+            };
+        } else if (metodo === 'Tarjeta de Crédito/Débito') {
+            baseConfig.style = {
+                layout: 'vertical',
+                color: 'silver',
+                shape: 'rect',
+                label: 'pay',
+                height: 50
+            };
+        }
+        
+        // Renderizar botones
+        try {
+            console.log('Renderizando botones con configuración:', baseConfig);
+            paypal.Buttons(baseConfig).render('#paypal-btn-container')
+                .then(() => {
+                    console.log('Botones renderizados exitosamente para:', metodo);
+                })
+                .catch((error) => {
+                    console.error('Error al renderizar botones:', error);
+                    mostrarToast('Error al cargar los botones de pago. Usando procesamiento manual.', 'error');
+                    mostrarProcesamientoManual();
+                });
+        } catch (error) {
+            console.error('Error crítico al crear botones:', error);
+            mostrarToast('Error crítico al cargar PayPal. Usando procesamiento manual.', 'error');
+            mostrarProcesamientoManual();
+        }
+    }
+    
+    // Función fallback para crear botón genérico cuando PayPal falla
+    function crearBotonFallback(metodo) {
+        const container = document.getElementById('paypal-btn-container');
+        const colorClass = metodo === 'PayPal' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-600 hover:bg-gray-700';
+        const icon = metodo === 'PayPal' ? 'fa-brands fa-paypal' : 'fa-solid fa-credit-card';
+        const texto = metodo === 'PayPal' ? 'Pagar con PayPal (Manual)' : 'Pagar con Tarjeta (Manual)';
+        
+        container.innerHTML = `
+            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
+                <div class="flex items-center">
+                    <i class="fa-solid fa-exclamation-triangle text-yellow-600 mr-2"></i>
+                    <span class="text-sm text-yellow-800">PayPal no está disponible. Procesando manualmente.</span>
+                </div>
+            </div>
+            <button onclick="procesarPagoFallback('${metodo}')" 
+                    class="w-full px-4 py-3 ${colorClass} text-white rounded-lg font-semibold transition-colors shadow-lg hover:shadow-xl">
+                <i class="${icon} mr-2"></i>${texto}
+            </button>
+            <p class="text-xs text-gray-500 mt-2 text-center">
+                Se procesará como pago manual con referencia generada automáticamente.
+            </p>
+        `;
+        
+        console.log('Botón de fallback creado para:', metodo);
+    }
+    
+    // Función para procesar pago cuando PayPal no está disponible
+    function procesarPagoFallback(metodo) {
+        // Generar referencia externa manual
+        const referenciaExterna = `MANUAL_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        
+        const detallesSimulados = {
+            id: referenciaExterna,
+            status: 'COMPLETED',
+            payer: {
+                name: { given_name: 'Usuario', surname: 'Manual' },
+                email_address: 'usuario@manual.com'
+            }
+        };
+        
+        mostrarToast(`Procesando pago manual con ${metodo}...`, 'warning');
+        procesarPagoPayPal(detallesSimulados);
+    }
+    
+    // Función para cerrar la sección de PayPal
+    function cerrarSeccionPayPal() {
+        const contenidoModal = document.getElementById('contenidoModalPago');
+        const seccionPayPal = document.getElementById('seccionPayPal');
+        
+        // Contraer modal a su tamaño original
+        contenidoModal.classList.remove('max-w-6xl');
+        contenidoModal.classList.add('max-w-md');
+        seccionPayPal.classList.remove('w-96', 'ml-8');
+        seccionPayPal.classList.add('w-0', 'ml-0');
+        
+        // Limpiar contenedor de PayPal
+        document.getElementById('paypal-btn-container').innerHTML = '';
+        
+        // Limpiar variables globales
+        metodoSeleccionado = null;
+        totalActual = 0;
+        datosPayPal = {};
+    }
+    
+    // Función para procesar pago de PayPal después de la confirmación
+    function procesarPagoPayPal(details) {
+        console.log('Procesando pago de PayPal:', details);
+        
+        const datos = {
+            atencion_id: parseInt(datosPayPal.atencionId),
+            pago_id: datosPayPal.pagoId && datosPayPal.pagoId !== 'null' ? parseInt(datosPayPal.pagoId) : null,
+            metodo_pago: datosPayPal.metodoPago,
+            monto_procesado: parseFloat(datosPayPal.montoPago),
+            observaciones: datosPayPal.observaciones || '',
+            referencia_externa: details.id // ID de transacción de PayPal
+        };
+        
+        console.log('Datos a enviar:', datos);
+        enviarPagoAlBackend(datos);
+    }
+    
+    // Función común para enviar datos al backend
+    function enviarPagoAlBackend(datos) {
+        console.log('Enviando datos al backend:', datos);
+        
+        // Hacer llamada AJAX al backend
+        fetch('{% url "doctor:procesar_pago" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify(datos)
+        })
+        .then(response => {
+            console.log('Respuesta del servidor:', response);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Datos recibidos:', data);
+            if (data.success) {
+                // Mostrar notificación de éxito
+                let mensajeExito = `¡Pago procesado exitosamente! Método: ${datos.metodo_pago}, Monto: $${datos.monto_procesado}`;
+                if (datos.referencia_externa) {
+                    mensajeExito += `, Referencia: ${datos.referencia_externa}`;
+                }
+                mostrarToast(mensajeExito, 'success');
+                
+                // Cerrar modal
+                cerrarModalPago();
+                
+                // Actualizar el estado de pago en la tabla sin recargar
+                actualizarEstadoPagoEnTabla(datos.atencion_id, 'pagado', datos.metodo_pago);
+                
+            } else {
+                // Mostrar notificación de error
+                mostrarToast('Error al procesar el pago: ' + (data.error || 'Error desconocido'), 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            mostrarToast('Error de conexión al procesar el pago. Por favor intenta nuevamente.', 'error');
+        })
+        .finally(() => {
+            // Restaurar botón
+            const btnProcesar = document.getElementById('btnProcesarPago');
+            if (btnProcesar) {
+                btnProcesar.disabled = false;
+                btnProcesar.innerHTML = '<i class="fa-solid fa-credit-card mr-2"></i>Procesar Pago';
+            }
+        });
+    }
+    
+    // Función para obtener el token CSRF
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
     }
 
     // Enhanced delete form handling
@@ -311,6 +1289,189 @@
                 }
             });
         });
+
+        // Cerrar modal de pago al hacer clic fuera
+        const modalPago = document.getElementById('modalPago');
+        if (modalPago) {
+            modalPago.addEventListener('click', function(e) {
+                if (e.target === modalPago) {
+                    cerrarModalPago();
+                }
+            });
+        }
+
+        // Cerrar modal con tecla ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const modalPago = document.getElementById('modalPago');
+                if (modalPago && !modalPago.classList.contains('hidden')) {
+                    cerrarModalPago();
+                }
+            }
+        });
     });
+
+    // Función para actualizar el estado de pago en la tabla sin recargar
+    function actualizarEstadoPagoEnTabla(atencionId, nuevoEstado, metodoPago) {
+        console.log('Actualizando estado de pago para atención:', atencionId, 'Estado:', nuevoEstado);
+        
+        // Buscar todas las filas que corresponden a esta atención
+        const filas = document.querySelectorAll('tbody tr');
+        
+        filas.forEach(fila => {
+            const celdaId = fila.querySelector('td:first-child');
+            if (celdaId && celdaId.textContent.includes('#' + atencionId)) {
+                console.log('Fila encontrada para atención:', atencionId);
+                
+                // Buscar la celda de estado de pago (columna 8: Estado de Pago)
+                const celdaEstado = fila.querySelector('td:nth-child(8)');
+                
+                if (celdaEstado) {
+                    console.log('Celda de estado encontrada, actualizando...');
+                    
+                    // Actualizar el contenido del estado
+                    let badgeClass = '';
+                    let estadoTexto = '';
+                    
+                    switch(nuevoEstado.toLowerCase()) {
+                        case 'pagado':
+                            badgeClass = 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
+                            estadoTexto = 'Pagado';
+                            break;
+                        case 'pendiente':
+                            badgeClass = 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
+                            estadoTexto = 'Pendiente';
+                            break;
+                        case 'parcial':
+                            badgeClass = 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
+                            estadoTexto = 'Parcial';
+                            break;
+                        case 'cancelado':
+                            badgeClass = 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
+                            estadoTexto = 'Cancelado';
+                            break;
+                        default:
+                            badgeClass = 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
+                            estadoTexto = 'Sin Estado';
+                    }
+                    
+                    celdaEstado.innerHTML = `
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${badgeClass}">
+                            ${estadoTexto}
+                        </span>
+                    `;
+                    
+                    // Agregar efecto visual de actualización
+                    celdaEstado.classList.add('animate-pulse');
+                    setTimeout(() => {
+                        celdaEstado.classList.remove('animate-pulse');
+                    }, 1000);
+                    
+                    console.log('Estado actualizado a:', estadoTexto);
+                } else {
+                    console.error('No se encontró la celda de estado de pago');
+                }
+            }
+        });
+    }
+
+    // Función para mostrar notificaciones toast
+    function mostrarToast(mensaje, tipo = 'success') {
+        // Crear elemento toast
+        const toast = document.createElement('div');
+        toast.className = `fixed top-4 right-4 z-50 flex items-center w-full max-w-xs p-4 mb-4 text-gray-500 bg-white rounded-lg shadow dark:text-gray-400 dark:bg-gray-800 transform transition-all duration-300 translate-x-full opacity-0`;
+        
+        // Icono según el tipo
+        let icono = '';
+        let colorClasses = '';
+        
+        switch(tipo) {
+            case 'success':
+                icono = 'fa-check-circle text-green-500';
+                colorClasses = 'text-green-500 bg-green-100 dark:bg-green-800 dark:text-green-200';
+                break;
+            case 'error':
+                icono = 'fa-exclamation-circle text-red-500';
+                colorClasses = 'text-red-500 bg-red-100 dark:bg-red-800 dark:text-red-200';
+                break;
+            case 'warning':
+                icono = 'fa-exclamation-triangle text-yellow-500';
+                colorClasses = 'text-yellow-500 bg-yellow-100 dark:bg-yellow-800 dark:text-yellow-200';
+                break;
+            case 'info':
+                icono = 'fa-info-circle text-blue-500';
+                colorClasses = 'text-blue-500 bg-blue-100 dark:bg-blue-800 dark:text-blue-200';
+                break;
+            default:
+                icono = 'fa-info-circle text-blue-500';
+                colorClasses = 'text-blue-500 bg-blue-100 dark:bg-blue-800 dark:text-blue-200';
+        }
+        
+        toast.innerHTML = `
+            <div class="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 ${colorClasses} rounded-lg">
+                <i class="fa-solid ${icono}"></i>
+            </div>
+            <div class="ml-3 text-sm font-normal">${mensaje}</div>
+            <button type="button" class="ml-auto -mx-1.5 -my-1.5 bg-white text-gray-400 hover:text-gray-900 rounded-lg focus:ring-2 focus:ring-gray-300 p-1.5 hover:bg-gray-100 inline-flex h-8 w-8 dark:text-gray-500 dark:hover:text-white dark:bg-gray-800 dark:hover:bg-gray-700" onclick="this.parentElement.remove()">
+                <i class="fa-solid fa-times"></i>
+            </button>
+        `;
+        
+        // Agregar al DOM
+        document.body.appendChild(toast);
+        
+        // Animación de entrada
+        setTimeout(() => {
+            toast.classList.remove('translate-x-full', 'opacity-0');
+            toast.classList.add('translate-x-0', 'opacity-100');
+        }, 100);
+        
+        // Auto-remove después de 5 segundos
+        setTimeout(() => {
+            toast.classList.add('translate-x-full', 'opacity-0');
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.remove();
+                }
+            }, 300);
+        }, 5000);
+    }
+
+    // Función para procesar pago manual directo (cuando PayPal no está disponible)
+    function procesarPagoManualDirecto() {
+        console.log('Procesando pago manual directo...');
+        
+        // Generar referencia externa manual
+        const referenciaExterna = `MANUAL_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        
+        const detallesSimulados = {
+            id: referenciaExterna,
+            status: 'COMPLETED',
+            payer: {
+                name: { given_name: 'Usuario', surname: 'Manual' },
+                email_address: 'manual@sistema.com'
+            },
+            purchase_units: [{
+                amount: { value: totalActual.toFixed(2) }
+            }]
+        };
+        
+        mostrarToast(`Procesando pago manual de $${totalActual.toFixed(2)}...`, 'info');
+        procesarPagoPayPal(detallesSimulados);
+    }
+    
+    // Función para mostrar botón de procesamiento manual
+    function mostrarProcesamientoManual() {
+        const paypalContainer = document.getElementById('paypal-btn-container');
+        const procesamientoManual = document.getElementById('procesamiento-manual');
+        
+        // Ocultar contenedor de PayPal
+        paypalContainer.style.display = 'none';
+        
+        // Mostrar procesamiento manual
+        procesamientoManual.classList.remove('hidden');
+        
+        console.log('Mostrado procesamiento manual');
+    }
 </script>
 {% endblock %}

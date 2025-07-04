@@ -13,7 +13,8 @@ from applications.doctor.views.atencion_medica import (
     AtencionListView,
     AtencionCreateView,
     AtencionUpdateView,
-    AtencionDeleteView
+    AtencionDeleteView,
+    procesar_pago
 )
 from applications.doctor.views.pago import (
     PagoListView,
@@ -67,24 +68,15 @@ urlpatterns = [
     path('servicio_adicional_delete/<int:pk>/', ServicioAdicionalDeleteView.as_view(), name="servicio_adicional_delete"),
 
     # Orden de pago
+    # Orden de pago
     path('pagos/crear/', OrdenPagoCreateView.as_view(), name='pagos_crear'),
 
-    # API Servicio adicional
+    # API endpoints
     path('api/servicio_adicional/crear/', crear_servicio_adicional, name='crear_servicio_adicional'),
     path('api/get_valor_consulta/<int:pago_id>/', get_valor_consulta, name='get_valor_consulta'),
     path('api/get_costo_servicio/<int:servicio_id>/', get_costo_servicio_adicional, name='get_costo_servicio'),
     path('api/guardar_detalle_pago/', guardar_detalle_pago, name='guardar_detalle_pago'),
-        #Orden de pago
-    path('pagos/crear/', OrdenPagoCreateView.as_view(), name='pagos_crear'),
-    #API SERVICIO ADICIONAL
-    path('api/servicio_adicional/crear/', crear_servicio_adicional, name='crear_servicio_adicional'),
-    #Api MONTO TOTAL
-    path('api/get_valor_consulta/<int:pago_id>/', get_valor_consulta, name='get_valor_consulta'),
-    #API AUTOMATIZACION SERVICIO ADICIONAL
-    path('api/get_costo_servicio/<int:servicio_id>/', get_costo_servicio_adicional, name='get_costo_servicio'),
-    #API GUARDAR DETALLE PAGO
-    path('api/guardar_detalle_pago/', guardar_detalle_pago, name='guardar_detalle_pago'),
-    #AJAX DETALLE DE PAGO
     path('api/detalles_pago/<int:pago_id>/', detalles_pago_tbody_ajax, name='detalles_pago_tbody_ajax'),
+    path('api/procesar_pago/', procesar_pago, name='procesar_pago'),
 
 ]

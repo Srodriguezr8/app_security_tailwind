@@ -6,10 +6,14 @@ from django.db import transaction
 from django.http import JsonResponse
 from django.urls import reverse_lazy
 from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
+from django.utils.decorators import method_decorator
+from django.contrib.auth.decorators import login_required
 
 from applications.core.models import Paciente, Medicamento, Diagnostico
 from applications.doctor.forms.atencion import AtencionForm
-from applications.doctor.models import Atencion, DetalleAtencion
+from applications.doctor.models import Atencion, DetalleAtencion, DetallePago, Pago_global
 from applications.security.components.mixin_crud import CreateViewMixin, DeleteViewMixin, ListViewMixin, \
     PermissionMixin, SessionGroupMixin, UpdateViewMixin
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
@@ -23,6 +27,7 @@ class AtencionListView(SessionGroupMixin,PermissionMixin, ListViewMixin, ListVie
     model = Atencion
     context_object_name = 'atenciones'
     permission_required = 'view_atencion'
+    paginate_by = 10  # Agregar paginación
 
     def get_queryset(self):
         q1 = self.request.GET.get('q')
@@ -32,13 +37,68 @@ class AtencionListView(SessionGroupMixin,PermissionMixin, ListViewMixin, ListVie
                self.query.add(Q(paciente__apellidos__icontains=q1), Q.OR)
                self.query.add(Q(motivo_consulta__icontains=q1), Q.OR)
         return self.model.objects.filter(self.query).order_by('-fecha_atencion')
-
-
+    
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        
+        # Obtener atenciones con información de pago correcta
+        atenciones_expandidas = []
+        atenciones = context['atenciones']  # Usar las atenciones paginadas
+        
+        try:
+            for atencion in atenciones:
+                # Buscar pagos relacionados ESPECÍFICAMENTE con esta atención
+                try:
+                    # Buscar solo pagos que pertenezcan a esta atención específica
+                    pago_principal = atencion.pagos.filter(activo=True).order_by('-fecha_creacion').first()
+                    
+                    if pago_principal:
+                        # Si tiene pago principal, usar sus datos
+                        atencion_expandida = {
+                            'atencion': atencion,
+                            'pago': pago_principal,
+                            'tiene_pago': True,
+                            'monto_pago': float(pago_principal.monto_total) if pago_principal.monto_total else 0.0,
+                            'estado_pago': pago_principal.estado,
+                            'metodo_pago': pago_principal.metodo_pago
+                        }
+                    else:
+                        # Si no tiene pagos, crear una fila indicando "Sin Pago"
+                        atencion_expandida = {
+                            'atencion': atencion,
+                            'pago': None,
+                            'tiene_pago': False,
+                            'monto_pago': 0.0,
+                            'estado_pago': 'sin_pago',
+                            'metodo_pago': 'no_especificado'
+                        }
+                except Exception as e:
+                    # Si hay error en la búsqueda, usar valores por defecto
+                    atencion_expandida = {
+                        'atencion': atencion,
+                        'pago': None,
+                        'tiene_pago': False,
+                        'monto_pago': 0.0,
+                        'estado_pago': 'sin_pago',
+                        'metodo_pago': 'no_especificado'
+                    }
+                
+                atenciones_expandidas.append(atencion_expandida)
+        except Exception as e:
+            # Si hay error general, mostrar las atenciones sin pagos
+            for atencion in atenciones:
+                atencion_expandida = {
+                    'atencion': atencion,
+                    'pago': None,
+                    'tiene_pago': False,
+                    'monto_pago': 0.0,
+                    'estado_pago': 'sin_pago',
+                    'metodo_pago': 'no_especificado'
+                }
+                atenciones_expandidas.append(atencion_expandida)
+        
+        context['atenciones_expandidas'] = atenciones_expandidas
         context['create_url'] = reverse_lazy('doctor:atencion_create')
-       
-
         return context
 
 
@@ -424,3 +484,150 @@ def obtener_contexto_paciente(id_paciente):
             'paciente_data': '',
             'paciente_json': 'null'
         }
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+@login_required
+def procesar_pago(request):
+    """
+    Vista para procesar pagos desde el modal de pago
+    """
+    try:
+        # Obtener datos del request
+        data = json.loads(request.body)
+        
+        atencion_id = data.get('atencion_id')
+        pago_id = data.get('pago_id')
+        metodo_pago = data.get('metodo_pago')
+        monto_procesado = data.get('monto_procesado')
+        observaciones = data.get('observaciones', '')
+        referencia_externa = data.get('referencia_externa', '')
+        
+        # Validar campos requeridos
+        if not atencion_id or not metodo_pago or not monto_procesado:
+            return JsonResponse({
+                'error': 'Todos los campos son requeridos'
+            }, status=400)
+        
+        # Validar que el monto sea positivo
+        try:
+            monto_procesado = Decimal(str(monto_procesado))
+            if monto_procesado <= 0:
+                return JsonResponse({
+                    'error': 'El monto debe ser mayor a 0'
+                }, status=400)
+        except (ValueError, TypeError):
+            return JsonResponse({
+                'error': 'El monto debe ser un número válido'
+            }, status=400)
+        
+        # Verificar que existe la atención
+        try:
+            atencion = Atencion.objects.get(id=atencion_id)
+        except Atencion.DoesNotExist:
+            return JsonResponse({
+                'error': 'Atención no encontrada'
+            }, status=404)
+        
+        # Crear el registro de pago 
+        with transaction.atomic():
+            # Siempre crear un nuevo pago para cada atención
+            # No reutilizar pagos existentes de otras atenciones
+            from applications.doctor.models import Pago
+            
+            # Verificar si ya existe un pago para esta atención específica
+            pago_existente = None
+            if pago_id:
+                try:
+                    pago_existente = Pago.objects.get(id=pago_id, atencion=atencion)
+                except Pago.DoesNotExist:
+                    pago_existente = None
+            
+            if pago_existente:
+                # Actualizar el pago existente solo si pertenece a esta atención
+                pago = pago_existente
+                pago.metodo_pago = metodo_pago.lower().replace(' ', '_')
+                pago.monto_total = monto_procesado
+                pago.estado = 'pagado'
+                pago.fecha_pago = timezone.now()
+                pago.observaciones = observaciones
+                if referencia_externa:
+                    pago.referencia_externa = referencia_externa
+                pago.save()
+            else:
+                # Crear un nuevo pago para esta atención específica
+                pago = Pago.objects.create(
+                    atencion=atencion,
+                    metodo_pago=metodo_pago.lower().replace(' ', '_'),
+                    monto_total=monto_procesado,
+                    estado='pagado',
+                    fecha_pago=timezone.now(),
+                    observaciones=observaciones,
+                    referencia_externa=referencia_externa if referencia_externa else None
+                )
+            
+            # Verificar si ya existe un Pago_global para este pago
+            pago_global_existente = None
+            try:
+                pago_global_existente = pago.pago_global
+            except Pago_global.DoesNotExist:
+                pago_global_existente = None
+            
+            if pago_global_existente:
+                # Actualizar datos de procesamiento del pago global
+                pago_global_existente.procesado_desde_modal = True
+                pago_global_existente.datos_procesamiento = {
+                    'fecha_procesamiento': timezone.now().isoformat(),
+                    'metodo_procesado': metodo_pago,
+                    'referencia_externa': referencia_externa,
+                    'observaciones': observaciones
+                }
+                if referencia_externa:
+                    pago_global_existente.referencia_externa = referencia_externa
+                pago_global_existente.save()
+                
+                pago_global = pago_global_existente
+                
+                # Guardar auditoría
+                save_audit(request, pago_global, "MODIFICACION")
+                
+            else:
+                # Crear el registro de pago global vinculado al pago
+                pago_global = Pago_global.objects.create(
+                    pago=pago,
+                    procesado_desde_modal=True,
+                    datos_procesamiento={
+                        'fecha_procesamiento': timezone.now().isoformat(),
+                        'metodo_procesado': metodo_pago,
+                        'referencia_externa': referencia_externa,
+                        'observaciones': observaciones
+                    },
+                    referencia_externa=referencia_externa if referencia_externa else None,
+                    activo=True
+                )
+                
+                # Guardar auditoría
+                save_audit(request, pago_global, "ADICION")
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Pago procesado exitosamente',
+            'pago_id': pago_global.id,
+            'fecha_procesamiento': pago_global.fecha_pago.strftime('%Y-%m-%d %H:%M:%S') if pago_global.fecha_pago else timezone.now().strftime('%Y-%m-%d %H:%M:%S'),
+            'metodo_pago': pago_global.metodo_pago,
+            'monto': float(pago_global.monto_total),
+            'referencia_externa': pago_global.referencia_externa or '',
+            'paciente': pago_global.paciente.nombre_completo if pago_global.paciente else 'Sin paciente',
+            'estado': pago_global.estado,
+            'atencion_id': pago_global.atencion.id if pago_global.atencion else atencion_id
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'error': 'Formato de datos inválido'
+        }, status=400)
+    except Exception as e:
+        return JsonResponse({
+            'error': f'Error interno del servidor: {str(e)}'
+        }, status=500)

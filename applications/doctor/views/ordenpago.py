@@ -9,6 +9,7 @@ from django.http import JsonResponse
 from applications.doctor.models import Pago
 from decimal import Decimal
 from django.http import HttpResponseRedirect
+from django.utils import timezone
 
 class OrdenPagoCreateView(LoginRequiredMixin, PermissionMixin, CreateView):
     model = Pago
@@ -68,28 +69,69 @@ DetallePagoFormSet = modelformset_factory(
     can_delete=True,
 )
 
-## API PARA SERVICIOS ADICIONALES ##
-from django.http import JsonResponse
-#from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
+from django.shortcuts import render, get_object_or_404
 import json
 
-#@csrf_exempt
+@csrf_exempt
+@require_http_methods(["POST"])
 def crear_servicio_adicional(request):
-    if request.method == "POST":
+    """
+    API para crear un nuevo servicio adicional
+    """
+    try:
+        # Validar Content-Type
+        if request.content_type != 'application/json':
+            return JsonResponse({"error": "Content-Type debe ser application/json"}, status=400)
+        
+        # Parsear JSON
+        if not request.body:
+            return JsonResponse({"error": "No se enviaron datos."}, status=400)
+            
         data = json.loads(request.body.decode("utf-8"))
-        nombre = data.get("nombre_servicio")
+        
+        # Validar campos
+        nombre = data.get("nombre_servicio", "").strip()
         costo = data.get("costo_servicio")
-        descripcion = data.get("descripcion")
-        if not (nombre and costo):
-            return JsonResponse({"error": "Faltan campos obligatorios."}, status=400)
-        serv = ServiciosAdicionales.objects.create(
+        descripcion = data.get("descripcion", "").strip()
+        
+        if not nombre:
+            return JsonResponse({"error": "El nombre del servicio es obligatorio."}, status=400)
+        
+        if not costo:
+            return JsonResponse({"error": "El costo del servicio es obligatorio."}, status=400)
+        
+        # Validar y convertir costo
+        try:
+            costo_decimal = float(costo)
+            if costo_decimal <= 0:
+                return JsonResponse({"error": "El costo debe ser mayor a 0."}, status=400)
+        except (ValueError, TypeError):
+            return JsonResponse({"error": "El costo debe ser un número válido."}, status=400)
+        
+        # Crear servicio
+        servicio = ServiciosAdicionales.objects.create(
             nombre_servicio=nombre,
-            costo_servicio=costo,
-            descripcion=descripcion or "",
+            costo_servicio=costo_decimal,
+            descripcion=descripcion,
             activo=True
         )
-        return JsonResponse({"id": serv.id, "nombre_servicio": serv.nombre_servicio})
-    return JsonResponse({"error": "Solo POST permitido"}, status=405)
+        
+        # Respuesta exitosa
+        response_data = {
+            "id": servicio.id,
+            "nombre_servicio": servicio.nombre_servicio,
+            "costo_servicio": float(servicio.costo_servicio),
+            "descripcion": servicio.descripcion
+        }
+        
+        return JsonResponse(response_data, status=201)
+        
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "Datos JSON inválidos."}, status=400)
+    except Exception as e:
+        return JsonResponse({"error": f"Error interno del servidor: {str(e)}"}, status=500)
 
 #valor consulta
 def get_valor_consulta(request, pago_id):
