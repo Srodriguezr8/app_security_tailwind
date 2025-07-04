@@ -44,43 +44,25 @@
                             <th scope="col" class="px-4 py-4">Síntomas</th>
                             <th scope="col" class="px-4 py-4">Diagnósticos</th>
                             <th scope="col" class="px-4 py-4">Tratamiento</th>
-<<<<<<< HEAD
-=======
                             <th scope="col" class="px-4 py-4">Estado de Pago</th>
->>>>>>> integration_api
                             <th scope="col" class="px-4 py-4">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
-<<<<<<< HEAD
-                        {% for atencion in atenciones %}
-                        <tr
-                            class="dark:text-gray-300 bg-white border-b dark:bg-[#0b1121] dark:border-secundario hover:bg-emerald-50 dark:hover:bg-[#121c33] transition-colors duration-200">
-                            <td class="px-4 py-4 font-medium text-emerald-600 dark:text-emerald-400">
-                                #{{ atencion.id }}
-=======
                         {% for item in atenciones_expandidas %}
                         <tr
                             class="dark:text-gray-300 bg-white border-b dark:bg-[#0b1121] dark:border-secundario hover:bg-emerald-50 dark:hover:bg-[#121c33] transition-colors duration-200">
                             <td class="px-4 py-4 font-medium text-emerald-600 dark:text-emerald-400">
                                 #{{ item.atencion.id }}
->>>>>>> integration_api
                             </td>
 
                             <td class="px-4 py-4">
                                 <div class="flex flex-col">
                                     <span class="font-semibold text-gray-900 dark:text-gray-100">
-<<<<<<< HEAD
-                                        {{ atencion.paciente.nombres }} {{ atencion.paciente.apellidos }}
-                                    </span>
-                                    <span class="text-xs text-gray-500 dark:text-gray-400">
-                                        {{ atencion.paciente.numero_identificacion }}
-=======
                                         {{ item.atencion.paciente.nombres }} {{ item.atencion.paciente.apellidos }}
                                     </span>
                                     <span class="text-xs text-gray-500 dark:text-gray-400">
                                         {{ item.atencion.paciente.numero_identificacion }}
->>>>>>> integration_api
                                     </span>
                                 </div>
                             </td>
@@ -88,145 +70,6 @@
                             <td class="px-4 py-4">
                                 <div class="flex flex-col">
                                     <span class="font-medium text-gray-900 dark:text-gray-100">
-<<<<<<< HEAD
-                                        {{ atencion.fecha_atencion|date:"d/m/Y" }}
-                                    </span>
-                                    <span class="text-xs text-gray-500 dark:text-gray-400">
-                                        {{ atencion.fecha_atencion|time:"H:i" }}
-                                    </span>
-                                </div>
-                            </td>
-
-                            <td class="px-4 py-4">
-                                <div class="max-w-xs">
-                                    {% if atencion.motivo_consulta %}
-                                    <p class="text-sm text-gray-700 dark:text-gray-300 text-left">
-                                        {{ atencion.motivo_consulta|truncatechars:80 }}
-                                    </p>
-                                    {% else %}
-                                    <span class="text-gray-400 italic text-xs">Sin especificar</span>
-                                    {% endif %}
-                                </div>
-                            </td>
-
-                            <td class="px-4 py-4">
-                                <div class="max-w-xs">
-                                    {% if atencion.sintomas %}
-                                    <p class="text-sm text-gray-700 dark:text-gray-300 text-left">
-                                        {{ atencion.sintomas|truncatechars:60 }}
-                                    </p>
-                                    {% else %}
-                                    <span class="text-gray-400 italic text-xs">Sin registrar</span>
-                                    {% endif %}
-                                </div>
-                            </td>
-
-                            <td class="px-4 py-4">
-                                <div class="flex flex-wrap gap-1 justify-center">
-                                    {% for diagnostico in atencion.diagnostico.all %}
-                                    <span
-                                        class="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded-full text-xs">
-                                        {{ diagnostico.codigo }}
-                                    </span>
-                                    {% empty %}
-                                    <span class="text-gray-400 italic text-xs">Sin diagnóstico</span>
-                                    {% endfor %}
-                                </div>
-                            </td>
-
-                            <td class="px-4 py-4">
-                                <div class="max-w-xs">
-                                    {% if atencion.tratamiento %}
-                                    <p class="text-sm text-gray-700 dark:text-gray-300 text-left">
-                                        {{ atencion.tratamiento|truncatechars:60 }}
-                                    </p>
-                                    {% else %}
-                                    <span class="text-gray-400 italic text-xs">Sin tratamiento</span>
-                                    {% endif %}
-                                </div>
-                            </td>
-
-                            <td class="px-4 py-4">
-                                <div class="flex justify-center space-x-2">
-                                    {% if permissions.view_atencion %}
-                                    <a href="#"
-                                        class="text-emerald-600 dark:text-emerald-500 hover:text-emerald-800 p-1 rounded transition-colors"
-                                        title="Ver Detalle">
-                                        <i class="fa-solid fa-eye text-lg"></i>
-                                    </a>
-                                    {% endif %}
-
-                                    {% if permissions.change_atencion %}
-                                    <a href="{% url 'doctor:atencion_update' atencion.id %}"
-                                        class="text-blue-600 dark:text-blue-500 hover:text-blue-800 p-1 rounded transition-colors"
-                                        title="Editar">
-                                        <i class="fa-solid fa-edit text-lg"></i>
-                                    </a>
-                                    {% endif %}
-
-                                    {% if permissions.delete_atencion %}
-                                    <a href="#"
-                                        class="text-red-600 dark:text-red-500 hover:text-red-800 p-1 rounded transition-colors"
-                                        onclick="openDeleteModal('{{ atencion.id }}', '{{ atencion.paciente.nombres }} {{ atencion.paciente.apellidos }}')"
-                                        title="Eliminar">
-                                        <i class="fa-solid fa-trash text-lg"></i>
-                                    </a>
-                                    {% endif %}
-                                </div>
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="8" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
-                                <div class="flex flex-col items-center">
-                                    <i class="fa-solid fa-stethoscope text-4xl mb-2 text-gray-300"></i>
-                                    <p class="text-lg">No se encontraron atenciones médicas</p>
-                                    <p class="text-sm">Intenta con otros términos de búsqueda</p>
-                                </div>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Pagination -->
-            {% if page_obj.paginator.num_pages > 1 %}
-            <div class="flex justify-center mt-6">
-                <nav aria-label="Navegación de páginas">
-                    <ul class="inline-flex -space-x-px shadow-sm rounded-lg">
-                        {% if page_obj.has_previous %}
-                        <li>
-                            <a href="?page=1{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}"
-                                class="flex items-center justify-center px-3 h-8 ms-0 leading-tight text-gray-500 bg-white border border-e-0 border-gray-300 rounded-s-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-[#0b1121] dark:border-secundario dark:text-gray-400 dark:hover:bg-[#121c33] dark:hover:text-white transition-colors">
-                                <i class="fa-solid fa-chevron-left mr-1"></i>Anterior
-                            </a>
-                        </li>
-                        {% endif %}
-
-                        {% for num in page_obj.paginator.page_range %}
-                        <li>
-                            <a href="?page={{ num }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}"
-                                class="flex items-center justify-center px-3 h-8 leading-tight {% if num == page_obj.number %}text-emerald-600 bg-emerald-50 border border-gray-300 hover:bg-emerald-100 hover:text-emerald-700 dark:bg-secundario dark:border-principal dark:text-emerald-300{% else %}text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-[#0b1121] dark:border-secundario dark:text-gray-400 dark:hover:bg-[#121c33] dark:hover:text-white{% endif %} transition-colors">
-                                {{ num }}
-                            </a>
-                        </li>
-                        {% endfor %}
-
-                        {% if page_obj.has_next %}
-                        <li>
-                            <a href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}"
-                                class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 rounded-e-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-[#0b1121] dark:border-secundario dark:text-gray-400 dark:hover:bg-[#121c33] dark:hover:text-white transition-colors">
-                                Siguiente<i class="fa-solid fa-chevron-right ml-1"></i>
-                            </a>
-                        </li>
-                        {% endif %}
-                    </ul>
-                </nav>
-            </div>
-            {% endif %}
-
-=======
                                         {{ item.atencion.fecha_atencion|date:"d/m/Y" }}
                                     </span>
                                     <span class="text-xs text-gray-500 dark:text-gray-400">
@@ -399,7 +242,6 @@
             </div>
             {% endif %}
 
->>>>>>> integration_api
             <!-- Action Buttons -->
             <div class="flex flex-col md:flex-row justify-center items-center gap-3 p-6">
                 {% if permissions.add_atencion %}
@@ -445,11 +287,7 @@
                             Mostrando
                         </h4>
                         <p class="text-2xl font-bold text-gray-900 dark:text-gray-100">
-<<<<<<< HEAD
-                            {{ atenciones|length }} registros
-=======
                             {{ atenciones_expandidas|length }} registros
->>>>>>> integration_api
                         </p>
                     </div>
                 </div>
@@ -459,10 +297,6 @@
 </section>
 
 {% include 'fragments/delete.html' %}
-<<<<<<< HEAD
-
-<script>
-=======
 
 <!-- Modal de Pago Dinámico -->
 <div id="modalPago" class="fixed inset-0 backdrop-blur-md z-50 hidden items-center justify-center">
@@ -707,7 +541,6 @@
         }
     });
 
->>>>>>> integration_api
     function openDeleteModal(id, patientName) {
         const deleteForm = document.getElementById('deleteForm');
         deleteForm.action = `{% url 'doctor:atencion_delete' 0 %}`.replace('0', id);
@@ -1477,8 +1310,6 @@
             }
         });
     });
-<<<<<<< HEAD
-=======
 
     // Función para actualizar el estado de pago en la tabla sin recargar
     function actualizarEstadoPagoEnTabla(atencionId, nuevoEstado, metodoPago) {
@@ -1642,6 +1473,5 @@
         
         console.log('Mostrado procesamiento manual');
     }
->>>>>>> integration_api
 </script>
 {% endblock %}

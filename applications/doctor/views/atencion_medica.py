@@ -13,12 +13,11 @@ from django.contrib.auth.decorators import login_required
 
 from applications.core.models import Paciente, Medicamento, Diagnostico
 from applications.doctor.forms.atencion import AtencionForm
-<<<<<<< HEAD
 from applications.doctor.models import Atencion, DetalleAtencion, DetallePago, Pago, ServiciosAdicionales
 from applications.doctor.utils.pago import EstadoPagoChoices, MetodoPagoChoices
-=======
+
 from applications.doctor.models import Atencion, DetalleAtencion, DetallePago, Pago_global
->>>>>>> integration_api
+
 from applications.security.components.mixin_crud import CreateViewMixin, DeleteViewMixin, ListViewMixin, \
     PermissionMixin, SessionGroupMixin, UpdateViewMixin
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
