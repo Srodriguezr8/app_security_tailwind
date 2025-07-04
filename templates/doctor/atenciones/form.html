@@ -7,14 +7,12 @@
 
 {% block content %}
 <section class="bg-gray-50 min-h-screen">
-    <!-- Header -->
-    <!-- Navigation Tabs -->
-   <nav class="bg-blue-100 shadow-lg sticky top-[4rem] z-50">
+   <!-- Header -->
+   <!-- Navigation Tabs -->
+    <nav class="bg-blue-100 shadow-lg sticky top-0 z-10">
         <div class="container mx-auto px-6">
-            <div class="flex space-x-0 pt-[60px]">
-
-                <button onclick="showTab('paciente')" id="tab-paciente"
-                    class="tab-button flex-1 py-4 px-6 text-center border-b-3 border-blue-500 text-blue-600 font-semibold transition-all duration-300 hover:bg-blue-50">
+            <div class="flex space-x-0">
+                <button onclick="showTab('paciente')" id="tab-paciente" class="tab-button flex-1 py-4 px-6 text-center border-b-3 border-blue-500 text-blue-600 font-semibold transition-all duration-300 hover:bg-blue-50">
                     <div class="flex items-center justify-center space-x-2">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -312,7 +310,7 @@
         <div id="content-atencion" class="tab-content">
             <div class="space-y-8">
                 <!-- Identificación -->
-                <form id="atencion-form" onsubmit="event.preventDefault(); (async () => { await grabarAtencion(); })();">
+              <form id="atencion-form" onsubmit="event.preventDefault(); grabarAtencion();">
                     {% csrf_token %}
                     <div class="bg-white rounded-2xl shadow-xl p-8">
                         <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
@@ -601,265 +599,134 @@
                         style="bottom: 52px;">🎙 Grabando...</span>
                 </div>
 
-                <!-- Transcriptor -->
-                <div class="relative">
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Comentario Adicional</label>
-                    <textarea id="id_comentario_adicional"
-                        class="w-full p-4 pr-14 pb-16 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        rows="3"
-                        placeholder="Comentarios adicionales...">{{ atencion.comentario_adicional|default:'' }}</textarea>
-                    <button type="button"
-                        class="btn-mic absolute right-4 bg-transparent hover:bg-gray-100 text-black rounded-full p-3 focus:outline-none flex items-center justify-center transition-all duration-200"
-                        style="bottom: 12px;" title="Dictar por voz" data-textarea="id_comentario_adicional"
-                        data-grabando="grabando-comentario-adicional">
-                        <!-- ICONO MICRÓFONO SVG -->
-                        <svg xmlns="http://www.w3.org/2000/svg"
-                            class="w-6 h-6 pointer-events-none transition-colors duration-200" fill="none"
-                            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M12 15a3 3 0 0 0 3-3V7a3 3 0 0 0-6 0v5a3 3 0 0 0 3 3zm5-3v1a5 5 0 0 1-10 0v-1m5 8v-2m0 0H9m3 0h3" />
-                        </svg>
-                    </button>
-                    <span id="grabando-comentario-adicional"
-                        class="absolute right-4 bg-white px-2 py-1 text-sm text-green-600 rounded shadow hidden"
-                        style="bottom: 52px;">🎙 Grabando...</span>
-                </div>
-
-                <!-- Transcriptor -->
-                 </div>
-
-
-                <!-- Prescripción de Medicamentos -->
-                <div class="bg-white rounded-2xl shadow-xl p-8">
-                    <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
-                        <div class="w-8 h-8 bg-rose-100 rounded-lg flex items-center justify-center mr-3">
-                            <svg class="w-4 h-4 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z">
-                                </path>
-                            </svg>
+<!-- Transcriptor -->
+                            <div class="relative">
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Comentario Adicional</label>
+                                <textarea id="id_comentario_adicional"
+                                    class="w-full p-4 pr-14 pb-16 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    rows="3"
+                                    placeholder="Comentarios adicionales...">{{ atencion.comentario_adicional|default:'' }}</textarea>
+                                <button type="button"
+                                    class="btn-mic absolute right-4 bg-transparent hover:bg-gray-100 text-black rounded-full p-3 focus:outline-none flex items-center justify-center transition-all duration-200"
+                                    style="bottom: 12px;"
+                                    title="Dictar por voz"
+                                    data-textarea="id_comentario_adicional"
+                                    data-grabando="grabando-comentario-adicional">
+                                    <!-- ICONO MICRÓFONO SVG -->
+                                    <svg xmlns="http://www.w3.org/2000/svg"
+                                        class="w-6 h-6 pointer-events-none transition-colors duration-200"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                        stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M12 15a3 3 0 0 0 3-3V7a3 3 0 0 0-6 0v5a3 3 0 0 0 3 3zm5-3v1a5 5 0 0 1-10 0v-1m5 8v-2m0 0H9m3 0h3"/>
+                                    </svg>
+                                </button>
+                                <span id="grabando-comentario-adicional"
+                                    class="absolute right-4 bg-white px-2 py-1 text-sm text-green-600 rounded shadow hidden"
+                                    style="bottom: 52px;">🎙 Grabando...</span>
+                            </div>
+<!-- Transcriptor -->
                         </div>
-                        Prescripción de Medicamentos
-                    </h3>
-
-                    <!-- Formulario de agregar medicamento -->
-                    <div class="bg-gray-50 p-6 rounded-xl mb-6">
-                        <h4 class="font-semibold text-gray-800 mb-4">Agregar Medicamento</h4>
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-                            <!-- select dinamico -->
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Medicamento *</label>
-                                <select id="medicamento-select"
-                                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500"
-                                    name="medicamento_id" required>
-                                    <option value="">Seleccione medicamento...</option>
-                                    {% for medicamento in medicamentos %}
-                                    <option value="{{ medicamento.id }}"
-                                        title="{{ medicamento.nombre }} {{ medicamento.concentracion }} - {{ medicamento.tipo.nombre }} ({{ medicamento.marca_medicamento.nombre }}) - ${{ medicamento.precio }} - Stock: {{ medicamento.cantidad }}">
-                                        {{ medicamento.nombre }}
-                                    </option>
-                                    {% empty %}
-                                    <option value="" disabled>No hay medicamentos disponibles</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <!-- fin select -->
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Cantidad *</label>
-                                <input type="number" id="cantidad-input"
-                                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500"
-                                    placeholder="30">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Prescripción *</label>
-                                <input type="text" id="prescripcion-input"
-                                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500"
-                                    placeholder="1 cada 8 horas">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Duración (días) *</label>
-                                <input type="number" id="duracion-input"
-                                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500"
-                                    placeholder="7">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Frecuencia diaria *</label>
-                                <input type="number" id="frecuencia-input"
-                                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500"
-                                    placeholder="3">
-                            </div>
-                        </div>
-                        <div class="mt-4 flex space-x-3">
-                            <button type="button" onclick="agregarMedicamento()"
-                                class="bg-rose-600 hover:bg-rose-700 text-white px-6 py-3 rounded-lg transition-colors duration-200 flex items-center space-x-2">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </div>
+                    <!-- Prescripción de Medicamentos -->
+                    <div class="bg-white rounded-2xl shadow-xl p-8">
+                        <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
+                            <div class="w-8 h-8 bg-rose-100 rounded-lg flex items-center justify-center mr-3">
+                                <svg class="w-4 h-4 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
                                 </svg>
-                                <span>Add Prescripcion</span>
-                            </button>
-                            <button type="button" onclick="verDatos()"
-                                class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg transition-colors duration-200">
-                                Crear Medicamentos
-                            </button>
+                            </div>
+                            Prescripción de Medicamentos
+                        </h3>
+
+                        <!-- Formulario de agregar medicamento -->
+                        <div class="bg-gray-50 p-6 rounded-xl mb-6">
+                            <h4 class="font-semibold text-gray-800 mb-4">Agregar Medicamento</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                            <!-- select dinamico -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Medicamento *</label>
+                                    <select id="medicamento-select" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500" name="medicamento_id" required>
+                                        <option value="">Seleccione medicamento...</option>
+                                        {% for medicamento in medicamentos %}
+                                            <option value="{{ medicamento.id }}"
+                                                    title="{{ medicamento.nombre }} {{ medicamento.concentracion }} - {{ medicamento.tipo.nombre }} ({{ medicamento.marca_medicamento.nombre }}) - ${{ medicamento.precio }} - Stock: {{ medicamento.cantidad }}">
+                                                {{ medicamento.nombre }}
+                                            </option>
+                                        {% empty %}
+                                            <option value="" disabled>No hay medicamentos disponibles</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <!-- fin select -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Cantidad *</label>
+                                    <input type="number" id="cantidad-input" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500" placeholder="30">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Prescripción *</label>
+                                    <input type="text" id="prescripcion-input" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500" placeholder="1 cada 8 horas">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Duración (días) *</label>
+                                    <input type="number" id="duracion-input" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500" placeholder="7">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Frecuencia diaria *</label>
+                                    <input type="number" id="frecuencia-input" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500" placeholder="3">
+                                </div>
+                            </div>
+                            <div class="mt-4 flex space-x-3">
+                                <button type="button" onclick="agregarMedicamento()" class="bg-rose-600 hover:bg-rose-700 text-white px-6 py-3 rounded-lg transition-colors duration-200 flex items-center space-x-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                    </svg>
+                                    <span>Add Prescripcion</span>
+                                </button>
+                                <button type="button" onclick="verDatos()" class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg transition-colors duration-200">
+                                    Crear Medicamentos
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Tabla de medicamentos -->
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead>
+                                    <tr class="border-b-2 border-gray-200">
+                                        <th class="text-left py-4 px-4 font-semibold text-gray-700">Medicamento</th>
+                                        <th class="text-left py-4 px-4 font-semibold text-gray-700">Cantidad</th>
+                                        <th class="text-left py-4 px-4 font-semibold text-gray-700">Prescripción</th>
+                                        <th class="text-left py-4 px-4 font-semibold text-gray-700">Duración (días)</th>
+                                        <th class="text-left py-4 px-4 font-semibold text-gray-700">Frecuencia</th>
+                                        <th class="text-left py-4 px-4 font-semibold text-gray-700">Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="medicamentos-table">
+                                    <!-- Los medicamentos se agregarán aquí dinámicamente -->
+                                </tbody>
+                            </table>
                         </div>
                     </div>
 
-                    <!-- Tabla de medicamentos -->
-                    <div class="overflow-x-auto">
-                        <table class="w-full">
-                            <thead>
-                                <tr class="border-b-2 border-gray-200">
-                                    <th class="text-left py-4 px-4 font-semibold text-gray-700">Medicamento</th>
-                                    <th class="text-left py-4 px-4 font-semibold text-gray-700">Cantidad</th>
-                                    <th class="text-left py-4 px-4 font-semibold text-gray-700">Prescripción</th>
-                                    <th class="text-left py-4 px-4 font-semibold text-gray-700">Duración (días)</th>
-                                    <th class="text-left py-4 px-4 font-semibold text-gray-700">Frecuencia</th>
-                                    <th class="text-left py-4 px-4 font-semibold text-gray-700">Acción</th>
-                                </tr>
-                            </thead>
-                            <tbody id="medicamentos-table">
-                                <!-- Los medicamentos se agregarán aquí dinámicamente -->
-                            </tbody>
-                        </table>
+                    <!-- Botón de Guardar -->
+                    <div class="bg-white rounded-2xl shadow-xl p-8 mt-8">
+                        <div class="flex justify-center space-x-4">
+                            <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-lg text-lg font-semibold transition-colors duration-200 flex items-center space-x-3">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                <span>Guardar Atención Médica</span>
+                            </button>
+                            <button type="button" onclick="window.history.back()" class="bg-gray-600 hover:bg-gray-700 text-white px-8 py-4 rounded-lg text-lg font-semibold transition-colors duration-200">
+                                Cancelar
+                            </button>
+                        </div>
                     </div>
-                </div>
-
-
-                <!-- Detalle de Servicios -->
-                <div class="p-4 border rounded-lg bg-white shadow mb-6">
-                <h2 class="text-xl font-bold mb-4">Costo de Atención</h2>
-
-                <!-- Tipo de atención -->
-                <div class="mb-4">
-                    <label class="inline-flex items-center">
-                    <input type="checkbox" id="atencion-gratuita" class="form-checkbox text-blue-600" />
-                    <span class="ml-2 text-gray-700 font-semibold">Atención gratuita</span>
-                    </label>
-                    <p class="text-sm text-gray-500 ml-6">Si está marcado, no se cobrará ningún servicio.</p>
-                </div>
-
-                <!-- Sección servicios con costo -->
-                <div id="seccion-costo" class="space-y-4">
-
-                    <!-- Fila de entrada de servicio -->
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-
-                    <!-- Servicio -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Servicio Adicional</label>
-                        <select id="servicio-select" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
-                               <option value="" disabled selected>Seleccione...</option>
-                            {% for servicio in servicios %}
-                                <option value="{{ servicio.id }}" data-precio="{{ servicio.costo_servicio }}">{{ servicio.nombre_servicio }} - ${{ servicio.costo_servicio }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-
-                    <!-- Cantidad -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Cantidad</label>
-                        <input type="number" id="cantidad" min="1" value="1"
-                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" />
-                    </div>
-
-                    <!-- Descuento -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Descuento %</label>
-                        <input type="number" id="descuento" min="0" max="100" value="0"
-                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" />
-                    </div>
-
-                    <!-- Aplica Seguro -->
-                    <div class="flex items-center mt-6">
-                        <input type="checkbox" id="aplica-seguro" onchange="toggleSeguro()" />
-                        <label for="aplica-seguro" class="ml-2 text-gray-700">Aplica Seguro</label>
-                    </div>
-
-                    <!-- Valor seguro -->
-                    <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700">Valor cubierto por seguro ($)</label>
-                        <input type="number" id="valor-seguro"  min="0" step="0.01" class="input text-xm  border-black rounded-md shadow-sm" disabled />
-                    </div>
-
-                    <!-- Descripción seguro -->
-                    <div class="md:col-span-4">
-                        <label class="block text-xs font-medium text-gray-700">Descripción del seguro</label>
-                        <input type="text" id="descripcion-seguro" class="input text-xm  border-black rounded-md shadow-sm" disabled />
-                    </div>
-                    </div>
-
-                    <!-- Botón para agregar servicio -->
-                <div class="mt-4 flex justify-between items-center flex-wrap gap-2">
-                    <button onclick="agregarServicio()" type="button"
-                        class="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700">
-                        Añadir Servicio al Pago
-                    </button>
-
-                    <div class="bg-gray-100 border border-gray-300 rounded px-4 py-2 text-right w-full md:w-auto">
-                        <span class="text-xl font-bold text-gray-700">Total a pagar:</span>
-                        <span id="total-general-little" class="text-xl font-bold text-green-600 ml-2">$0.00</span>
-                    </div>
-                </div>
-
-                </div>
-
-                <!-- Tabla de servicios añadidos -->
-                <div class="mt-6">
-                    <h3 class="font-semibold text-gray-800 mb-2">Servicios seleccionados:</h3>
-                    <table class="min-w-full border border-gray-300 text-sm">
-                    <thead class="bg-gray-100">
-                        <tr>
-                        <th class="border px-2 py-1">Servicio</th>
-                        <th class="border px-2 py-1">Cantidad</th>
-                        <th class="border px-2 py-1">Precio</th>
-                        <th class="border px-2 py-1">Descuento %</th>
-                        <th class="border px-2 py-1">Seguro</th>
-                        <th class="border px-2 py-1">Subtotal</th>
-                        <th class="border px-2 py-1">Acción</th> 
-                        </tr>
-                    </thead>
-                    <tbody id="tabla-detalles">
-                        <!-- Se llenará con JS -->
-                    </tbody>
-                    <tfoot>
-                    <tr class="bg-gray-100 font-semibold">
-                        <td colspan="5" class="text-right px-2 py-1">TOTAL:</td>
-                        <td class="text-right px-2 py-1" id="total-general">$0.00</td>
-                        <td></td>
-                    </tr>
-                    </tfoot>
-                    </table>
-                </div>
-                </div>
-
-
-
-
-                <!-- Botón de Guardar -->
-                <div class="bg-white rounded-2xl shadow-xl p-8 mt-8">
-                    <div class="flex justify-center space-x-4">
-                        <button type="submit"
-                            class="bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-lg text-lg font-semibold transition-colors duration-200 flex items-center space-x-3">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7">
-                                </path>
-                            </svg>
-                            <span>Guardar Atención Médica</span>
-                        </button>
-                        <button type="button" onclick="window.history.back()"
-                            class="bg-gray-600 hover:bg-gray-700 text-white px-8 py-4 rounded-lg text-lg font-semibold transition-colors duration-200">
-                            Cancelar
-                        </button>
-                    </div>
-                </div>
-
-            </form>
-
-        </div>
-
-        </div>
-
+                </form>
+            </div>
         </div>
 
     </main>
@@ -867,229 +734,24 @@
 </section>
 
 <!-- CSS para estilos de error y variables médicas -->
- <script>
+ <style>
 
-  let servicios_json = [];
-  let atencion_gratuita = false;
-
-  const serviciosAgregados = new Set();
-
-  function toggleSeguro() {
- 
-    const check = document.getElementById("aplica-seguro");
-    const valorSeguro = document.getElementById("valor-seguro");
-    const descripcionSeguro = document.getElementById("descripcion-seguro");
-
-    if (check.checked) {
-        valorSeguro.disabled = false;
-        descripcionSeguro.disabled = false;
-    } else {
-        valorSeguro.value = "";
-        descripcionSeguro.value = "";
-        valorSeguro.disabled = true;
-        descripcionSeguro.disabled = true;
-    }
-}
-
-
-function eliminarServicio(servicioId, button) {
-    const row = button.closest("tr");
-    row.remove();
-    serviciosAgregados.delete(servicioId);
-
-    // Elimina del array de objetos
-    servicios_json = servicios_json.filter(item => item.servicio_id !== servicioId);
-    console.log("🗑 Servicio eliminado. servicios_json:", servicios_json);
-    actualizarTotalGeneral();
-}
-
- function actualizarTotalGeneral() {
-  let total = 0;
-  servicios_json.forEach(servicio => {
-    const precio = servicio.valor_unitario;
-    const cantidad = servicio.cantidad;
-    const descuento = servicio.descuento;
-    const valorSeguro = servicio.aplica_seguro ? servicio.valor_seguro : 0;
-
-    let base = precio - (precio * descuento / 100);
-    let subtotal = (base * cantidad) - valorSeguro;
-
-    total += Math.max(0, subtotal);
-  });
-
-  document.getElementById("total-general").textContent = `$${total.toFixed(2)}`;
-  document.getElementById("total-general-little").textContent = `$${total.toFixed(2)}`;
-}
-
-  function agregarServicio() {
-    const select = document.getElementById("servicio-select");
-    const descripcionSeguroValue = document.getElementById("descripcion-seguro").value;
-    const servicioId = select.value;
-    const servicioText = select.options[select.selectedIndex].text;
-    const precio = parseFloat(select.options[select.selectedIndex].dataset.precio);
-    const cantidad = parseInt(document.getElementById("cantidad").value) || 1;
-    const descuento = parseFloat(document.getElementById("descuento").value) || 0;
-    const aplicaSeguro = document.getElementById("aplica-seguro").checked;
-    const valorSeguro = parseFloat(document.getElementById("valor-seguro").value) || 0;
-
-    if (!servicioId || serviciosAgregados.has(servicioId)) {
-      alert("Servicio ya agregado o no seleccionado.");
-      return;
-    }
-
-
-    // control de cantidad se seguro
-    if (aplicaSeguro) {
-        if (!valorSeguro || valorSeguro < 0) {
-            alert("El valor del seguro debe ser mayor o igual a 0.");
-            return;
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        main { font-family: 'Inter', sans-serif; }
+        .tab-content { display: none; animation: fadeIn 0.5s ease-in-out; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-        if (!descripcionSeguroValue.trim()) {
-            alert("Debe ingresar una descripción del seguro.");
-            return;
+        .card-hover:hover { transform: translateY(-4px); }
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .medical-gradient { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+        .glass-effect { backdrop-filter: blur(10px); background: rgba(255, 255, 255, 0.9); }
+        .card-hover:hover {
+            transform: translateY(-4px);
         }
-    }
-
-    // Cálculo del subtotal
-    let precioBase = precio;
-    let descuentoValor = (precioBase * descuento / 100);
-    let total = (precioBase - descuentoValor) * cantidad;
-    if (aplicaSeguro) {
-      total -= valorSeguro;
-    }
-
-    if (total < 0) {
-      alert("El subtotal no puede ser negativo.");
-      return;
-    }
-
- 
-    // Agregar fila a la tabla
-    const tbody = document.getElementById("tabla-detalles");
-    const row = document.createElement("tr");
-    row.setAttribute("data-id", servicioId);
-    row.innerHTML = `
-      <td class="border px-2 py-1">${servicioText}</td>
-      <td class="border px-2 py-1 text-center">${cantidad}</td>
-      <td class="border px-2 py-1 text-right">$${precio.toFixed(2)}</td>
-      <td class="border px-2 py-1 text-right">${descuento}%</td>
-      <td class="border px-2 py-1 text-right">${aplicaSeguro ? `$${valorSeguro.toFixed(2)}` : '-'}</td>
-      <td class="border px-2 py-1 text-right font-semibold">$${total.toFixed(2)}</td>
-      <td class="border px-2 py-1 text-center">
-        <button type="button" onclick="eliminarServicio('${servicioId}', this)"
-        class="text-red-600 hover:text-red-800 font-semibold text-sm">
-        🗑 Eliminar
-        </button>
-     </td>
-    `;
-       tbody.appendChild(row);
-
-        serviciosAgregados.add(servicioId);
-
-        // Agregar al array
-        servicios_json.push({
-            servicio_id: servicioId,
-            cantidad: cantidad,
-            valor_unitario: precio,
-            descuento: descuento,
-            aplica_seguro: aplicaSeguro,
-            valor_seguro: aplicaSeguro ? valorSeguro : 0,
-            descripcion_seguro: aplicaSeguro ? descripcionSeguroValue : '',
-        });
-
-        console.log("📦 servicios_json actualizado:", servicios_json);
-        actualizarTotalGeneral();
-
-
-        // Limpiar campos
-        document.getElementById("cantidad").value = "1";
-        document.getElementById("descuento").value = "0";
-        document.getElementById("aplica-seguro").checked = false;
-        document.getElementById("valor-seguro").value = "";
-        document.getElementById("descripcion-seguro").value = "";
-        document.getElementById("servicio-select").selectedIndex = 0;
-
-        // Deshabilitar campos de seguro
-        document.getElementById("valor-seguro").disabled = true;
-        document.getElementById("descripcion-seguro").disabled = true;
-    }
-   
-document.addEventListener("DOMContentLoaded", function() {
-    // Inicializar servicios_json desde el contexto de Django
-    servicios_json = {{ servicios_json|safe }};
-
-    // Actualizar total general al cargar la página
-    actualizarTotalGeneral();
-
-    // Manejar el checkbox de atención gratuita
-    const atencionGratuitaCheckbox = document.getElementById("atencion-gratuita");
-    atencionGratuitaCheckbox.addEventListener("change", function() {
-        atencion_gratuita = this.checked;
-        document.getElementById("seccion-costo").style.display = atencion_gratuita ? "none" : "block";
-        if (atencion_gratuita) {
-            document.getElementById("total-general").textContent = "$0.00";
-            document.getElementById("total-general-little").textContent = "$0.00";
-        } else {
-            actualizarTotalGeneral();
-        }
-    });
-});
-
-
-</script>
-
-<style>
-
-    
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-
-    main {
-        font-family: 'Inter', sans-serif;
-    }
-
-    .tab-content {
-        display: none;
-        animation: fadeIn 0.5s ease-in-out;
-    }
-
-    .tab-content.active {
-        display: block;
-    }
-
-    @keyframes fadeIn {
-        from {
-            opacity: 0;
-            transform: translateY(20px);
-        }
-
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    .card-hover:hover {
-        transform: translateY(-4px);
-    }
-
-    .gradient-bg {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    }
-
-    .medical-gradient {
-        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-    }
-
-    .glass-effect {
-        backdrop-filter: blur(10px);
-        background: rgba(255, 255, 255, 0.9);
-    }
-
-    .card-hover:hover {
-        transform: translateY(-4px);
-    }
-
-    /* Estilos adicionales para el modal de paciente */
+        /* Estilos adicionales para el modal de paciente */
 
     /* Animación de entrada del modal */
     #modal-agregar-paciente {
@@ -1391,58 +1053,50 @@ document.addEventListener("DOMContentLoaded", function() {
     // Chat Voz - Script Glonbal
     // ==============================
 
-    // Botones para transcripcion
-    document.addEventListener('DOMContentLoaded', function () {
-        const input = document.getElementById('nuevo-diagnostico-input');
-        const btn = document.getElementById('agregar-diagnostico-btn');
-        const lista = document.getElementById('diagnosticos-lista');
-        const hiddenInput = document.getElementById('diagnosticos_agregados');
-        let diagnosticos = [];
-        
-          // Evento para agregar diagnóstico
-        if (btn) {
-            btn.addEventListener('click', function () {
-                        const texto = input.value.trim();
-                        if (texto && !diagnosticos.includes(texto)) {
-                            diagnosticos.push(texto);
+// Botones para transcripcion
+document.addEventListener('DOMContentLoaded', function () {
+    const input = document.getElementById('nuevo-diagnostico-input');
+    const btn = document.getElementById('agregar-diagnostico-btn');
+    const lista = document.getElementById('diagnosticos-lista');
+    const hiddenInput = document.getElementById('diagnosticos_agregados');
+    let diagnosticos = [];
 
-                            // Crear el chip visual
-                            const chip = document.createElement('span');
-                            chip.className = 'bg-pink-100 text-pink-800 px-3 py-1 rounded-full flex items-center space-x-2 mb-1';
-                            chip.innerHTML = `
-                            <span>${texto}</span>
-                            <button type="button" class="ml-2 text-pink-500 hover:text-red-700 font-bold focus:outline-none" title="Eliminar">&times;</button>
-                        `;
+    // Evento para agregar diagnóstico
+    btn.addEventListener('click', function () {
+        const texto = input.value.trim();
+        if (texto && !diagnosticos.includes(texto)) {
+            diagnosticos.push(texto);
 
-                            // Botón para eliminar el chip
-                            chip.querySelector('button').onclick = function () {
-                                diagnosticos = diagnosticos.filter(d => d !== texto);
-                                chip.remove();
-                                hiddenInput.value = diagnosticos.join('|'); // actualiza el campo oculto
-                            };
+            // Crear el chip visual
+            const chip = document.createElement('span');
+            chip.className = 'bg-pink-100 text-pink-800 px-3 py-1 rounded-full flex items-center space-x-2 mb-1';
+            chip.innerHTML = `
+                <span>${texto}</span>
+                <button type="button" class="ml-2 text-pink-500 hover:text-red-700 font-bold focus:outline-none" title="Eliminar">&times;</button>
+            `;
 
-                            lista.appendChild(chip);
-                            input.value = '';
-                            input.focus();
-                            hiddenInput.value = diagnosticos.join('|'); // actualiza el campo oculto
-                        }
-                    });
+            // Botón para eliminar el chip
+            chip.querySelector('button').onclick = function () {
+                diagnosticos = diagnosticos.filter(d => d !== texto);
+                chip.remove();
+                hiddenInput.value = diagnosticos.join('|'); // actualiza el campo oculto
+            };
+
+            lista.appendChild(chip);
+            input.value = '';
+            input.focus();
+            hiddenInput.value = diagnosticos.join('|'); // actualiza el campo oculto
         }
-      
-         
-        // Permite agregar con Enter
-        if (input){
-
-            input.addEventListener('keydown', function (e) {
-                        if (e.key === 'Enter') {
-                            e.preventDefault();
-                            btn.click();
-                        }
-                    });
-   
-        }
-      
     });
+
+    // Permite agregar con Enter
+    input.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            btn.click();
+        }
+    });
+});
 
     // Recibir el contexto del paciente desde Django
     const pacienteDesdeServidor = {{ paciente_json | safe }};
@@ -1812,11 +1466,11 @@ document.addEventListener("DOMContentLoaded", function() {
         // 3.4 GRABACIÓN Y ENVÍO DE DATOS
         // ============================================
 
-        /**
-         * Método para capturar todos los datos del formulario
-         */
-        async grabarAtencion() {
-            console.log('💾 Iniciando proceso de grabación...');
+    /**
+     * Método para capturar todos los datos del formulario
+     */
+    grabarAtencion() {
+        console.log('💾 Iniciando proceso de grabación...');
 
             try {
                 // Capturar datos de identificación
@@ -1863,29 +1517,15 @@ document.addEventListener("DOMContentLoaded", function() {
                     return;
                 }
 
-                // Preparar objeto con todos los datos
-                const datosAtencion = this.obtenerDatosCompletos();
-                console.log('📦 Datos preparados para envío:', datosAtencion);
+            // Preparar objeto con todos los datos
+            const datosAtencion = this.obtenerDatosCompletos();
+            console.log('📦 Datos preparados para envío:', datosAtencion);
 
-                atencion_gratuita = atencion_gratuita || false; // Asegurar que la variable esté definida
-             
-                if (!atencion_gratuita && (!servicios_json || servicios_json.length === 0)){
-                    alert('Por favor, seleccione al menos un servicio médico. si la atención es gratuita, marque la casilla correspondiente.');
-                    return;
-                }
+            // Enviar datos al backend
+            this.enviarDatosAlBackend(datosAtencion);
 
-                datosAtencion.servicios = servicios_json; // Note: 'servicios' (typo in your backend)
-                datosAtencion.atencion_gratuita = atencion_gratuita;
-                
-                // Enviar datos al backend
-                const result = await this.enviarDatosAlBackend(datosAtencion);
-
-                if (result.success) {
-                    console.log('✅ Proceso de grabación exitoso', result);
-                    window.location.href = `{% url 'doctor:atencion_list' %}`;
-                    // window.location.href = "{% url 'doctor:atencion_list' %}"
-                }
-       
+            console.log('✅ Proceso de grabación iniciado');
+            window.location.href = "{% url 'doctor:atencion_list' %}"
 
             } catch (error) {
                 console.error('❌ Error en grabarAtencion:', error);
@@ -1893,15 +1533,14 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         }
 
-        /**
-         * Método para enviar datos al backend usando fetch
-         * @param {Object} datos - Datos de la atención médica
-         */
-        async enviarDatosAlBackend(datos) {
-            let result = { success: false, message: '', data: [] };
-            try {
-                // Mostrar indicador de carga
-                this.mostrarIndicadorCarga(true);
+    /**
+     * Método para enviar datos al backend usando fetch
+     * @param {Object} datos - Datos de la atención médica
+     */
+    async enviarDatosAlBackend(datos) {
+        try {
+            // Mostrar indicador de carga
+            this.mostrarIndicadorCarga(true);
 
                 // URL del endpoint - CAMBIAR POR TU URL REAL
                 //const url = "{% url 'doctor:atencion_create' %}"
@@ -1923,35 +1562,31 @@ document.addEventListener("DOMContentLoaded", function() {
                 // Ocultar indicador de carga
                 this.mostrarIndicadorCarga(false);
 
-                if (response.ok) {
-                    result.success = true;
-                    result.message = 'Atención médica guardada exitosamente';
-                    result.data = await response.json();
- 
-                    this.mostrarMensajeExito(result.data );
-                    this.limpiarFormulario();
-                    return result;
+            if (response.ok) {
+                const resultado = await response.json();
+                console.log('✅ FETCH EXITOSO - Respuesta del servidor:', resultado);
 
-                } else {
-                    const error = await response.text();
-                    console.error('❌ FETCH ERROR - Error del servidor:', response.status, error);
-                    this.mostrarMensajeError(`Error del servidor (${response.status}): ${error}`);
-                    return result;
-                }
+                this.mostrarMensajeExito(resultado);
+                this.limpiarFormulario();
+
+            } else {
+                const error = await response.text();
+                console.error('❌ FETCH ERROR - Error del servidor:', response.status, error);
+                this.mostrarMensajeError(`Error del servidor (${response.status}): ${error}`);
+            }
 
             } catch (error) {
                 this.mostrarIndicadorCarga(false);
                 console.error('❌ FETCH FALLÓ - Error de conexión:', error);
 
-                if (error instanceof TypeError && error.message.includes('fetch')) {
-                    console.log('🔌 Sin conexión - Ofreciendo modo offline...');
-                    this.manejarErrorConexion(datos);
-                } else {
-                    this.mostrarMensajeError('Error inesperado: ' + error.message);
-                }
-                return result;
+            if (error instanceof TypeError && error.message.includes('fetch')) {
+                console.log('🔌 Sin conexión - Ofreciendo modo offline...');
+                this.manejarErrorConexion(datos);
+            } else {
+                this.mostrarMensajeError('Error inesperado: ' + error.message);
             }
         }
+    }
 
         // ============================================
         // 3.5 MÉTODOS DE INTERFAZ DE USUARIO
@@ -2911,11 +2546,11 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
 
-    /**
-     * Función global para grabar atención
-     */
-    async function grabarAtencion() {
-        console.log('🔄 Función grabarAtencion() llamada');
+/**
+ * Función global para grabar atención
+ */
+function grabarAtencion() {
+    console.log('🔄 Función grabarAtencion() llamada');
 
         if (!atencionMedica) {
             console.log('⚠️ Sistema no inicializado, intentando inicializar...');
@@ -2924,13 +2559,13 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         }
 
-        try {
-            await atencionMedica.grabarAtencion();
-        } catch (error) {
-            console.error('❌ Error en grabarAtencion:', error);
-            alert('Error al grabar atención: ' + error.message);
-        }
+    try {
+        atencionMedica.grabarAtencion();
+    } catch (error) {
+        console.error('❌ Error en grabarAtencion:', error);
+        alert('Error al grabar atención: ' + error.message);
     }
+}
 
     /**
      * Función global para agregar diagnóstico

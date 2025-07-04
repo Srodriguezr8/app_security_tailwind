@@ -715,10 +715,18 @@ def get_weekly_schedule_config():
 
     try:
         for dia in dias_ordenados:
+<<<<<<< HEAD
             horario = HorarioAtencion.objects.filter(dia_semana__iexact=dia).first()
             if horario:
                 weeklyScheduleConfig.append({
                     'dia_semana': horario.dia_semana.capitalize(),
+=======
+            horario = HorarioAtencion.objects.filter(dia_semana=dia).first()
+
+            if horario:
+                weeklyScheduleConfig.append({
+                    'dia_semana': horario.dia_semana,
+>>>>>>> integration_api
                     'hora_inicio': horario.hora_inicio.strftime('%H:%M'),
                     'hora_fin': horario.hora_fin.strftime('%H:%M'),
                     'intervalo_desde': horario.intervalo_desde.strftime('%H:%M') if horario.intervalo_desde else '00:00',
@@ -746,7 +754,11 @@ def get_weekly_schedule_config():
                 'intervalo_hasta': '00:00',
                 'activo': False
             })
+<<<<<<< HEAD
     print('xxx',weeklyScheduleConfig)
   
+=======
+
+>>>>>>> integration_api
     return weeklyScheduleConfig
     
