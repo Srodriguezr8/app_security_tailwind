@@ -1,12 +1,12 @@
 {% extends 'base.html' %}
 <title>{% block title %}{{title}}{% endblock %}</title>
-{% load static %}
+
 {% block css %}
 <script src="https://cdn.tailwindcss.com"></script>
 {% endblock css %}
 
 {% block content %}
-<section class="relative overflow-visible">
+<section class="bg-gray-50 min-h-screen">
     <!-- Header -->
     <!-- Navigation Tabs -->
    <nav class="bg-blue-100 shadow-lg sticky top-[4rem] z-50">
@@ -272,9 +272,6 @@
             </div>
 
             <!-- Modal Agregar Paciente si no existe -->
-             {% include "fragments/modal_paciente.html"  %}
-
-             
 
         </div>
         <!-- Consultas Anteriores -->
@@ -352,7 +349,7 @@
                     </div>
 
                     <!-- Signos Vitales -->
-                    <div class="bg-white rounded-2xl shadow-xl p-8 mt-10">
+                    <div class="bg-white rounded-2xl shadow-xl p-8">
                         <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
                             <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center mr-3">
                                 <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -435,7 +432,7 @@
                     </div>
 
                     <!-- Evaluación Clínica -->
-                    <div class="bg-white rounded-2xl shadow-xl p-8 mt-10">
+                    <div class="bg-white rounded-2xl shadow-xl p-8">
                         <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
                             <div class="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center mr-3">
                                 <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor"
@@ -545,7 +542,7 @@
                     </div>
 
             <!-- Plan Terapéutico -->
-                 <div class="bg-white rounded-2xl shadow-xl p-8 mt-10">
+                 <div class="bg-white rounded-2xl shadow-xl p-8">
                     <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
                     <div class="w-8 h-8 bg-cyan-100 rounded-lg flex items-center justify-center mr-3">
                         <svg class="w-4 h-4 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -637,79 +634,94 @@
                     <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
                         <div class="w-8 h-8 bg-rose-100 rounded-lg flex items-center justify-center mr-3">
                             <svg class="w-4 h-4 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <div class="bg-white rounded-2xl shadow-xl p-8 mt-10">
-                <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
-                    <div class="w-8 h-8 bg-rose-100 rounded-lg flex items-center justify-center mr-3">
-                        <svg class="w-4 h-4 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z">
-                            </path>
-                        </svg>
-                    </div>
-                    Prescripción de Medicamentos
-                </h3>
-
-                <!-- Formulario de agregar medicamento -->
-                <div class="bg-gray-50 p-6 rounded-xl mb-6">
-                    <h4 class="font-semibold text-gray-800 mb-4">Agregar Medicamento</h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-                        <!-- select dinamico -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Medicamento *</label>
-                            <select id="medicamento-select"
-                                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500"
-                                name="medicamento_id" >
-                                <option value="">Seleccione medicamento...</option>
-                                {% for medicamento in medicamentos %}
-                                <option value="{{ medicamento.id }}"
-                                    title="{{ medicamento.nombre }} {{ medicamento.concentracion }} - {{ medicamento.tipo.nombre }} ({{ medicamento.marca_medicamento.nombre }}) - ${{ medicamento.precio }} - Stock: {{ medicamento.cantidad }}">
-                                    {{ medicamento.nombre }}
-                                </option>
-                                {% empty %}
-                                <option value="" disabled>No hay medicamentos disponibles</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <!-- fin select -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Cantidad *</label>
-                            <input type="number" id="cantidad-input"
-                                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500"
-                                placeholder="30">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Prescripción *</label>
-                            <input type="text" id="prescripcion-input"
-                                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500"
-                                placeholder="1 cada 8 horas">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Duración (días) *</label>
-                            <input type="number" id="duracion-input"
-                                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500"
-                                placeholder="7">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Frecuencia diaria *</label>
-                            <input type="number" id="frecuencia-input"
-                                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500"
-                                placeholder="3">
-                        </div>
-                    </div>
-                    <div class="mt-4 flex space-x-3">
-                        <button type="button" onclick="agregarMedicamento()"
-                            class="bg-rose-600 hover:bg-rose-700 text-white px-6 py-3 rounded-lg transition-colors duration-200 flex items-center space-x-2">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z">
                                 </path>
                             </svg>
-                            <span>Add Prescripcion</span>
-                        </button>
-                        <button type="button" onclick="mostrarFormularioNuevoMedicamento()"
-                            class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg transition-colors duration-200">
-                            Crear Medicamentos
-                        </button>
+                        </div>
+                        Prescripción de Medicamentos
+                    </h3>
+
+                    <!-- Formulario de agregar medicamento -->
+                    <div class="bg-gray-50 p-6 rounded-xl mb-6">
+                        <h4 class="font-semibold text-gray-800 mb-4">Agregar Medicamento</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                            <!-- select dinamico -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Medicamento *</label>
+                                <select id="medicamento-select"
+                                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500"
+                                    name="medicamento_id" required>
+                                    <option value="">Seleccione medicamento...</option>
+                                    {% for medicamento in medicamentos %}
+                                    <option value="{{ medicamento.id }}"
+                                        title="{{ medicamento.nombre }} {{ medicamento.concentracion }} - {{ medicamento.tipo.nombre }} ({{ medicamento.marca_medicamento.nombre }}) - ${{ medicamento.precio }} - Stock: {{ medicamento.cantidad }}">
+                                        {{ medicamento.nombre }}
+                                    </option>
+                                    {% empty %}
+                                    <option value="" disabled>No hay medicamentos disponibles</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <!-- fin select -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Cantidad *</label>
+                                <input type="number" id="cantidad-input"
+                                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500"
+                                    placeholder="30">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Prescripción *</label>
+                                <input type="text" id="prescripcion-input"
+                                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500"
+                                    placeholder="1 cada 8 horas">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Duración (días) *</label>
+                                <input type="number" id="duracion-input"
+                                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500"
+                                    placeholder="7">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Frecuencia diaria *</label>
+                                <input type="number" id="frecuencia-input"
+                                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500"
+                                    placeholder="3">
+                            </div>
+                        </div>
+                        <div class="mt-4 flex space-x-3">
+                            <button type="button" onclick="agregarMedicamento()"
+                                class="bg-rose-600 hover:bg-rose-700 text-white px-6 py-3 rounded-lg transition-colors duration-200 flex items-center space-x-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                </svg>
+                                <span>Add Prescripcion</span>
+                            </button>
+                            <button type="button" onclick="verDatos()"
+                                class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg transition-colors duration-200">
+                                Crear Medicamentos
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tabla de medicamentos -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="border-b-2 border-gray-200">
+                                    <th class="text-left py-4 px-4 font-semibold text-gray-700">Medicamento</th>
+                                    <th class="text-left py-4 px-4 font-semibold text-gray-700">Cantidad</th>
+                                    <th class="text-left py-4 px-4 font-semibold text-gray-700">Prescripción</th>
+                                    <th class="text-left py-4 px-4 font-semibold text-gray-700">Duración (días)</th>
+                                    <th class="text-left py-4 px-4 font-semibold text-gray-700">Frecuencia</th>
+                                    <th class="text-left py-4 px-4 font-semibold text-gray-700">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="medicamentos-table">
+                                <!-- Los medicamentos se agregarán aquí dinámicamente -->
+                            </tbody>
+                        </table>
                     </div>
                 </div>
 
@@ -845,176 +857,12 @@
             </form>
 
         </div>
-        </div>
 
         </div>
 
-        <input type="hidden" name="id_atencion" value="1">
-
-       
-
-<div id="printModal" class="fixed inset-0 flex items-center justify-center hidden z-50" style="backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); background: rgba(255, 255, 255, 0.1);">
-    <div class="bg-white p-6 rounded-2xl shadow-xl max-w-xs w-full mx-4 border border-gray-100" style="transform: scale(0.95); transition: all 0.3s ease;">
-        <div class="text-center mb-6">
-            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
-                </svg>
-            </div>
-            <h2 class="text-lg font-semibold text-gray-800 leading-snug">¿Desea imprimir la receta de esta atención?</h2>
         </div>
-        
-        <div class="flex justify-end space-x-3">
-            <button onclick="closeModal()" class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-6 py-2 rounded-md font-medium transition-colors duration-200">
-                Cancelar
-            </button>
-            <button onclick="Imprimir()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md font-medium transition-colors duration-200">
-                Imprimir
-            </button>
-        </div>
-    </div>
-</div>
-
-
-        <div id="formErrorsContainer" class="messages-container hidden">
-            <!-- Los mensajes de error se insertarán aquí dinámicamente -->
-        </div>
-
-        <!-- Modal Agregar Medicamento (TailwindCSS estilo Paciente) -->
-<div id="medicamentoModal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-black bg-opacity-50">
-  <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-    <!-- Fondo opaco -->
-    <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" aria-hidden="true"></div>
-
-    <!-- Contenido del Modal -->
-    <div class="relative inline-block w-full max-w-4xl px-6 py-8 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl">
-      <!-- Header del Modal -->
-      <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
-        <h2 class="text-2xl font-bold text-gray-800 flex items-center">
-          <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center mr-4">
-            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-            </svg>
-          </div>
-          Agregar Nuevo Medicamento
-        </h2>
-        <button type="button" onclick="cerrarModalMedicamento()" class="text-gray-400 hover:text-gray-600 transition-colors duration-200">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-          </svg>
-        </button>
-      </div>
-
-      <!-- Formulario -->
-      <form id="medicamentoForm" onsubmit="event.preventDefault();">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <!-- Columna Izquierda -->
-          <div class="space-y-4">
-            <div>
-              <label for="tipo" class="block font-semibold text-gray-700 mb-1">Tipo de Medicamento *</label>
-              <select id="tipo" name="tipo" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                <option value="">Seleccione un tipo</option>
-                {% for tipo in tipos_medicamento %}
-                  <option value="{{ tipo.id }}">{{ tipo.nombre }}</option>
-                {% endfor %}
-              </select>
-            </div>
-            <div>
-              <label for="nombre" class="block font-semibold text-gray-700 mb-1">Nombre *</label>
-              <input id="nombre" name="nombre" type="text" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Ejemplo: Ibuprofeno">
-            </div>
-            <div>
-              <label for="marca_medicamento" class="block font-semibold text-gray-700 mb-1">Marca</label>
-              <select id="marca_medicamento" name="marca_medicamento" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                <option value="">Sin marca específica</option>
-                {% for marca in marcas_medicamento %}
-                  <option value="{{ marca.id }}">{{ marca.nombre }}</option>
-                {% endfor %}
-              </select>
-            </div>
-            <div>
-              <label for="concentracion" class="block font-semibold text-gray-700 mb-1">Concentración</label>
-              <input id="concentracion" name="concentracion" type="text" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Ej: 500mg, 5%">
-            </div>
-            <div>
-              <label for="via_administracion" class="block font-semibold text-gray-700 mb-1">Vía de Administración *</label>
-              <select id="via_administracion" name="via_administracion" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                <option value="">Seleccione una vía</option>
-                
-                  <option value="">Seleccione una vía</option>
-                    <option value="ORAL">Oral</option>
-                    <option value="SUBLINGUAL">Sublingual</option>
-                    <option value="TOPICA">Tópica</option>
-                    <option value="INHALATORIA">Inhalatoria</option>
-                    <option value="INTRAVENOSA">Intravenosa (IV)</option>
-                    <option value="INTRAMUSCULAR">Intramuscular (IM)</option>
-                    <option value="SUBCUTANEA">Subcutánea (SC)</option>
-                    <option value="RECTAL">Rectal</option>
-                    <option value="VAGINAL">Vaginal</option>
-                    <option value="OCULAR">Ocular</option>
-                    <option value="OTICA">Ótica (oído)</option>
-                    <option value="NASAL">Nasal</option>
-                    <option value="DERMICA">Dérmica (parches, cremas)</option>
-                    <option value="INTRADERMICA">Intradérmica</option>
-            
-              </select>
-            </div>
-          </div>
-
-          <!-- Columna Derecha -->
-          <div class="space-y-4">
-            <div>
-              <label for="cantidad" class="block font-semibold text-gray-700 mb-1">Stock *</label>
-              <input id="cantidad" name="cantidad" type="number" min="0" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-            </div>
-            <div>
-              <label for="precio" class="block font-semibold text-gray-700 mb-1">Precio Unitario *</label>
-              <div class="flex">
-                <span class="inline-flex items-center px-3 bg-gray-100 border border-gray-300 rounded-l">$</span>
-                <input id="precio" name="precio" type="number" step="0.01" min="0" required class="w-full p-3 border border-gray-300 rounded-r focus:ring-2 focus:ring-blue-500">
-              </div>
-            </div>
-            <div class="flex items-center gap-2">
-              <input type="checkbox" id="comercial" name="comercial" class="h-4 w-4 text-blue-600 border-gray-300 rounded" checked>
-              <label for="comercial" class="text-gray-700">Medicamento Comercial</label>
-            </div>
-            <div class="flex items-center gap-2">
-              <input type="checkbox" id="activo" name="activo" class="h-4 w-4 text-blue-600 border-gray-300 rounded" checked>
-              <label for="activo" class="text-gray-700">Activo</label>
-            </div>
-            <div>
-              <label for="foto" class="block font-semibold text-gray-700 mb-1">Foto del Medicamento</label>
-              <input id="foto" name="foto" type="file" accept="image/*" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-            </div>
-          </div>
-        </div>
-
-        <!-- Descripción -->
-        <div class="mt-6">
-          <label for="descripcion" class="block font-semibold text-gray-700 mb-1">Descripción</label>
-          <textarea id="descripcion" name="descripcion" rows="3" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Uso, indicaciones, precauciones..."></textarea>
-        </div>
-
-        <!-- Botones -->
-        <div class="flex justify-end space-x-4 pt-6 border-t border-gray-200 mt-6">
-          <button type="button" onclick="cerrarModalMedicamento()" class="px-6 py-3 text-gray-700 bg-gray-200 hover:bg-gray-300 rounded-lg font-medium">Cancelar</button>
-          <button type="submit" class="px-6 py-3 text-white bg-blue-600 hover:bg-blue-700 rounded-lg font-medium">Guardar</button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
-
-        
-
-
-
-
-
 
     </main>
-    
-  
 
 </section>
 
@@ -1463,87 +1311,9 @@ document.addEventListener("DOMContentLoaded", function() {
         box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
         transform: translateY(-2px);
     }
-
-
-    /* Animación para cuando se muestra el modal */
-#printModal:not(.hidden) .bg-white {
-    transform: scale(1);
-}
-
-/* Efecto de hover mejorado */
-#printModal button:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-/* Transición suave */
-#printModal {
-    transition: all 0.3s ease;
-}
 </style>
 
-
-<script src="{% static 'js/message_validations.js' %}"></script>
 <script>
-
-function mostrarFormularioNuevoMedicamento() {
-
-    document.getElementById("medicamentoModal").classList.remove("hidden");
-    
-  }
-
-  function cerrarModalMedicamento() {
-    document.getElementById("medicamentoModal").classList.add("hidden");
-  }
-
-
-
-
- function openModal() {
-
-    document.getElementById("printModal").classList.remove("hidden");
-    
-  }
-
-  function closeModal() {
-    document.getElementById("printModal").classList.add("hidden");
-    window.location.href = "{% url 'doctor:atencion_list' %}"
-  }
-
-  function printRecipe(pk,clase='') {
-    // Carga el contenido de la receta desde otra página
-   
-    fetch(`/doctor/receta/atencion/${pk}/`)
-      .then(response => response.text())
-      .then(html => {
-        const printWindow = window.open('', '', 'width=900,height=600');
-        printWindow.document.write(html);
-        printWindow.document.close();
-        printWindow.focus();
-
-        printWindow.onafterprint = function () {
-             setTimeout(() => {
-                printWindow.close();
-                if (clase == ''){
-                    window.location.href = "{% url 'doctor:atencion_list' %}"
-                }
-                ;
-            }, 500);
-        };
-
-        printWindow.print();
-      });
-
-    document.getElementById("printModal").classList.add("hidden");
-    // window.location.href = "{% url 'doctor:atencion_list' %}"
-    // Cierra el modal después de iniciar impresión
-  }
-
-function Imprimir(){
-        pk=document.querySelector('input[name="id_atencion"]').value
-        printRecipe(pk)
-
-    }
     // ==============================
     // Chat Voz - Script Global 
     // ==============================
@@ -1856,14 +1626,13 @@ function Imprimir(){
 
             // Validar que todos los campos estén llenos
             if (!medicamento || !cantidad || !prescripcion || !duracion || !frecuencia) {
-                showCustomMessage('Por favor, complete todos los campos obligatorios del medicamento.', 'error');
+                alert('Por favor, complete todos los campos obligatorios del medicamento.');
                 return;
             }
 
             // Validar que los números sean válidos
             if (isNaN(cantidad) || isNaN(duracion) || isNaN(frecuencia)) {
-                showCustomMessage('La cantidad, duración y frecuencia deben ser números válidos.',1)
-              
+                alert('La cantidad, duración y frecuencia deben ser números válidos.');
                 return;
             }
 
@@ -1984,8 +1753,7 @@ function Imprimir(){
 
             if (!diagnosticoSelect || !diagnosticoLista) {
                 console.error('❌ No se encontraron los elementos de diagnóstico');
-                //alert('Error: Elementos de diagnóstico no encontrados en la página');
-                showCustomMessage('Error: Elementos de diagnóstico no encontrados en la página','error')
+                alert('Error: Elementos de diagnóstico no encontrados en la página');
                 return;
             }
 
@@ -2091,8 +1859,7 @@ function Imprimir(){
                 // Validar campos obligatorios
                 const errores = this.validarCamposObligatorios();
                 if (errores.length > 0) {
-                    //alert('Por favor, complete los siguientes campos obligatorios:\n' + errores.join('\n'));
-                    showCustomMessage('Por favor, complete los siguientes campos obligatorios:\n' + errores.join('\n'),'error')
+                    alert('Por favor, complete los siguientes campos obligatorios:\n' + errores.join('\n'));
                     return;
                 }
 
@@ -2156,9 +1923,6 @@ function Imprimir(){
                 // Ocultar indicador de carga
                 this.mostrarIndicadorCarga(false);
 
-                console.log('Pasa mostrar indicador')
-                console.log(response.ok)
-
                 if (response.ok) {
                     result.success = true;
                     result.message = 'Atención médica guardada exitosamente';
@@ -2167,7 +1931,6 @@ function Imprimir(){
                     this.mostrarMensajeExito(result.data );
                     this.limpiarFormulario();
                     return result;
-
 
                 } else {
                     const error = await response.text();
@@ -2234,13 +1997,11 @@ function Imprimir(){
             const mensaje = resultado.message || 'Atención médica guardada exitosamente';
             const id = resultado.id || 'N/A';
 
-            console.log(`✅ ${mensaje}\n\n` +
+            alert(`✅ ${mensaje}\n\n` +
                 `ID de Atención: ${id}\n` +
                 `Medicamentos: ${this.medicamentos.length}\n` +
                 `Diagnósticos: ${this.diagnostico.length}\n` +
-                `Fecha: ${new Date().toLocaleString()}`)
-
-            showCustomMessage('La atención se guardó correctamente', 'success');
+                `Fecha: ${new Date().toLocaleString()}`);
         }
 
         /**
@@ -2248,7 +2009,7 @@ function Imprimir(){
          * @param {string} mensaje - Mensaje de error
          */
         mostrarMensajeError(mensaje) {
-            showCustomMessage('Error al guardar:\n\n${mensaje}\n\nRevise la conexión e intente nuevamente.','error')
+            alert(`❌ Error al guardar:\n\n${mensaje}\n\nRevise la conexión e intente nuevamente.`);
         }
 
         /**
@@ -2264,8 +2025,7 @@ function Imprimir(){
 
             if (guardarOffline) {
                 this.guardarDatosOffline(datos);
-               
-                showCustomMessage('Datos guardados localmente.\n\nSe enviarán automáticamente cuando se restaure la conexión.','info')
+                alert('💾 Datos guardados localmente.\n\nSe enviarán automáticamente cuando se restaure la conexión.');
             }
         }
 
@@ -2341,10 +2101,6 @@ function Imprimir(){
             if (!this.sintomas.trim()) errores.push('- Síntomas');
             if (this.diagnostico.length === 0) errores.push('- Diagnósticos');
             if (!this.tratamiento.trim()) errores.push('- Plan de Tratamiento');
-
-            if (this.medicamentos.length == 0){
-                errores.push('- Agrega medicamentos')
-            }
 
             return errores;
         }
@@ -2760,16 +2516,7 @@ function Imprimir(){
         atenciones.forEach((atencion, index) => {
             const consultaElement = crearConsultaElement(atencion, index);
             container.appendChild(consultaElement);
-            document.querySelectorAll('.btn-imprimir').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    id = btn.dataset.id;
-                    printRecipe(id,'btn-imprimir');
-                });
-            });
-
-            
         });
-        
     }
 
     /**
@@ -2801,34 +2548,12 @@ function Imprimir(){
                 <h3 class="text-xl font-bold text-gray-800">${fechaFormateada}</h3>
                 <span class="${colorConfig.badge} px-3 py-1 rounded-full text-sm font-medium">${atencion.tipo_consulta}</span>
             </div>
-            <div class="flex items-center space-x-2">
-                <!-- OJO -->
-                <button class="text-gray-400 hover:text-gray-600 transition-colors duration-200">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <button class="text-gray-400 hover:text-gray-600 transition-colors duration-200">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                     </svg>
-                </button>
-
-                <!-- IMPRESORA -->
-                <button title="Imprimir receta" class="btn-imprimir text-gray-400 hover:text-gray-600 transition-colors duration-200" data-id="${atencion.id }">
-                    <svg xmlns="http://www.w3.org/2000/svg"
-                         fill="none"
-                         viewBox="0 0 24 24"
-                         stroke="currentColor"
-                         stroke-width="2"
-                         class="w-6 h-6">
-                      <path stroke-linecap="round"
-                            stroke-linejoin="round"
-                            d="M6 9V4a1 1 0 011-1h10a1 1 0 011 1v5M6 18h12a2 2 0 002-2v-5a2 2 0 00-2-2H6a2 2 0 00-2 2v5a2 2 0 002 2zm3-3h6"/>
-                    </svg>
-                </button>
-
-
-            </div>
-
-
-
+                </svg>
+            </button>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -2898,8 +2623,6 @@ function Imprimir(){
             </div>
         </div>
     `;
-
-        
 
         return consultaDiv;
     }
@@ -3032,11 +2755,6 @@ function Imprimir(){
         document.getElementById('form-nuevo-paciente').reset(); // Limpiar formulario
     }
 
-
-  
-
-
-
     /**
      * Función para toggle del acordeón
      * @param {string} section - Sección del acordeón
@@ -3065,8 +2783,7 @@ function Imprimir(){
 
         for (let campo of camposRequeridos) {
             if (!data[campo] || data[campo].trim() === '') {
-                
-                showCustomMessage(`❌ Error: El campo "${getCampoNombre(campo)}" es obligatorio.`,'error')
+                alert(`❌ Error: El campo "${getCampoNombre(campo)}" es obligatorio.`);
                 document.getElementById(campo).focus();
                 return false;
             }
@@ -3074,15 +2791,14 @@ function Imprimir(){
 
         // Validar formato de cédula (10 dígitos)
         if (data.cedula_ecuatoriana && !/^\d{10}$/.test(data.cedula_ecuatoriana)) {
-            
-            showCustomMessage('Error: La cédula ecuatoriana debe tener exactamente 10 dígitos.','error')
+            alert('❌ Error: La cédula ecuatoriana debe tener exactamente 10 dígitos.');
             document.getElementById('cedula_ecuatoriana').focus();
             return false;
         }
 
         // Validar email si se proporciona
         if (data.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
-            showCustomMessage('Error: Ingrese un correo electrónico válido.','error')
+            alert('❌ Error: Ingrese un correo electrónico válido.');
             document.getElementById('email').focus();
             return false;
         }
@@ -3092,7 +2808,7 @@ function Imprimir(){
             const fechaNac = new Date(data.fecha_nacimiento);
             const hoy = new Date();
             if (fechaNac > hoy) {
-                showCustomMessage('Error: La fecha de nacimiento no puede ser futura.','error')
+                alert('❌ Error: La fecha de nacimiento no puede ser futura.');
                 document.getElementById('fecha_nacimiento').focus();
                 return false;
             }
@@ -3157,7 +2873,7 @@ function Imprimir(){
             return true;
         } catch (error) {
             console.error('❌ Error al inicializar:', error);
-            showCustomMessage(`'Error al inicializar el sistema: ${error.message}`,'error')
+            alert('Error al inicializar el sistema: ' + error.message);
             return false;
         }
     }
@@ -3179,8 +2895,7 @@ function Imprimir(){
             atencionMedica.agregarMedicamento();
         } catch (error) {
             console.error('❌ Error en agregarMedicamento:', error);
-
-            showCustomMessage(`Error al agregar medicamento: ${error.message}`,'error')
+            alert('Error al agregar medicamento: ' + error.message);
         }
     }
 
@@ -3251,9 +2966,6 @@ function Imprimir(){
 
         atencionMedica.verDatos();
     }
-
-    
-
 
     /**
      * Función para verificar el estado del sistema
@@ -3340,131 +3052,14 @@ function Imprimir(){
 
                 // Aquí iría la lógica para enviar al backend
                 console.log('Datos del nuevo paciente:', pacienteData);
-                async function guardarPaciente(datos) {
-                    try {
-                    
-                        const response = await fetch('/core/api/paciente_create/', {
-                            method: 'POST',
-                            headers: {
-                                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-                            },
-                            body: datos
-                        });
-                    
-                        console.log(response.ok)
-                    
-                        if (response.ok) {
-                            const resultado = await response.json();
-                            console.log('✅ FETCH EXITOSO - Respuesta del servidor:', resultado);
-                            showCustomMessage('Se guardó exitosamente','success')
-
-                        
-                        } else {
-                            const error = await response.text();
-                            console.error('❌ FETCH ERROR - Error del servidor:', response.status, error);
-                           showCustomMessage('Error del servidor','error')
-                        }
-                    
-                    } catch (error) {
-                        console.error('❌ FETCH FALLÓ - Error de conexión:', error);
-                        showCustomMessage(`Error de conexión: ${error}`,'error')
-                
-                    }
-                    cerrarModalPaciente();
-
-                const inputSearch = document.getElementById("paciente-search-input")
-                inputSearch.value = `${pacienteData.nombres} ${pacienteData.apellidos}`
-                buscarPacientes(`${pacienteData.nombres}`)
-                }
 
                 // Simulación de guardado exitoso
-               
-                guardarPaciente(formData)
+                alert('✅ Paciente agregado exitosamente!\n\nNombre: ' + pacienteData.nombres + ' ' + pacienteData.apellidos + '\nCédula: ' + pacienteData.cedula_ecuatoriana);
 
-                console.log('llega')
                 // Cerrar modal y limpiar formulario
-                
-
+                cerrarModalPaciente();
             });
         }
-
-
-        const formNuevoMedicamento = document.getElementById('medicamentoForm');
-        if (formNuevoMedicamento) {
-            formNuevoMedicamento.addEventListener('submit', function (e) {
-                e.preventDefault();
-
-                // Obtener datos del formulario
-                const formData = new FormData(formNuevoMedicamento);
-                const MedicamentoData = {};
-
-                // Convertir FormData a objeto
-               
-
-                // Validaciones básicas
-               
-                // Aquí iría la lógica para enviar al backend
-                
-                console.log('Actualizado:', formData);
-                
-                async function guardarMedicamento(datos) {
-                    try {
-                    
-                        const response = await fetch('/core/api/medicamento_create/', {
-                            method: 'POST',
-                            body: datos,
-                            headers: {
-                               
-                                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-                            }
-                            
-                        });
-                    
-                        console.log(response.ok)
-                    
-                        if (response.ok) {
-                            const resultado = await response.json();
-                            console.log('✅ FETCH EXITOSO - Respuesta del servidor:', resultado);
-                            showCustomMessage('Se guardó exitosamente','success')
-                            const option = document.createElement('option');
-                            option.value = resultado.id;
-                            option.textContent = resultado.nombre;
-                            option.selected = true; 
-                            document.querySelector('#medicamento-select').appendChild(option);
-
-                        
-                        } else {
-                            const error = await response.text();
-                            console.error('❌ FETCH ERROR - Error del servidor:', response.status, error);
-                            showCustomMessage('Error del servidor','error')
-                        }
-                    
-                    } catch (error) {
-                        console.error('❌ FETCH FALLÓ - Error de conexión:', error);
-                        showCustomMessage(`Error de conexión: ${error}`,'error')
-                
-                    }
-                    
-                    cerrarModalMedicamento();
-                    formNuevoMedicamento.reset()
-
-                
-                }
-
-                // Simulación de guardado exitoso
-               
-                guardarMedicamento(formData)
-
-                console.log('llega')
-                // Cerrar modal y limpiar formulario
-                
-
-            });
-        }
-
-
-
-
 
         // ============================================
         // 8.4 CONFIGURAR EVENTOS ADICIONALES
@@ -3583,22 +3178,6 @@ function Imprimir(){
     window.limpiarSeleccion = limpiarSeleccion;
 
     console.log('📜 Sistema de Atención Médica - Código organizado cargado y esperando inicialización...');
-    function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let cookie of cookies) {
-            cookie = cookie.trim();
-            // ¿Esta cookie comienza con el nombre que queremos?
-            if (cookie.startsWith(name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
-}
-
 </script>
 
 {% endblock %}
