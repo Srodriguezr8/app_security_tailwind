@@ -5,7 +5,7 @@ from applications.doctor.models import Pago
 
 class PagoListView(LoginRequiredMixin, ListView):
     model = Pago
-    template_name = "core/pago/list.html"
+    template_name = "core/pagos/list.html"
     context_object_name = "pagos"
     queryset = Pago.objects.filter(activo=True)
 

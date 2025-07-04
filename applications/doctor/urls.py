@@ -21,6 +21,7 @@ from applications.doctor.views.pago import (
     PagoUpdateView,
     PagoDeleteView
 )
+from applications.doctor.views.receta import obtener_atencion
 from applications.doctor.views.servicio_adicional import (
     ServicioAdicionalCreateView,
     ServicioAdicionalDeleteView,
@@ -73,4 +74,7 @@ urlpatterns = [
     path('api/get_valor_consulta/<int:pago_id>/', get_valor_consulta, name='get_valor_consulta'),
     path('api/get_costo_servicio/<int:servicio_id>/', get_costo_servicio_adicional, name='get_costo_servicio'),
     path('api/guardar_detalle_pago/', guardar_detalle_pago, name='guardar_detalle_pago'),
+
+
+    path('receta/atencion/<int:pk>/', obtener_atencion, name='receta_atencion'),
 ]
