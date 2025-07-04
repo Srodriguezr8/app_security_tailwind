@@ -1,16 +1,17 @@
 <aside id="sidebar"
-    class="bg-primary-custom w-64 border-r border-gray-200 p-6 flex flex-col justify-between transition-all duration-300 ease-in-out">
+    class="sidebar-expanded bg-primary-custom w-64 border-r border-gray-200 p-6 flex flex-col justify-between transition-all duration-300 ease-in-out">
     <div class="flex-1 flex flex-col">
         <div class="flex items-center mb-8 relative">
-            <div id="logo-medical"
-                class="w-10 h-10 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center">
-                <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                    <path
-                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15H9v-2h2v2zm0-4H9V8h2v5zm4 4h-2v-2h2v2zm0-4h-2V8h2v5z" />
-                </svg>
-            </div>
+           
+      <div id="logo-medical"
+    class="w-10 h-10 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-md dark:shadow-lg">
+    <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+        <path
+            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15H9v-2h2v2zm0-4H9V8h2v5zm4 4h-2v-2h2v2zm0-4h-2V8h2v5z" />
+    </svg>
+</div>
 
-            <h2 class="text-2xl font-bold text-gray-900 dark:text-white transition-opacity duration-300 mr-2">MediCenter
+            <h2 id="app-title" class="text-2xl font-bold text-gray-900  transition-opacity duration-300 mr-2">MediCenter
             </h2>
 
             <button id="sidebar-toggle"
@@ -29,7 +30,7 @@
      <nav class="flex-1 overflow-y-auto overflow-x-hidden h-[calc(100vh-4rem)]" x-data="{ openMenus: [] }">
         <ul class="space-y-2">
             <li>
-                <a href="#" class="flex items-center p-2 hover:bg-blue-50 rounded">
+                <a href="{% url 'security:home' %}" class="flex items-center p-2 hover:bg-blue-50 rounded">
                     <i class="fas fa-home mr-3"></i>
                     <span class="hidden-collapsed">Inicio</span>
                 </a>
@@ -194,27 +195,29 @@
 
     // --- Función para crear un elemento de menú con Alpine.js ---
     function createMenuElement(menu) {
-        const li = document.createElement('li');
-        li.className = 'mb-2';
+       const li = document.createElement('li');
+            li.className = 'mb-2';
 
-        const menuId = `menu-${menu.id}`;
+            const menuId = `menu-${menu.id}`;
 
-        let menuHtml = `
-            <button
-                @click="$store.openMenus.includes('${menuId}') ? $store.openMenus.splice($store.openMenus.indexOf('${menuId}'), 1) : $store.openMenus.push('${menuId}')"
-                class="w-full flex items-center justify-between px-4 py-3 text-left text-primary-custom rounded-lg menu-item hover:bg-secondary-custom hover:text-white transition-colors duration-200"
-            >
-                <div class="flex items-center">
-                    <i class="${menu.icon || ''} mr-3 text-xl"></i>
-                    <span class="font-medium">${menu.name}</span>
-                </div>
-                <svg class="w-4 h-4 transition-transform duration-200"
-                    :class="{ 'transform rotate-180': $store.openMenus.includes('${menuId}') }"
-                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                </svg>
-            </button>
-        `;
+            let menuHtml = `
+                <button
+                    @click="$store.openMenus.includes('${menuId}') ? $store.openMenus.splice($store.openMenus.indexOf('${menuId}'), 1) : $store.openMenus.push('${menuId}')"
+                    class="group w-full flex items-center justify-between px-4 py-3 text-left text-primary-custom rounded-lg menu-item transition-colors duration-200"
+                >
+                    <div class="flex items-center">
+                        <i class="menu-icon text-tertiary-custom ${menu.icon || ''} mr-3 text-xl transition-colors duration-200"></i>
+                        <span class="menu-label hidden-collapsed font-medium text-tertiary-custom transition-colors duration-200">
+                            ${menu.name}
+                        </span>
+                    </div>
+                    <svg class="w-4 h-4 transition-transform duration-200"
+                        :class="{ 'transform rotate-180': $store.openMenus.includes('${menuId}') }"
+                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </button>
+            `;
 
         if (menu.modules && menu.modules.length > 0) {
             menuHtml += `
@@ -227,9 +230,10 @@
             menu.modules.forEach(module => {
                 menuHtml += `
                     <a href="${module.url}"
-                        class="w-full flex items-center px-4 py-2 text-left text-secondary-custom rounded-md mb-1 submenu-item hover:bg-tertiary-custom transition-colors duration-200">
-                        <i class="${module.icon || ''} mr-3 text-m"></i>
-                        <span class="text-sm">${module.name}</span>
+                        class="group w-full flex items-center px-4 py-2 text-left text-secondary-custom hover:text-invert-custom hover:bg-tertiary-custom rounded-md mb-1 submenu-item transition-colors duration-200">
+                        
+                        <i class="menu-icon text-tertiary-custom ${module.icon || ''} mr-3 text-m"></i>
+                        <span class="hidden-collapsed text-sm group-hover:text-invert-custom">${module.name}</span>
                     </a>
                 `;
             });

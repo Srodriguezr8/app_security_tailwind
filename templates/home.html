@@ -1,170 +1,504 @@
 {% extends 'base.html' %}
+{% load static %}
+
+{% block styles %}
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/dist/dashboard-home.css' %}">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1e40af',
+                        secondary: '#0f766e',
+                        accent: '#f59e0b',
+                        dark: '#1f2937',
+                        'dark-lighter': '#374151'
+                    }
+                }
+            }
+        }
+    </script>
+{% endblock %}
 
 {% block content %}
-<div class="min-h-screen -mx-4 -my-8 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-    <main class="max-w-7xl mx-auto px-6 py-8">
+<!-- CONTENEDOR PRINCIPAL DEL DASHBOARD -->
+<div id="medical-dashboard-container" class="medical-dashboard-main">
+    <main class="medical-content-wrapper">
+        
+        <!-- HEADER PRINCIPAL CON TÍTULO Y BOTÓN -->
+        <header id="dashboard-main-header" class="medical-header-section">
+            <div class="medical-header-content">
+                <div class="medical-title-group">
+                    <h1 id="dashboard-main-title" class="medical-main-title">
+                        <div class="medical-title-icon">
+                            <i class="fas fa-heartbeat"></i>
+                        </div>
+                        Dashboard Médico
+                    </h1>
+                    <p class="medical-subtitle">Sistema de Gestión Integral de Salud</p>
+                </div>
+                <button id="medical-generate-report" class="medical-report-button">
+                    <i class="fas fa-file-chart-line"></i>
+                    Generar Reporte
+                </button>
+            </div>
+        </header>
 
-        <!-- Welcome Section -->
-        <div class="mb-8">
-            <div
-                class="bg-gradient-to-r from-blue-500 to-indigo-400 rounded-2xl p-8 text-text-primary-custom relative overflow-hidden">
-                <div class="relative z-10">
-                    <h2 class="text-3xl font-bold mb-2">¡Bienvenido a SaludTotal!</h2>
-                    <p class="text-blue-100 text-lg">Gestiona tu citas y atenciones</p>
-                </div>
-                <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
-                <div class="absolute bottom-0 right-0 w-24 h-24 bg-white/5 rounded-full -mr-12 -mb-12"></div>
-            </div>
-        </div>
-
-        <!-- Quick Stats -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div
-                class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 transform hover:scale-105 border border-gray-100">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-gray-600 text-sm font-medium">Total Usuarios</p>
-                        <p class="text-2xl font-bold text-gray-900">1,234</p>
+        <!-- BANNER DE BIENVENIDA -->
+        <section id="welcome-banner-section" class="medical-welcome-banner">
+            <div class="medical-welcome-content">
+                <h2 class="medical-welcome-title">¡Bienvenido al Centro de Control Médico!</h2>
+                <p class="medical-welcome-subtitle">Gestiona citas, pacientes y atenciones médicas con tecnología de vanguardia</p>
+                <div class="medical-datetime-container">
+                    <div class="medical-datetime-item">
+                        <i class="fas fa-clock"></i>
+                        <span id="current-time-display"></span>
                     </div>
-                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <svg class="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                            <path
-                                d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z">
-                            </path>
-                        </svg>
+                    <div class="medical-datetime-item">
+                        <i class="fas fa-calendar"></i>
+                        <span id="current-date-display"></span>
                     </div>
                 </div>
             </div>
-
-            <div
-                class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 transform hover:scale-105 border border-gray-100">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-gray-600 text-sm font-medium">Atenciones Hoy</p>
-                        <p class="text-2xl font-bold text-gray-900">89</p>
-                    </div>
-                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                    </div>
-                </div>
-            </div>
-
-            <div
-                class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 transform hover:scale-105 border border-gray-100">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-gray-600 text-sm font-medium">Consultas Pendientes</p>
-                        <p class="text-2xl font-bold text-gray-900">23</p>
-                    </div>
-                    <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-                        <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                    </div>
-                </div>
-            </div>
-
-            <div
-                class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 transform hover:scale-105 border border-gray-100">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-gray-600 text-sm font-medium">Mantenimientos</p>
-                        <p class="text-2xl font-bold text-gray-900">5</p>
-                    </div>
-                    <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
-                        <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z">
-                            </path>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                        </svg>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- Iterar por cada menú -->
-        {% for menu_item in menu_list %}
-        <div class="mb-12">
-            <!-- Título del Menú -->
-            <div class="flex items-center mb-2">
-                {% if menu_item.menu.icon %}
-                <div class="flex items-center justify-center w-12 h-12 bg-gradient-to-r 
-                                    {% cycle 'from-blue-500 to-blue-600' 'from-orange-500 to-red-500' 'from-green-500 to-emerald-500' 'from-purple-500 to-indigo-500' 'from-pink-500 to-rose-500' 'from-teal-500 to-cyan-500' %}
-                                    rounded-xl mr-4">
-                    <i class="{{ menu_item.menu.icon }} text-white text-xl"></i>
-                </div>
-                {% endif %}
-                <div>
-                    <h2 class="text-3xl font-bold text-gray-900">{{ menu_item.menu.name }}</h2>
-                    {% if menu_item.menu.description %}
-                    <p class="text-gray-600 mt-1">{{ menu_item.menu.description }}</p>
-                    {% endif %}
-                </div>
-            </div>
-            <hr class="border-0 h-1 bg-gradient-to-r from-transparent via-gray-400 to-transparent my-4 rounded">
             
-            <!-- Cards de Módulos del Menú -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {% for module_permission in menu_item.group_module_permission_list %}
-               <a href="{% if module_permission.module.url %}/security/{{ module_permission.module.url }}{% else %}javascript:void(0);{% endif %}"
-                    class="module-card bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 transform hover:scale-105 border border-gray-100 group cursor-pointer block text-decoration-none">
-                    <!-- Icono del Módulo -->
-                    <div class="flex items-center justify-center w-14 h-14 bg-gradient-to-r 
-                                        {% cycle 'from-blue-100 to-blue-200 group-hover:from-blue-200 group-hover:to-blue-300' 'from-orange-100 to-red-100 group-hover:from-orange-200 group-hover:to-red-200' 'from-green-100 to-emerald-100 group-hover:from-green-200 group-hover:to-emerald-200' 'from-purple-100 to-indigo-100 group-hover:from-purple-200 group-hover:to-indigo-200' 'from-pink-100 to-rose-100 group-hover:from-pink-200 group-hover:to-rose-200' 'from-teal-100 to-cyan-100 group-hover:from-teal-200 group-hover:to-cyan-200' %}
-                                        rounded-xl mb-4 transition-all duration-300">
-
-                        {% if module_permission.module.icon %}
-                        <i class="{{ module_permission.module.icon }} 
-                                            {% cycle 'text-blue-600' 'text-orange-600' 'text-green-600' 'text-purple-600' 'text-pink-600' 'text-teal-600' %} 
-                                            text-lg"></i>
-                        {% else %}
-                        <!-- Icono por defecto para módulos -->
-                        <i class="fas fa-cube 
-                                            {% cycle 'text-blue-600' 'text-orange-600' 'text-green-600' 'text-purple-600' 'text-pink-600' 'text-teal-600' %} 
-                                            text-lg"></i>
-                        {% endif %}
-                    </div>
-
-                    <!-- Nombre del Módulo -->
-                    <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ module_permission.module.name }}</h3>
-
-                    <!-- Descripción del Módulo -->
-                    <p class="text-gray-600 text-sm mb-4 leading-relaxed">
-                        {% if module_permission.module.description %}
-                        {{ module_permission.module.description }}
-                        {% else %}
-                        Accede a las funcionalidades de {{ module_permission.module.name|lower }}.
-                        {% endif %}
-                    </p>
-
-                    <!-- Botón de Acceso -->
-                    <div
-                        class="w-full font-medium py-2 px-4 rounded-lg transition-all duration-300 text-sm text-center
-                                        {% cycle 'bg-blue-50 hover:bg-blue-100 text-blue-700 group-hover:bg-blue-600 group-hover:text-white' 'bg-orange-50 hover:bg-orange-100 text-orange-700 group-hover:bg-orange-600 group-hover:text-white' 'bg-green-50 hover:bg-green-100 text-green-700 group-hover:bg-green-600 group-hover:text-white' 'bg-purple-50 hover:bg-purple-100 text-purple-700 group-hover:bg-purple-600 group-hover:text-white' 'bg-pink-50 hover:bg-pink-100 text-pink-700 group-hover:bg-pink-600 group-hover:text-white' 'bg-teal-50 hover:bg-teal-100 text-teal-700 group-hover:bg-teal-600 group-hover:text-white' %}">
-                        Acceder
-                    </div>
-                </a>
-                {% empty %}
-                <!-- Mensaje cuando no hay módulos en este menú -->
-                <div class="col-span-full text-center py-8">
-                    <div class="text-gray-400">No hay módulos disponibles en este menú</div>
+            <div class="medical-floating-elements">
+                <div class="medical-floating-circle medical-circle-1"></div>
+                <div class="medical-floating-circle medical-circle-2"></div>
+                <div class="medical-floating-icon">
+                    <i class="fas fa-stethoscope"></i>
                 </div>
-                {% endfor %}
+            </div>
+        </section>
+
+        <!-- TARJETAS DE ESTADÍSTICAS -->
+        <section id="stats-cards-section" class="medical-stats-grid">
+            <div class="medical-stat-card medical-patients-card">
+                <div class="medical-stat-content">
+                    <div class="medical-stat-info">
+                        <h3>Total Pacientes</h3>
+                        <div class="medical-stat-number" id="total-patients-count">0</div>
+                        <div class="medical-stat-change medical-positive">
+                            <i class="fas fa-arrow-up"></i>
+                            +12% este mes
+                        </div>
+                    </div>
+                    <div class="medical-stat-icon medical-patients-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                </div>
+                <div class="medical-stat-details">
+                    <span>Activos: 1,180</span>
+                    <span>Nuevos: 54</span>
+                </div>
             </div>
 
-        </div>
-        {% empty %}
-        <!-- Mensaje cuando no hay menús disponibles -->
-        <div class="text-center py-12">
-            <div class="text-gray-400 text-lg">No hay módulos disponibles para este grupo</div>
-        </div>
-        {% endfor %}
+            <div class="medical-stat-card medical-doctors-card">
+                <div class="medical-stat-content">
+                    <div class="medical-stat-info">
+                        <h3>Total Doctores</h3>
+                        <div class="medical-stat-number" id="total-doctors-count">0</div>
+                        <div class="medical-stat-change medical-positive">
+                            <i class="fas fa-arrow-up"></i>
+                            +3% este mes
+                        </div>
+                    </div>
+                    <div class="medical-stat-icon medical-doctors-icon">
+                        <i class="fas fa-user-md"></i>
+                    </div>
+                </div>
+                <div class="medical-stat-details">
+                    <span>Disponibles: 38</span>
+                    <span>En consulta: 7</span>
+                </div>
+            </div>
 
+            <div class="medical-stat-card medical-appointments-card">
+                <div class="medical-stat-content">
+                    <div class="medical-stat-info">
+                        <h3>Citas Hoy</h3>
+                        <div class="medical-stat-number" id="today-appointments-count">0</div>
+                        <div class="medical-stat-change medical-positive">
+                            <i class="fas fa-clock"></i>
+                            5 pendientes
+                        </div>
+                    </div>
+                    <div class="medical-stat-icon medical-appointments-icon">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                </div>
+                <div class="medical-stat-details">
+                    <span>Completadas: 18</span>
+                    <span>Canceladas: 2</span>
+                </div>
+            </div>
+
+            <div class="medical-stat-card medical-emergencies-card">
+                <div class="medical-stat-content">
+                    <div class="medical-stat-info">
+                        <h3>Emergencias</h3>
+                        <div class="medical-stat-number" id="emergencies-count">0</div>
+                        <div class="medical-stat-change medical-positive">
+                            <i class="fas fa-exclamation-triangle medical-pulse-glow"></i>
+                            Atención inmediata
+                        </div>
+                    </div>
+                    <div class="medical-stat-icon medical-emergencies-icon">
+                        <i class="fas fa-ambulance"></i>
+                    </div>
+                </div>
+                <div class="medical-stat-details">
+                    <span>Críticas: 1</span>
+                    <span>Moderadas: 1</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECCIÓN DE GRÁFICOS -->
+        <section id="charts-section" class="medical-charts-grid">
+            <div class="medical-chart-card medical-appointments-chart">
+                <div class="medical-chart-header">
+                    <div>
+                        <h3 class="medical-chart-title">Analíticas de Citas</h3>
+                        <p class="medical-chart-subtitle">Tendencia semanal de consultas</p>
+                    </div>
+                    <div class="medical-chart-metric">
+                        <i class="fas fa-arrow-up"></i>
+                        +8% esta semana
+                    </div>
+                </div>
+                <div class="medical-chart-container">
+                    <canvas id="appointments-analytics-chart"></canvas>
+                </div>
+            </div>
+
+            <div class="medical-chart-card medical-consultation-types">
+                <div class="medical-chart-header">
+                    <div>
+                        <h3 class="medical-chart-title">Tipos de Consulta</h3>
+                        <p class="medical-chart-subtitle">Distribución por categoría</p>
+                    </div>
+                </div>
+                <div class="medical-chart-container">
+                    <canvas id="consultation-types-chart"></canvas>
+                </div>
+                <div class="medical-chart-legend">
+                    <div class="medical-legend-item">
+                        <div class="medical-legend-label">
+                            <div class="medical-legend-color medical-blue"></div>
+                            <span class="medical-legend-text">Consultas</span>
+                        </div>
+                        <span class="medical-legend-value">35%</span>
+                    </div>
+                    <div class="medical-legend-item">
+                        <div class="medical-legend-label">
+                            <div class="medical-legend-color medical-red"></div>
+                            <span class="medical-legend-text">Emergencias</span>
+                        </div>
+                        <span class="medical-legend-value">5%</span>
+                    </div>
+                    <div class="medical-legend-item">
+                        <div class="medical-legend-label">
+                            <div class="medical-legend-color medical-orange"></div>
+                            <span class="medical-legend-text">Seguimientos</span>
+                        </div>
+                        <span class="medical-legend-value">25%</span>
+                    </div>
+                    <div class="medical-legend-item">
+                        <div class="medical-legend-label">
+                            <div class="medical-legend-color medical-green"></div>
+                            <span class="medical-legend-text">Chequeos</span>
+                        </div>
+                        <span class="medical-legend-value">35%</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- MÓDULOS DEL SISTEMA -->
+        <section id="system-modules-section" class="medical-modules-section">
+            <div class="medical-section-header">
+                <div class="medical-section-icon">
+                    <i class="fas fa-th-large"></i>
+                </div>
+                <div>
+                    <h2 class="medical-section-title">Módulos del Sistema</h2>
+                    <p class="medical-section-subtitle">Accede a todas las funcionalidades del sistema médico</p>
+                </div>
+            </div>
+            
+            <div id="medical-modules-grid" class="medical-modules-grid">
+                <!-- Los módulos se cargarán con JavaScript -->
+            </div>
+        </section>
+
+        <!-- ACTIVIDADES RECIENTES -->
+        <section id="recent-activities-section" class="medical-activities-card">
+            <div class="medical-activities-header">
+                <div>
+                    <h3 class="medical-activities-title">Actividad Reciente</h3>
+                    <p class="medical-activities-subtitle">Últimas acciones del sistema</p>
+                </div>
+                <a href="#" class="medical-activities-view-all">Ver Todo</a>
+            </div>
+            <div id="medical-activities-list" class="medical-activities-list">
+                <!-- Las actividades se cargarán con JavaScript -->
+            </div>
+        </section>
     </main>
 </div>
+{% endblock %}
+
+{% block js %}
+<script>
+    // Datos de los módulos del sistema médico
+    const medicalModules = [
+        { name: 'Gestión de Pacientes', icon: 'fas fa-user-friends', color: 'medical-blue-gradient', description: 'Registro y gestión completa de pacientes', url: '#' },
+        { name: 'Citas Médicas', icon: 'fas fa-calendar-alt', color: 'medical-green-gradient', description: 'Programación y control de citas', url: '#' },
+        { name: 'Historias Clínicas', icon: 'fas fa-file-medical', color: 'medical-purple-gradient', description: 'Expedientes médicos digitales', url: '#' },
+        { name: 'Farmacia', icon: 'fas fa-pills', color: 'medical-orange-gradient', description: 'Control de medicamentos e inventario', url: '#' },
+        { name: 'Laboratorio', icon: 'fas fa-flask', color: 'medical-teal-gradient', description: 'Gestión de exámenes y resultados', url: '#' },
+        { name: 'Facturación', icon: 'fas fa-receipt', color: 'medical-indigo-gradient', description: 'Sistema de facturación y pagos', url: '#' },
+        { name: 'Reportes', icon: 'fas fa-chart-bar', color: 'medical-pink-gradient', description: 'Reportes estadísticos y análisis', url: '#' },
+        { name: 'Configuración', icon: 'fas fa-cog', color: 'medical-gray-gradient', description: 'Configuración del sistema', url: '#' }
+    ];
+
+    // Datos de actividades recientes
+    const recentMedicalActivities = [
+        { icon: 'fas fa-user-plus', text: 'Nuevo paciente registrado: María García', time: '2 min ago', color: '#10b981', bg: 'rgba(16, 185, 129, 0.1)' },
+        { icon: 'fas fa-calendar-check', text: 'Cita programada con Dr. Johnson', time: '5 min ago', color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.1)' },
+        { icon: 'fas fa-file-medical', text: 'Historia clínica actualizada', time: '12 min ago', color: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.1)' },
+        { icon: 'fas fa-exclamation-triangle', text: 'Emergencia atendida en sala 3', time: '18 min ago', color: '#ef4444', bg: 'rgba(239, 68, 68, 0.1)' },
+        { icon: 'fas fa-prescription-bottle', text: 'Medicamento dispensado: Amoxicilina', time: '25 min ago', color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.1)' },
+        { icon: 'fas fa-vial', text: 'Resultado de laboratorio disponible', time: '32 min ago', color: '#06b6d4', bg: 'rgba(6, 182, 212, 0.1)' }
+    ];
+
+    // Actualizar fecha y hora
+    function updateMedicalDateTime() {
+        const now = new Date();
+        const timeElement = document.getElementById('current-time-display');
+        const dateElement = document.getElementById('current-date-display');
+        
+        if (timeElement) {
+            timeElement.textContent = now.toLocaleTimeString('es-ES', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+        }
+        
+        if (dateElement) {
+            dateElement.textContent = now.toLocaleDateString('es-ES', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+        }
+    }
+
+    // Inicializar módulos médicos
+    function initMedicalModules() {
+        const modulesGrid = document.getElementById('medical-modules-grid');
+        if (!modulesGrid) return;
+        
+        modulesGrid.innerHTML = medicalModules.map((module, index) => `
+            <div class="medical-module-card medical-animate-scale" style="animation-delay: ${0.7 + (index * 0.1)}s">
+                <div class="medical-module-icon ${module.color}">
+                    <i class="${module.icon}"></i>
+                </div>
+                <h3 class="medical-module-title">${module.name}</h3>
+                <p class="medical-module-description">${module.description}</p>
+                <button class="medical-module-button">
+                    <i class="fas fa-arrow-right"></i>
+                    Acceder
+                </button>
+            </div>
+        `).join('');
+    }
+
+    // Inicializar actividades recientes
+    function initMedicalActivities() {
+        const activitiesContainer = document.getElementById('medical-activities-list');
+        if (!activitiesContainer) return;
+        
+        activitiesContainer.innerHTML = recentMedicalActivities.map((activity, index) => `
+            <div class="medical-activity-item medical-animate-fade-left" style="animation-delay: ${0.9 + (index * 0.1)}s">
+                <div class="medical-activity-icon" style="background: ${activity.bg}; color: ${activity.color};">
+                    <i class="${activity.icon}"></i>
+                </div>
+                <div class="medical-activity-content">
+                    <p class="medical-activity-text">${activity.text}</p>
+                    <p class="medical-activity-time">${activity.time}</p>
+                </div>
+                <div class="medical-activity-arrow">
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // Inicializar gráficos médicos
+    function initMedicalCharts() {
+        // Gráfico de citas
+        const appointmentsCtx = document.getElementById('appointments-analytics-chart');
+        if (appointmentsCtx) {
+            new Chart(appointmentsCtx.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'],
+                    datasets: [{
+                        label: 'Citas',
+                        data: [15, 19, 23, 18, 25, 12, 8],
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        borderWidth: 3,
+                        pointBackgroundColor: '#3b82f6',
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 3,
+                        pointRadius: 6,
+                        pointHoverRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                color: '#6b7280',
+                                font: {
+                                    size: 12,
+                                    weight: '500'
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(107, 114, 128, 0.2)',
+                                borderDash: [5, 5]
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: '#6b7280',
+                                font: {
+                                    size: 12,
+                                    weight: '500'
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(107, 114, 128, 0.2)',
+                                borderDash: [5, 5]
+                            }
+                        }
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    }
+                }
+            });
+        }
+
+        // Gráfico de tipos de consulta
+        const consultationCtx = document.getElementById('consultation-types-chart');
+        if (consultationCtx) {
+            new Chart(consultationCtx.getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Consultas', 'Emergencias', 'Seguimientos', 'Chequeos'],
+                    datasets: [{
+                        data: [35, 5, 25, 35],
+                        backgroundColor: [
+                            '#3b82f6',
+                            '#ef4444',
+                            '#f59e0b',
+                            '#10b981'
+                        ],
+                        borderWidth: 0,
+                        hoverOffset: 15
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    cutout: '70%'
+                }
+            });
+        }
+    }
+
+    // Animar contadores
+    function animateMedicalCounters() {
+        const counters = [
+            { id: 'total-patients-count', target: 1234 },
+            { id: 'total-doctors-count', target: 45 },
+            { id: 'today-appointments-count', target: 23 },
+            { id: 'emergencies-count', target: 2 }
+        ];
+        
+        counters.forEach(counter => {
+            const element = document.getElementById(counter.id);
+            if (!element) return;
+            
+            let current = 0;
+            const increment = counter.target / 60;
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= counter.target) {
+                    current = counter.target;
+                    clearInterval(timer);
+                }
+                element.textContent = Math.floor(current).toLocaleString();
+            }, 30);
+        });
+    }
+
+    // Función para generar reporte
+    function initMedicalReportGenerator() {
+        const generateBtn = document.getElementById('medical-generate-report');
+        if (!generateBtn) return;
+        
+        generateBtn.addEventListener('click', function() {
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generando...';
+            this.disabled = true;
+            
+            setTimeout(() => {
+                this.innerHTML = '<i class="fas fa-check"></i> Reporte Generado';
+                setTimeout(() => {
+                    this.innerHTML = '<i class="fas fa-file-chart-line"></i> Generar Reporte';
+                    this.disabled = false;
+                }, 2000);
+            }, 2000);
+        });
+    }
+
+    // Inicializar todo cuando se carga la página
+    document.addEventListener('DOMContentLoaded', function() {
+        updateMedicalDateTime();
+        setInterval(updateMedicalDateTime, 1000);
+        
+        initMedicalModules();
+        initMedicalActivities();
+        initMedicalReportGenerator();
+        
+        setTimeout(() => {
+            initMedicalCharts();
+            animateMedicalCounters();
+        }, 100);
+    });
+</script>
 {% endblock %}

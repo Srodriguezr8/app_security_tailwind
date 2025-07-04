@@ -210,36 +210,65 @@
         const mainContentWrapper = document.getElementById('main-content-wrapper'); // Necesario para verificar su existencia
         const toggleIconMenu = document.getElementById('toggle-icon-menu');
         const toggleIconClose = document.getElementById('toggle-icon-close');
+        const body = document.body;
 
-        if (sidebarToggle && sidebar && mainContentWrapper && toggleIconMenu && toggleIconClose) {
-            // Establecer el estado inicial de los iconos al cargar la página
-            // Si el body tiene 'sidebar-collapsed' al inicio, muestra el icono de menú y esconde el de cerrar
-            const isInitiallyCollapsed = document.body.classList.contains('sidebar-collapsed');
-            if (isInitiallyCollapsed) {
-                toggleIconMenu.classList.add('hidden');
-                toggleIconClose.classList.remove('hidden');
-            } else {
-                // Si no está colapsado, muestra el icono de cerrar (para indicar que se puede colapsar) y esconde el de menú
-                toggleIconMenu.classList.remove('hidden');
-                toggleIconClose.classList.add('hidden');
-            }
 
-            sidebarToggle.addEventListener('click', function () {
-                // Alternar las clases del body para cambiar el estado de la barra lateral
-                document.body.classList.toggle('sidebar-expanded');
-                document.body.classList.toggle('sidebar-collapsed');
+        
+    // Estado inicial
+    if (body.classList.contains('sidebar-collapsed')) {
+        toggleIconMenu.classList.remove('hidden');
+        toggleIconClose.classList.add('hidden');
+    } else {
+        toggleIconMenu.classList.add('hidden');
+        toggleIconClose.classList.remove('hidden');
+    }
 
-                // Actualizar la visibilidad de los iconos después de alternar las clases
-                const isCollapsed = document.body.classList.contains('sidebar-collapsed');
-                if (isCollapsed) {
-                    toggleIconMenu.classList.remove('hidden'); // Cuando está colapsado, muestra el menú (☰)
-                    toggleIconClose.classList.add('hidden');    // Y esconde la "X"
-                } else {
-                    toggleIconMenu.classList.add('hidden');     // Cuando está expandido, esconde el menú (☰)
-                    toggleIconClose.classList.remove('hidden'); // Y muestra la "X"
-                }
-            });
-        }
+    // Alternar el estado
+    if (sidebarToggle) {
+        sidebarToggle.addEventListener('click', function () {
+            body.classList.toggle('sidebar-expanded');
+            body.classList.toggle('sidebar-collapsed');
+
+            const isCollapsed = body.classList.contains('sidebar-collapsed');
+            toggleIconMenu.classList.toggle('hidden', !isCollapsed);
+            toggleIconClose.classList.toggle('hidden', isCollapsed);
+        });
+    }
+
+    // Inicializa estado por defecto si no existe
+    if (!body.classList.contains('sidebar-collapsed') && !body.classList.contains('sidebar-expanded')) {
+        body.classList.add('sidebar-expanded');
+    }
+    
+        // if (sidebarToggle && sidebar && mainContentWrapper && toggleIconMenu && toggleIconClose) {
+        //     // Establecer el estado inicial de los iconos al cargar la página
+        //     // Si el body tiene 'sidebar-collapsed' al inicio, muestra el icono de menú y esconde el de cerrar
+        //     const isInitiallyCollapsed = document.body.classList.contains('sidebar-collapsed');
+        //     if (isInitiallyCollapsed) {
+        //         toggleIconMenu.classList.add('hidden');
+        //         toggleIconClose.classList.remove('hidden');
+        //     } else {
+        //         // Si no está colapsado, muestra el icono de cerrar (para indicar que se puede colapsar) y esconde el de menú
+        //         toggleIconMenu.classList.remove('hidden');
+        //         toggleIconClose.classList.add('hidden');
+        //     }
+
+        //     sidebarToggle.addEventListener('click', function () {
+        //         // Alternar las clases del body para cambiar el estado de la barra lateral
+        //         document.body.classList.toggle('sidebar-expanded');
+        //         document.body.classList.toggle('sidebar-collapsed');
+
+        //         // Actualizar la visibilidad de los iconos después de alternar las clases
+        //         const isCollapsed = document.body.classList.contains('sidebar-collapsed');
+        //         if (isCollapsed) {
+        //             toggleIconMenu.classList.remove('hidden'); // Cuando está colapsado, muestra el menú (☰)
+        //             toggleIconClose.classList.add('hidden');    // Y esconde la "X"
+        //         } else {
+        //             toggleIconMenu.classList.add('hidden');     // Cuando está expandido, esconde el menú (☰)
+        //             toggleIconClose.classList.remove('hidden'); // Y muestra la "X"
+        //         }
+        //     });
+        // }
 
     });
 

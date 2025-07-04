@@ -708,7 +708,8 @@ def get_setting_hours(request):
         print(f"[ERROR] get_setting_hours: {e}")
         return JsonResponse({'error': 'Error interno del servidor'}, status=500)
     
-    
+   
+   
 def get_weekly_schedule_config():
     dias_ordenados = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
     weeklyScheduleConfig = []
@@ -746,7 +747,7 @@ def get_weekly_schedule_config():
                 'intervalo_hasta': '00:00',
                 'activo': False
             })
-    print('xxx',weeklyScheduleConfig)
+
   
-    return weeklyScheduleConfig
-    
+    return weeklyScheduleConfig   
+   
