@@ -1,4 +1,5 @@
 
+import json
 from django.contrib import messages
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
@@ -6,7 +7,7 @@ from django.urls import reverse_lazy
 from django.views import View
 
 from applications.core.form.medicamento import MedicamentoForm
-from applications.core.models import  Medicamento
+from applications.core.models import  MarcaMedicamento, Medicamento, TipoMedicamento
 from applications.security.components.mixin_crud import CreateViewMixin, DeleteViewMixin, ListViewMixin, PermissionMixin, UpdateViewMixin
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.db.models import Q
@@ -132,3 +133,63 @@ class SaveMedicamentoView(View):
             return JsonResponse({'ok': False, 'errors': str(e)}, status=400)
     
 
+def crear_medicamento_ajax(request):
+    try:
+
+       
+        tipo_id = request.POST.get('tipo')
+
+        try:
+            print(tipo_id)
+        except Exception as e:
+            print('e:', e)
+        
+        nombre = request.POST.get('nombre')
+        via_administracion = request.POST.get('via_administracion')
+        cantidad = request.POST.get('cantidad')
+        precio = request.POST.get('precio')
+
+        print('antes')
+        print(tipo_id)
+        tipo = TipoMedicamento.objects.get(pk=int(tipo_id))
+        
+        marca_id = request.POST.get('marca_medicamento')
+        marca = None
+        print('FILES:', request.FILES)
+       
+
+        print('pasa')
+        if marca_id:
+            try:
+                marca = MarcaMedicamento.objects.get(pk=int(marca_id))
+            except MarcaMedicamento.DoesNotExist:
+                return JsonResponse({'success': False, 'error': 'Marca no válida'}, status=400)
+
+        medicamento = Medicamento.objects.create(
+            tipo=tipo,
+            marca_medicamento=marca,
+            nombre=nombre,
+            descripcion=request.POST.get('descripcion'),
+            concentracion=request.POST.get('concentracion'),
+            via_administracion=via_administracion,
+            cantidad=int(cantidad),
+            precio=float(precio),
+            comercial=request.POST.get('comercial') == 'on' if True else False,
+            foto = request.FILES.get('foto') or None,
+            activo=request.POST.get('activo') == 'on'  if True else False,
+            
+        )
+
+        return JsonResponse({
+            'success': True,
+            'mensaje': 'Medicamento creado exitosamente',
+            'id': medicamento.id,
+            'nombre': medicamento.nombre
+        })
+
+    except TipoMedicamento.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Tipo de medicamento no válido'}, status=400)
+    except ValueError as e:
+        return JsonResponse({'success': False, 'error': f'Error de valor: {str(e)}'}, status=400)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)

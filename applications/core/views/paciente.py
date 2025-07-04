@@ -1,9 +1,11 @@
+import json
+from django.forms import ValidationError
 from django.http import JsonResponse
 from django.db.models import Q
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth.decorators import login_required
 from applications.core.form.paciente import PacienteForm
-from applications.core.models import Paciente
+from applications.core.models import Paciente, TipoSangre
 
 
 from django.contrib import messages
@@ -59,6 +61,7 @@ class PacienteCreateView(PermissionMixin, CreateViewMixin, CreateView):
         context = super().get_context_data()
         context['grabar'] = 'Grabar Paciente'
         context['back_url'] = self.success_url
+        
         return context
 
     def form_valid(self, form):
@@ -144,7 +147,47 @@ class SavePacienteView(View):
             return JsonResponse({'ok': False, 'errors': str(e)}, status=400)
     
 
+def crear_paciente_ajax(request):
+    try:
 
+        paciente = Paciente(
+            nombres=request.POST.get('nombres'),
+            apellidos=request.POST.get('apellidos'),
+            cedula_ecuatoriana=request.POST.get('cedula_ecuatoriana'),
+            dni=request.POST.get('dni'),
+            fecha_nacimiento=request.POST.get('fecha_nacimiento'),
+            telefono=request.POST.get('telefono'),
+            email=request.POST.get('email') or None,
+            sexo=request.POST.get('sexo'),
+            estado_civil=request.POST.get('estado_civil'),
+            direccion=request.POST.get('direccion'),
+            latitud=request.POST.get('latitud') or None,
+            longitud=request.POST.get('longitud') or None,
+            tipo_sangre=TipoSangre.objects.get(pk=request.POST['tipo_sangre']) if request.POST.get('tipo_sangre') else None,
+            antecedentes_personales=request.POST.get('antecedentes_personales'),
+            antecedentes_quirurgicos=request.POST.get('antecedentes_quirurgicos'),
+            antecedentes_familiares=request.POST.get('antecedentes_familiares'),
+            alergias=request.POST.get('alergias'),
+            medicamentos_actuales=request.POST.get('medicamentos_actuales'),
+            habitos_toxicos=request.POST.get('habitos_toxicos', 'ninguno'),
+            vacunas=request.POST.get('vacunas'),
+            antecedentes_gineco_obstetricos=request.POST.get('antecedentes_gineco_obstetricos'),
+            foto=request.FILES.get('foto') or None,
+            activo=request.POST.get('activo') == 'on'
+        )
+        paciente.save()
+        print(paciente.activo)
+
+        return JsonResponse({'success': True, 'id': paciente.id},status=200)
+
+    except TipoSangre.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Tipo de sangre inválido'}, status=400)
+
+    except ValidationError as e:
+        return JsonResponse({'success': False, 'errors': e.message_dict}, status=400)
+
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
 
 """  Vista para buscar pacientes mediante AJAX. Por nombres, apellidos, cédula o teléfono. """
