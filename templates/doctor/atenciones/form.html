@@ -3049,10 +3049,9 @@ function Imprimir(){
                         const response = await fetch('/core/api/paciente_create/', {
                             method: 'POST',
                             headers: {
-                                'Content-Type': 'application/json',
                                 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
                             },
-                            body: JSON.stringify(datos)
+                            body: datos
                         });
                     
                         console.log(response.ok)
@@ -3083,7 +3082,7 @@ function Imprimir(){
 
                 // Simulación de guardado exitoso
                
-                guardarPaciente(pacienteData)
+                guardarPaciente(formData)
 
                 console.log('llega')
                 // Cerrar modal y limpiar formulario
@@ -3099,28 +3098,29 @@ function Imprimir(){
                 e.preventDefault();
 
                 // Obtener datos del formulario
-                const formData = new FormData(this);
+                const formData = new FormData(formNuevoMedicamento);
                 const MedicamentoData = {};
 
                 // Convertir FormData a objeto
-                for (let [key, value] of formData.entries()) {
-                    MedicamentoData[key] = value;
-                }
+               
 
                 // Validaciones básicas
                
                 // Aquí iría la lógica para enviar al backend
-                console.log('Datos del nuevo paciente:', MedicamentoData);
+                
+                console.log('Actualizado:', formData);
+                
                 async function guardarMedicamento(datos) {
                     try {
                     
                         const response = await fetch('/core/api/medicamento_create/', {
                             method: 'POST',
+                            body: datos,
                             headers: {
                                
                                 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-                            },
-                            body: JSON.stringify(datos)
+                            }
+                            
                         });
                     
                         console.log(response.ok)
@@ -3129,12 +3129,17 @@ function Imprimir(){
                             const resultado = await response.json();
                             console.log('✅ FETCH EXITOSO - Respuesta del servidor:', resultado);
                             showCustomMessage('Se guardó exitosamente','success')
+                            const option = document.createElement('option');
+                            option.value = resultado.id;
+                            option.textContent = resultado.nombre;
+                            option.selected = true; 
+                            document.querySelector('#medicamento-select').appendChild(option);
 
                         
                         } else {
                             const error = await response.text();
                             console.error('❌ FETCH ERROR - Error del servidor:', response.status, error);
-                           showCustomMessage('Error del servidor','error')
+                            showCustomMessage('Error del servidor','error')
                         }
                     
                     } catch (error) {
@@ -3142,14 +3147,16 @@ function Imprimir(){
                         showCustomMessage(`Error de conexión: ${error}`,'error')
                 
                     }
+                    
                     cerrarModalMedicamento();
+                    formNuevoMedicamento.reset()
 
                 
                 }
 
                 // Simulación de guardado exitoso
                
-                guardarMedicamento(MedicamentoData)
+                guardarMedicamento(formData)
 
                 console.log('llega')
                 // Cerrar modal y limpiar formulario

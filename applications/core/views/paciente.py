@@ -149,31 +149,31 @@ class SavePacienteView(View):
 
 def crear_paciente_ajax(request):
     try:
-        data = json.loads(request.body)
 
         paciente = Paciente(
-            nombres=data.get('nombres'),
-            apellidos=data.get('apellidos'),
-            cedula_ecuatoriana=data.get('cedula_ecuatoriana'),
-            dni=data.get('dni'),
-            fecha_nacimiento=data.get('fecha_nacimiento'),
-            telefono=data.get('telefono'),
-            email=data.get('email') or None,
-            sexo=data.get('sexo'),
-            estado_civil=data.get('estado_civil'),
-            direccion=data.get('direccion'),
-            latitud=data.get('latitud') or None,
-            longitud=data.get('longitud') or None,
-            tipo_sangre=TipoSangre.objects.get(pk=data['tipo_sangre']) if data.get('tipo_sangre') else None,
-            antecedentes_personales=data.get('antecedentes_personales'),
-            antecedentes_quirurgicos=data.get('antecedentes_quirurgicos'),
-            antecedentes_familiares=data.get('antecedentes_familiares'),
-            alergias=data.get('alergias'),
-            medicamentos_actuales=data.get('medicamentos_actuales'),
-            habitos_toxicos=data.get('habitos_toxicos', 'ninguno'),
-            vacunas=data.get('vacunas'),
-            antecedentes_gineco_obstetricos=data.get('antecedentes_gineco_obstetricos'),
-            activo=data.get('activo')=='on'if True else False
+            nombres=request.POST.get('nombres'),
+            apellidos=request.POST.get('apellidos'),
+            cedula_ecuatoriana=request.POST.get('cedula_ecuatoriana'),
+            dni=request.POST.get('dni'),
+            fecha_nacimiento=request.POST.get('fecha_nacimiento'),
+            telefono=request.POST.get('telefono'),
+            email=request.POST.get('email') or None,
+            sexo=request.POST.get('sexo'),
+            estado_civil=request.POST.get('estado_civil'),
+            direccion=request.POST.get('direccion'),
+            latitud=request.POST.get('latitud') or None,
+            longitud=request.POST.get('longitud') or None,
+            tipo_sangre=TipoSangre.objects.get(pk=request.POST['tipo_sangre']) if request.POST.get('tipo_sangre') else None,
+            antecedentes_personales=request.POST.get('antecedentes_personales'),
+            antecedentes_quirurgicos=request.POST.get('antecedentes_quirurgicos'),
+            antecedentes_familiares=request.POST.get('antecedentes_familiares'),
+            alergias=request.POST.get('alergias'),
+            medicamentos_actuales=request.POST.get('medicamentos_actuales'),
+            habitos_toxicos=request.POST.get('habitos_toxicos', 'ninguno'),
+            vacunas=request.POST.get('vacunas'),
+            antecedentes_gineco_obstetricos=request.POST.get('antecedentes_gineco_obstetricos'),
+            foto=request.FILES.get('foto') or None,
+            activo=request.POST.get('activo') == 'on'
         )
         paciente.save()
         print(paciente.activo)

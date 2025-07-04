@@ -136,26 +136,27 @@ class SaveMedicamentoView(View):
 def crear_medicamento_ajax(request):
     try:
 
-        data=json.loads(request.body)
-        print('Datos:',data)
-        tipo_id = data.get('tipo')
+       
+        tipo_id = request.POST.get('tipo')
 
         try:
             print(tipo_id)
         except Exception as e:
             print('e:', e)
         
-        nombre = data.get('nombre')
-        via_administracion = data.get('via_administracion')
-        cantidad = data.get('cantidad')
-        precio = data.get('precio')
+        nombre = request.POST.get('nombre')
+        via_administracion = request.POST.get('via_administracion')
+        cantidad = request.POST.get('cantidad')
+        precio = request.POST.get('precio')
 
         print('antes')
         print(tipo_id)
         tipo = TipoMedicamento.objects.get(pk=int(tipo_id))
         
-        marca_id = data.get('marca_medicamento')
+        marca_id = request.POST.get('marca_medicamento')
         marca = None
+        print('FILES:', request.FILES)
+       
 
         print('pasa')
         if marca_id:
@@ -168,20 +169,22 @@ def crear_medicamento_ajax(request):
             tipo=tipo,
             marca_medicamento=marca,
             nombre=nombre,
-            descripcion=data.get('descripcion'),
-            concentracion=data.get('concentracion'),
+            descripcion=request.POST.get('descripcion'),
+            concentracion=request.POST.get('concentracion'),
             via_administracion=via_administracion,
             cantidad=int(cantidad),
             precio=float(precio),
-            comercial=data.get('comercial') == 'on' if True else False,
-            activo=data.get('activo') == 'on'  if True else False,
+            comercial=request.POST.get('comercial') == 'on' if True else False,
+            foto = request.FILES.get('foto') or None,
+            activo=request.POST.get('activo') == 'on'  if True else False,
             
         )
 
         return JsonResponse({
             'success': True,
             'mensaje': 'Medicamento creado exitosamente',
-            'id': medicamento.id
+            'id': medicamento.id,
+            'nombre': medicamento.nombre
         })
 
     except TipoMedicamento.DoesNotExist:

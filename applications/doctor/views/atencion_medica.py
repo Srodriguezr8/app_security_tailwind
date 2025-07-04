@@ -66,6 +66,7 @@ class AtencionCreateView(SessionGroupMixin,PermissionMixin, CreateViewMixin, Cre
         context['tipo_sangres'] = list(TipoSangre.objects.all())
         context['tipos_medicamento'] = list(TipoMedicamento.objects.all())
         context['marcas_medicamento'] = list(MarcaMedicamento.objects.all())
+        context['url']= Medicamento._meta.get_field('foto').upload_to
         
         
         return context
