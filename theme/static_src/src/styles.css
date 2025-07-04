@@ -39,6 +39,14 @@
   --txt-button-secondary: #90cdf4;
   --txt-button-tertiary: #bee3f8;
   --shadow: rgba(0, 0, 0, 0.1);
+
+   --text-hover-invert: #000000;
+
+   --medical-text-secondary: #1d2531;
+
+    --logo-shadow: rgba(0, 0, 0, 0.15);
+    --theme-toggle-text: #1d2531;          /* Modo claro - texto oscuro */
+  --theme-toggle-hover-bg: #f1f5f9;      /* Modo claro - fondo hover */
 }
 
 
@@ -74,6 +82,15 @@
   --txt-button-cuatertiary: #bee3f8;
 
   --shadow: rgba(0, 0, 0, 0.5);
+
+   --text-hover-invert: #ffffff; 
+
+   --medical-text-secondary: #edf2f7;
+
+    --logo-shadow: rgba(255, 255, 255, 0.2);
+
+      --theme-toggle-text: #e2e8f0;          /* Modo oscuro - texto claro */
+  --theme-toggle-hover-bg: #1f2937; 
 }
 
 :root {
@@ -93,6 +110,18 @@
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
+.hover\:text-invert-custom:hover {
+  color: var(--text-hover-invert);
+}
+
+.group:hover .menu-icon {
+  color: var(--text-hover-invert);
+}
+
+.group:hover .menu-icon,
+.group:hover .menu-label {
+  color: var(--text-hover-invert);
+}
 
 .bg-primary-custom {
   background-color: var(--bg-primary);
@@ -160,7 +189,7 @@
 
 
 .theme-toggle-button:hover {
-  background-color: var(--bg-secondary);
+  background-color: var(--bg-primary);
 }
 
 /* Añade esto a tu archivo CSS principal */
@@ -256,7 +285,7 @@
 }
 
 .sidebar-collapsed #sidebar {
-  width: 80px; /* Ancho de la barra lateral colapsada (ajusta según tus iconos) */
+  width: 100px; /* Ancho de la barra lateral colapsada (ajusta según tus iconos) */
 }
 
 .sidebar-collapsed #sidebar h2,
@@ -269,6 +298,22 @@
 }
 
 
+/* Oculta los textos cuando el sidebar está colapsado */
+
+.sidebar-collapsed .hidden-collapsed {
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
+  pointer-events: none;
+  transition: all 0.3s ease-in-out;
+}
+
+/* Muestra los textos cuando el sidebar está expandido */
+.sidebar-expanded .hidden-collapsed {
+  opacity: 1;
+  width: auto;
+  pointer-events: auto;
+}
 
 
 
@@ -280,6 +325,7 @@
 .sidebar-collapsed #main-content-wrapper {
   margin-left: 80px;
 } */
+
 
 
 /* Esto es importante para el contenido colapsable dentro del sidebar (se mantuvo) */
@@ -1036,8 +1082,22 @@
     margin-right: 0.75rem;
 }
 
+#app-title{
+    color: var(--medical-text-secondary) !important;
+}   
 
+#logo-medical {
+  box-shadow: 0 4px 6px var(--logo-shadow);
+}
 
+.theme-toggle-custom {
+  color: var(--theme-toggle-text);
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.theme-toggle-custom:hover {
+  background-color: var(--theme-toggle-hover-bg);
+}
 
 
 @media (max-width: 768px) {

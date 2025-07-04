@@ -55,7 +55,6 @@ class AtencionListView(SessionGroupMixin,PermissionMixin, ListViewMixin, ListVie
                 try:
                     # Buscar solo pagos que pertenezcan a esta atención específica
                     pago_principal = atencion.pagos.filter(activo=True).order_by('-fecha_creacion').first()
-                    
                     if pago_principal:
                         # Si tiene pago principal, usar sus datos
                         atencion_expandida = {
