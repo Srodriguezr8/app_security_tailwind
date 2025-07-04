@@ -1,10 +1,11 @@
 <!-- Modal Agregar Paciente -->
 <div id="modal-agregar-paciente" class="fixed inset-0 z-50 hidden overflow-y-auto bg-black bg-opacity-50">
     <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+        <!-- Backdrop que NO cierra el modal al hacer click -->
         <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" aria-hidden="true"></div>
 
         <!-- Contenido del Modal -->
-        <div class="inline-block w-full max-w-4xl px-6 py-8 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl">
+        <div class="relative inline-block w-full max-w-4xl px-6 py-8 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl">
             <!-- Header del Modal -->
             <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
                 <h2 class="text-2xl font-bold text-gray-800 flex items-center">
@@ -15,7 +16,7 @@
                     </div>
                     Agregar Nuevo Paciente
                 </h2>
-                <button onclick="cerrarModalPaciente()" class="text-gray-400 hover:text-gray-600 transition-colors duration-200">
+                <button type="button" onclick="cerrarModalPaciente()" class="text-gray-400 hover:text-gray-600 transition-colors duration-200">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                     </svg>
@@ -23,7 +24,9 @@
             </div>
 
             <!-- Formulario con Acordeón -->
-            <form id="form-nuevo-paciente" class="space-y-6">
+            <form id="form-nuevo-paciente" class="space-y-6" onsubmit="event.preventDefault();">
+                {% csrf_token %}
+                
                 <!-- Acordeón Datos Personales -->
                 <div class="border border-gray-200 rounded-xl overflow-hidden">
                     <button type="button" onclick="toggleAccordion('datos-personales')" class="w-full px-6 py-4 text-left bg-blue-50 hover:bg-blue-100 transition-colors duration-200 flex items-center justify-between">
@@ -112,16 +115,11 @@
                             <!-- Tipo de Sangre -->
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">Tipo de Sangre</label>
-                                <select id="tipo_sangre" name="tipo_sangre" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                               <select id="tipo_sangre" name="tipo_sangre" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                                     <option value="">Seleccione...</option>
-                                    <option value="O+">O+</option>
-                                    <option value="O-">O-</option>
-                                    <option value="A+">A+</option>
-                                    <option value="A-">A-</option>
-                                    <option value="B+">B+</option>
-                                    <option value="B-">B-</option>
-                                    <option value="AB+">AB+</option>
-                                    <option value="AB-">AB-</option>
+                                    {% for tipo in tipo_sangres %}
+                                    <option value="{{ tipo.id }}">{{ tipo.tipo }}</option>
+                                        {% endfor %}
                                 </select>
                             </div>
                         </div>
@@ -151,6 +149,10 @@
                             <label class="block text-sm font-semibold text-gray-700 mb-2">Foto del Paciente</label>
                             <input type="file" id="foto" name="foto" accept="image/*" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                             <p class="text-xs text-gray-500 mt-1">Imagen de perfil del paciente (opcional).</p>
+                        </div>
+                         <div class="flex items-center gap-2">
+                            <input type="checkbox" id="activo" name="activo" class="h-4 w-4 text-blue-600 border-gray-300 rounded" checked>
+                            <label for="activo" class="text-gray-700">Activo</label>
                         </div>
                     </div>
                 </div>
@@ -214,7 +216,7 @@
                             </div>
 
                             <!-- Antecedentes Gineco-obstétricos -->
-                            <div>
+                            <div id="gineco-container" style="display: none;">
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">Antecedentes Gineco-obstétricos</label>
                                 <textarea id="antecedentes_gineco_obstetricos" name="antecedentes_gineco_obstetricos" rows="3" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" placeholder="Solo en mujeres. Ej.: menarquia, embarazos, anticonceptivos."></textarea>
                                 <p class="text-xs text-gray-500 mt-1">Solo aplicable para pacientes femeninas.</p>

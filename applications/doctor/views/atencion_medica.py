@@ -11,7 +11,7 @@ from django.views.decorators.http import require_http_methods
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
 
-from applications.core.models import Paciente, Medicamento, Diagnostico
+from applications.core.models import MarcaMedicamento, Paciente, Medicamento, Diagnostico, TipoMedicamento, TipoSangre
 from applications.doctor.forms.atencion import AtencionForm
 from applications.doctor.models import Atencion, DetalleAtencion, DetallePago, Pago, ServiciosAdicionales
 from applications.doctor.utils.pago import EstadoPagoChoices, MetodoPagoChoices
@@ -130,6 +130,12 @@ class AtencionCreateView(SessionGroupMixin,PermissionMixin, CreateViewMixin, Cre
         context['medicamentos_json'] = '[]'  # Array vacío
         context['servicios_json'] = '[]'  # Array vacío
         context['modo_edicion'] = False
+        context['tipo_sangres'] = list(TipoSangre.objects.all())
+        context['tipos_medicamento'] = list(TipoMedicamento.objects.all())
+        context['marcas_medicamento'] = list(MarcaMedicamento.objects.all())
+        context['url']= Medicamento._meta.get_field('foto').upload_to
+        
+        
         return context
 
 
@@ -258,6 +264,7 @@ class AtencionCreateView(SessionGroupMixin,PermissionMixin, CreateViewMixin, Cre
 
                 # Mensaje de éxito
                 messages.success(request, f"Éxito al registrar la atención médica #{atencion.id}")
+                print('Exito')
 
                 # Respuesta exitosa
                 return JsonResponse({
@@ -268,6 +275,7 @@ class AtencionCreateView(SessionGroupMixin,PermissionMixin, CreateViewMixin, Cre
                 }, status=200)
 
         except Exception as e:
+            print('rollback')
             messages.error(request, f"Error al registrar la atención médica")
             return JsonResponse({
                 "msg": f"Error al registrar la atención médica: {str(e)}"

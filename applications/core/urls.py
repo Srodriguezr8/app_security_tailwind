@@ -2,14 +2,14 @@ from django.urls import path
 from applications.core.views.cargo import CargoCreateView, CargoDeleteView, CargoListView, CargoUpdateView
 from applications.core.views.diagnostico import DiagnosticoCreateView, DiagnosticoDeleteView, DiagnosticoListView, DiagnosticoUpdateView
 from applications.core.views.doctor import DoctorCreateView, DoctorDeleteView, DoctorListView, DoctorUpdateView, EspecialidadDoctorView
-from applications.core.views.paciente import paciente_find
+from applications.core.views.paciente import crear_paciente_ajax, paciente_find
 from applications.core.views.pagos import PagosPendientesListView, RealizarPagoView
 from applications.core.views.empleado import EmpleadoCreateView, EmpleadoDeleteView, EmpleadoListView, EmpleadoUpdateView, SaveEmpleadoView
 from applications.core.views.especialidad import EspecialidadCreateView, EspecialidadDeleteView, EspecialidadListView, EspecialidadUpdateView
 from applications.core.views.foto_paciente import FotoPacienteCreateView, FotoPacienteDeleteView, FotoPacienteListView, FotoPacienteUpdateView
 from applications.core.views.gasto_mensual import GastoMensualCreateView, GastoMensualListView, GastoMensualUpdateView, GastoMensualdDeleteView
 from applications.core.views.marca_medicamento import MarcaMedicamentoCreateView, MarcaMedicamentoDeleteView, MarcaMedicamentoListView, MarcaMedicamentoUpdateView
-from applications.core.views.medicamento import MedicamentoCreateView, MedicamentoDeleteView, MedicamentoListView, MedicamentoUpdateView, SaveMedicamentoView
+from applications.core.views.medicamento import MedicamentoCreateView, MedicamentoDeleteView, MedicamentoListView, MedicamentoUpdateView, SaveMedicamentoView, crear_medicamento_ajax
 from applications.core.views.paciente import PacienteCreateView, PacienteDeleteView, PacienteListView, PacienteUpdateView, SavePacienteView, paciente_find
 from applications.core.views.tipo_gasto import TipoGastoCreateView, TipoGastoDeleteView, TipoGastoListView, TipoGastoUpdateView
 from applications.core.views.tipo_medicamento import TipoMedicamentoCreateView, TipoMedicamentoDeleteView, TipoMedicamentoListView, TipoMedicamentoUpdateView
@@ -24,6 +24,8 @@ urlpatterns = [
     path('paciente_update/<int:pk>/', PacienteUpdateView.as_view(),name='paciente_update'),
     path('save/paciente/', SavePacienteView.as_view(),name='paciente_save'),
     path('paciente_delete/<int:pk>/', PacienteDeleteView.as_view(),name='paciente_delete'),
+    path('api/paciente_create/', crear_paciente_ajax,name="api_paciente_create"),
+    
 
     # Rutas  para vistas relacionadas con cargos
     path('cargo_list/',CargoListView.as_view() ,name="cargo_list"),
@@ -86,6 +88,9 @@ urlpatterns = [
     path('tipo_medicamento_create/', TipoMedicamentoCreateView.as_view(),name="tipo_medicamento_create"),
     path('tipo_medicamento_update/<int:pk>/', TipoMedicamentoUpdateView.as_view(),name='tipo_medicamento_update'),
     path('tipo_medicamento_delete/<int:pk>/', TipoMedicamentoDeleteView.as_view(),name='tipo_medicamento_delete'),
+    path('api/medicamento_create/', crear_medicamento_ajax,name='api_medicamento_create'),
+    
+
     
     # Rutas  para vistas relacionadas con las marcas de medicamentos
     path('marca_medicamento_list/',MarcaMedicamentoListView.as_view() ,name="marca_medicamento_list"),

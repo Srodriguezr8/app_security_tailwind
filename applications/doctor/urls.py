@@ -27,6 +27,7 @@ from applications.doctor.views.pago import (
     PagoDeleteView
 )
 
+from applications.doctor.views.receta import obtener_atencion
 from applications.doctor.views.servicio_adicional import (
     ServicioAdicionalCreateView,
     ServicioAdicionalDeleteView,
@@ -85,4 +86,7 @@ urlpatterns = [
     path('api/guardar_detalle_pago/', guardar_detalle_pago, name='guardar_detalle_pago'),
     path('api/detalles_pago/<int:pago_id>/', detalles_pago_tbody_ajax, name='detalles_pago_tbody_ajax'),
     path('api/procesar_pago/', procesar_pago, name='procesar_pago'),
+
+
+    path('receta/atencion/<int:pk>/', obtener_atencion, name='receta_atencion'),
 ]
