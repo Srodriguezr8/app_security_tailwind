@@ -1,0 +1,276 @@
+{% extends 'base.html' %}
+{% load static %}
+
+<title>{% block title %}{{ title }}{% endblock %}</title>
+
+{% block content %}
+<section class="dark:bg-principal mt-2">
+    <div class="max-w-2xl mx-auto px-4 py-6">
+        
+        <!-- Header -->
+        <div class="text-center mb-8" data-aos="fade-up" data-aos-delay="200">
+            <h1 class="rounded-2xl bg-red-500 px-4 py-2 text-white uppercase text-3xl font-bold">
+                {{ title1 }}
+            </h1>
+        </div>
+
+        <!-- Breadcrumb -->
+        <nav class="flex mb-6" aria-label="Breadcrumb">
+            <ol class="inline-flex items-center space-x-1 md:space-x-3">
+                <li class="inline-flex items-center">
+                    <a href="{% url 'security:user_list' %}" 
+                       class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600 dark:text-gray-400 dark:hover:text-white">
+                        <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path>
+                        </svg>
+                        Lista de Usuarios
+                    </a>
+                </li>
+                <li>
+                    <div class="flex items-center">
+                        <svg class="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+                        </svg>
+                        <span class="ml-1 text-sm font-medium text-gray-500 md:ml-2 dark:text-gray-400">
+                            Eliminar Usuario
+                        </span>
+                    </div>
+                </li>
+            </ol>
+        </nav>
+
+        <!-- Tarjeta de confirmación -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden border-l-4 border-red-500">
+            
+            <!-- Header de la tarjeta -->
+            <div class="px-6 py-4 bg-red-50 dark:bg-red-900/20 border-b border-red-100 dark:border-red-800">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-lg font-semibold text-red-800 dark:text-red-200">
+                            ¡Atención! Esta acción no se puede deshacer
+                        </h3>
+                        <p class="text-sm text-red-600 dark:text-red-300 mt-1">
+                            Está a punto de eliminar permanentemente este usuario del sistema
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Información del usuario -->
+            <div class="px-6 py-6">
+                <div class="flex items-center space-x-4 mb-6">
+                    <div class="flex-shrink-0">
+                        <img class="h-16 w-16 rounded-full object-cover border-2 border-gray-300" 
+                             src="{{ user_obj.get_image }}" 
+                             alt="Foto de {{ user_obj.get_full_name }}">
+                    </div>
+                    <div class="flex-1">
+                        <h4 class="text-xl font-semibold text-gray-900 dark:text-white">
+                            {{ user_obj.get_full_name }}
+                        </h4>
+                        <p class="text-gray-600 dark:text-gray-400">{{ user_obj.email }}</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-500">
+                            Usuario: {{ user_obj.username }}
+                        </p>
+                    </div>
+                    <div class="flex-shrink-0">
+                        {% if user_obj.is_active %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                                <svg class="w-2 h-2 mr-1" fill="currentColor" viewBox="0 0 8 8">
+                                    <circle cx="4" cy="4" r="3"/>
+                                </svg>
+                                Activo
+                            </span>
+                        {% else %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
+                                <svg class="w-2 h-2 mr-1" fill="currentColor" viewBox="0 0 8 8">
+                                    <circle cx="4" cy="4" r="3"/>
+                                </svg>
+                                Inactivo
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Información adicional del usuario -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    {% if user_obj.dni %}
+                    <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Cédula/RUC</dt>
+                        <dd class="text-sm text-gray-900 dark:text-white">{{ user_obj.dni }}</dd>
+                    </div>
+                    {% endif %}
+                    
+                    {% if user_obj.phone %}
+                    <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Teléfono</dt>
+                        <dd class="text-sm text-gray-900 dark:text-white">{{ user_obj.phone }}</dd>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Fecha de registro</dt>
+                        <dd class="text-sm text-gray-900 dark:text-white">{{ user_obj.date_joined|date:"d/m/Y H:i" }}</dd>
+                    </div>
+                    
+                    <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Último acceso</dt>
+                        <dd class="text-sm text-gray-900 dark:text-white">
+                            {% if user_obj.last_login %}
+                                {{ user_obj.last_login|date:"d/m/Y H:i" }}
+                            {% else %}
+                                Nunca
+                            {% endif %}
+                        </dd>
+                    </div>
+                </div>
+
+                <!-- Advertencias sobre datos relacionados -->
+                {% if has_related_data %}
+                <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-6">
+                    <div class="flex">
+                        <svg class="w-5 h-5 text-yellow-400 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                        </svg>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-medium text-yellow-800 dark:text-yellow-200">
+                                Este usuario tiene datos relacionados
+                            </h3>
+                            <div class="mt-2 text-sm text-yellow-700 dark:text-yellow-300">
+                                <ul class="list-disc list-inside space-y-1">
+                                    {% for info in related_info %}
+                                        <li>{{ info }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            <p class="mt-2 text-sm text-yellow-700 dark:text-yellow-300">
+                                Al eliminar este usuario, también se eliminarán todos sus datos relacionados.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Verificaciones de seguridad -->
+                {% if user_obj.is_superuser %}
+                <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-6">
+                    <div class="flex">
+                        <svg class="w-5 h-5 text-red-400 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                        </svg>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-medium text-red-800 dark:text-red-200">
+                                ¡Cuidado! Este es un superusuario
+                            </h3>
+                            <p class="mt-1 text-sm text-red-700 dark:text-red-300">
+                                Los superusuarios tienen acceso completo al sistema. Asegúrese de que esta eliminación es necesaria.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Formulario de confirmación -->
+                <form method="post" id="deleteForm" class="space-y-4">
+                    {% csrf_token %}
+                    
+                    <!-- Checkbox de confirmación -->
+                    <div class="flex items-start">
+                        <div class="flex items-center h-5">
+                            <input id="confirm-delete" 
+                                   type="checkbox" 
+                                   required
+                                   class="w-4 h-4 text-red-600 bg-gray-100 border-gray-300 rounded focus:ring-red-500 dark:focus:ring-red-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                        </div>
+                        <div class="ml-3 text-sm">
+                            <label for="confirm-delete" class="font-medium text-gray-700 dark:text-gray-300">
+                                Confirmo que deseo eliminar permanentemente este usuario
+                            </label>
+                            <p class="text-gray-500 dark:text-gray-400">
+                                Esta acción no se puede deshacer y eliminará todos los datos asociados.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Botones de acción -->
+                    <div class="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4 pt-6 border-t border-gray-200 dark:border-gray-600">
+                        <a href="{% url 'security:user_list' %}"
+                           class="inline-flex justify-center items-center px-6 py-3 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                            Cancelar
+                        </a>
+                        <button type="submit" 
+                                id="deleteButton"
+                                disabled
+                                class="inline-flex justify-center items-center px-6 py-3 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                            </svg>
+                            <span id="deleteButtonText">Eliminar Usuario</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const confirmCheckbox = document.getElementById('confirm-delete');
+        const deleteButton = document.getElementById('deleteButton');
+        const deleteForm = document.getElementById('deleteForm');
+        const deleteButtonText = document.getElementById('deleteButtonText');
+        
+        // Habilitar/deshabilitar botón según checkbox
+        confirmCheckbox.addEventListener('change', function() {
+            deleteButton.disabled = !this.checked;
+        });
+        
+        // Manejar envío del formulario
+        deleteForm.addEventListener('submit', function(e) {
+            if (!confirmCheckbox.checked) {
+                e.preventDefault();
+                alert('Debe confirmar la eliminación marcando la casilla.');
+                return;
+            }
+            
+            // Mostrar estado de carga
+            deleteButton.disabled = true;
+            deleteButtonText.textContent = 'Eliminando...';
+            deleteButton.innerHTML = `
+                <svg class="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Eliminando...
+            `;
+        });
+        
+        // Confirmación adicional para superusuarios
+        {% if user_obj.is_superuser %}
+        deleteForm.addEventListener('submit', function(e) {
+            if (!confirm('¡ATENCIÓN! Está eliminando un SUPERUSUARIO. ¿Está completamente seguro?')) {
+                e.preventDefault();
+                // Restaurar botón
+                deleteButton.disabled = !confirmCheckbox.checked;
+                deleteButtonText.textContent = 'Eliminar Usuario';
+                deleteButton.innerHTML = `
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                    </svg>
+                    <span id="deleteButtonText">Eliminar Usuario</span>
+                `;
+            }
+        });
+        {% endif %}
+    });
+</script>
+{% endblock %}

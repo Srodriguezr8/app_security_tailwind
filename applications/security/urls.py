@@ -6,7 +6,7 @@ from applications.security.views.group_module_pemission import DeleteGroupModule
 from applications.security.views.home import ModuloTemplateView, StartTemplateView, get_group_menus, test_group_menus
 from applications.security.views.menu import MenuCreateView, MenuDeleteView, MenuListView, MenuUpdateView
 from applications.security.views.module import ModuleCreateView, ModuleDeleteView, ModuleListView, ModuleUpdateView
-from applications.security.views.user import UserListView, UserUpdateView, UserUpdateView,toggle_user_status, user_list_view
+from applications.security.views.user import UserListView, RequestNewActivationView, UserCreateView, UserUpdateView, UserUpdateView,UserDeleteView, ActivateAccountView, toggle_user_status, user_list_view
 
 
 app_name='security' # define un espacio de nombre para la aplicacion
@@ -29,9 +29,14 @@ urlpatterns = [
   
 
     # Rutas de usuarios user_list
-    path('user_list/', UserListView.as_view(), name="user_list"),
+    path('user_list/', UserListView.as_view(), name='user_list'),
+    path('user_add', UserCreateView.as_view(), name='user_add'),
     path('user_update/<int:pk>/', UserUpdateView.as_view(), name='user_update'),
+    path('user_delete/<int:pk>/', UserDeleteView.as_view(), name='user_delete'),
     path('user/<int:user_id>/toggle-status/', toggle_user_status, name='user_toggle_status'),
+     # ... otras URLs ...
+    path('activate/<uuid:token>/', ActivateAccountView.as_view(), name='activate_account'),
+    path('request-activation/', RequestNewActivationView.as_view(), name='request_new_activation'),
 
  
   path('group_list/',GroupListView.as_view() ,name="group_list"),

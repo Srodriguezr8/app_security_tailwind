@@ -120,7 +120,7 @@ class User(AbstractUser, PermissionsMixin):
     direction = models.CharField('Dirección', max_length=200, blank=True, null=True)
     phone = models.CharField('Teléfono', max_length=50, blank=True, null=True)
   
- 
+    
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["username", "first_name", "last_name"]
 
@@ -180,6 +180,8 @@ class User(AbstractUser, PermissionsMixin):
             return self.image.url
         else:
             return '/static/img/usuario_anonimo.png'
+
+
 
 class AuditUser(models.Model):
     usuario = models.ForeignKey(User, verbose_name='Usuario',on_delete=models.PROTECT)
