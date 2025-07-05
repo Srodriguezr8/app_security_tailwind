@@ -1,22 +1,30 @@
-import json
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
-from django.http import JsonResponse
-from django.shortcuts import render
-from django.views.decorators.csrf import csrf_exempt
-from django.template.loader import render_to_string
-from django.urls import reverse_lazy
-from applications.security.components.mixin_crud import SessionGroupMixin, UpdateViewMixin, ListViewMixin, PermissionMixin
-from applications.security.forms.user import UserForm, UserStatusForm
-from applications.security.models import User
-from django.views.generic import ListView, UpdateView, CreateView, DeleteView
-from django.core.paginator import Paginator
-from django.db.models import Q
-from django.core.exceptions import ValidationError
-from django.contrib.auth.hashers import make_password
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.auth import get_user_model
+from django.contrib import messages
+from django.views.generic import CreateView, UpdateView, DeleteView, View
+from django.urls import reverse_lazy
+from django.http import JsonResponse
+from django.core.mail import send_mail
+from django.conf import settings
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
+from django.contrib.sites.shortcuts import get_current_site
+from django.views.decorators.csrf import csrf_exempt
+from django.forms import ModelForm, CharField, PasswordInput
+from django.core.paginator import Paginator
+from django import forms
+from django.db.models import Q
+from django.views.generic import ListView, UpdateView, DeleteView
+import json
+
+from applications.security.components.mixin_crud import ListViewMixin, PermissionMixin, SessionGroupMixin
 
 User = get_user_model()
+
 
 class UserListView( SessionGroupMixin, PermissionMixin, ListViewMixin, ListView):
     template_name = 'security/users/list.html'
@@ -53,9 +61,10 @@ class UserListView( SessionGroupMixin, PermissionMixin, ListViewMixin, ListView)
             context['permissions'] = self.request.user.get_all_permissions()
         else:
             context['permissions'] = self.request.user.get_user_permissions() # O Default
-        # es posible obtnener estsa lita    
-        # permissions = self.request.user.get_all_permissions()
-   
+         
+        print("Contenido de menu_list:",context['menu_list'])
+        print("Tipo de menu_list:", type(context['menu_list']))
+            
         return context
 
     def render_to_response(self, context, **response_kwargs):
@@ -92,178 +101,313 @@ class UserListView( SessionGroupMixin, PermissionMixin, ListViewMixin, ListView)
             return super().render_to_response(context, **response_kwargs)
     
     
-
-class UserCreateView(SessionGroupMixin, PermissionMixin, CreateView):
+    
+class UserCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     model = User
-    template_name = 'security/users/create.html'  # Mismo template
-    permission_required = 'add_user'
+    template_name = 'security/users/user_form.html'
+    fields = ['first_name', 'last_name', 'email', 'dni', 'direction', 'phone']
+    permission_required = 'auth.add_user'
     success_url = reverse_lazy('security:user_list')
-    
-    fields = [
-        'username', 'email', 'first_name', 'last_name', 
-        'dni', 'phone', 'direction', 'image', 'is_active'
-    ]
-    
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Crear Usuario'
         context['title1'] = 'Nuevo Usuario'
-        context['cancel_url'] = reverse_lazy('security:user_list')
-        context['is_edit'] = False  # Flag para saber si estamos creando
+        context['back_url'] = reverse_lazy('security:user_list')
         return context
 
+    def form_valid(self, form):
+        # Crear usuario sin contraseña y inactivo
+        user = form.save(commit=False)
+        user.username = user.email  # Usar email como username
+        user.is_active = False  # Usuario inactivo hasta que active su cuenta
+        user.save()
+        
+        # Enviar email de activación
+        self.send_activation_email(user)
+        
+        messages.success(
+            self.request, 
+            f'Usuario {user.get_full_name} creado exitosamente. '
+            f'Se ha enviado un email de activación a {user.email}'
+        )
+        return super().form_valid(form)
 
-class UserUpdateView(SessionGroupMixin, PermissionMixin, UpdateView):
+    def send_activation_email(self, user):
+        """Envía email de activación al usuario"""
+        current_site = get_current_site(self.request)
+        
+        # Generar token de activación
+        token = default_token_generator.make_token(user)
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        
+        # URL de activación
+        activation_url = f"http://{current_site.domain}/security/activate/{uid}/{token}/"
+        
+        # Contexto para el template del email
+        context = {
+            'user': user,
+            'activation_url': activation_url,
+            'site_name': current_site.name,
+            'domain': current_site.domain,
+        }
+        
+        # Renderizar template del email
+        html_message = render_to_string('security/emails/activation_email.html', context)
+        plain_message = strip_tags(html_message)
+        
+        # Enviar email
+        send_mail(
+            subject='Activa tu cuenta',
+            message=plain_message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email],
+            html_message=html_message,
+            fail_silently=False,
+        )
+
+
+class UserUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
     model = User
-    template_name = 'security/users/create.html'  # Usaremos el mismo template
-    permission_required = 'change_user'
+    template_name = 'security/users/user_form.html'
+    fields = ['first_name', 'last_name', 'email', 'dni', 'direction', 'phone', 'is_active']
+    permission_required = 'auth.change_user'
     success_url = reverse_lazy('security:user_list')
-    
-    fields = [
-        'username', 'email', 'first_name', 'last_name', 
-        'dni', 'phone', 'direction', 'image', 'is_active'
-    ]
-    
-    def get_object(self, queryset=None):
-        return get_object_or_404(User, pk=self.kwargs['pk'])
-    
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Editar Usuario'
-        context['title1'] = 'Editar Usuario'
-        context['cancel_url'] = reverse_lazy('security:user_list')
-        context['is_edit'] = True  # Flag para saber si estamos editando
-        context['user_obj'] = self.object  # Objeto usuario para el template
+        context['title1'] = 'Modificar Usuario'
+        context['back_url'] = reverse_lazy('security:user_list')
         return context
-    
+
     def form_valid(self, form):
-        try:
-            # No modificamos la contraseña en la edición
-            # La contraseña se mantiene igual a menos que se use otra vista específica
-            
-            response = super().form_valid(form)
-            
-            messages.success(
-                self.request, 
-                f'Usuario {form.instance.get_full_name} actualizado exitosamente.'
-            )
-            return response
-            
-        except ValidationError as e:
-            form.add_error(None, e)
-            return self.form_invalid(form)
-        except Exception as e:
-            messages.error(self.request, f'Error al actualizar usuario: {str(e)}')
-            return self.form_invalid(form)
-    
-    def form_invalid(self, form):
-        messages.error(self.request, 'Por favor corrige los errores en el formulario.')
-        return super().form_invalid(form)
+        messages.success(self.request, f'Usuario {form.instance.get_full_name} actualizado exitosamente.')
+        return super().form_valid(form)
 
 
-
-class UserDeleteView(SessionGroupMixin, PermissionMixin, DeleteView):
+class UserDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
     model = User
-    template_name = 'security/users/delete.html'
-    permission_required = 'delete_user'
+    template_name = 'security/users/user_delete.html'
+    permission_required = 'auth.delete_user'
     success_url = reverse_lazy('security:user_list')
-    context_object_name = 'user_obj'
-    
-    def get_object(self, queryset=None):
-        return get_object_or_404(User, pk=self.kwargs['pk'])
-    
+    cancel_url = reverse_lazy('security:user_list')
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Eliminar Usuario'
         context['title1'] = 'Confirmar Eliminación'
-        context['cancel_url'] = reverse_lazy('security:user_list')
-        
-        # Verificar si el usuario tiene datos relacionados
-        user = self.object
-        context['has_related_data'] = self.check_related_data(user)
-        context['related_info'] = self.get_related_info(user)
-        
+        context['back_url'] = reverse_lazy('security:user_list')
         return context
-    
-    def check_related_data(self, user):
-        """Verificar si el usuario tiene datos relacionados que impedirían la eliminación"""
-        # Aquí puedes agregar verificaciones según tu modelo
-        # Por ejemplo, si tiene posts, comentarios, etc.
-        related_data = False
-        
-        # Ejemplo de verificaciones:
-        # if user.posts.exists():
-        #     related_data = True
-        # if user.comments.exists():
-        #     related_data = True
-        
-        return related_data
-    
-    def get_related_info(self, user):
-        """Obtener información sobre datos relacionados"""
-        info = []
-        
-        # Ejemplo de información relacionada:
-        # if user.posts.exists():
-        #     info.append(f"{user.posts.count()} publicaciones")
-        # if user.comments.exists():
-        #     info.append(f"{user.comments.count()} comentarios")
-        
-        return info
-    
+
     def delete(self, request, *args, **kwargs):
-        """Sobrescribir el método delete para manejar la eliminación"""
-        self.object = self.get_object()
+        user = self.get_object()
+        messages.success(request, f'Usuario {user.get_full_name} eliminado exitosamente.')
+        return super().delete(request, *args, **kwargs)
+
+
+class ActivateAccountView(View):
+    """Vista para activar cuenta de usuario"""
+    
+    def get(self, request, uidb64, token):
+        try:
+            # Decodificar el ID del usuario
+            uid = force_str(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            user = None
+
+        # Verificar si el token es válido
+        if user is not None and default_token_generator.check_token(user, token):
+            if user.is_active:
+                # Usuario ya está activo
+                messages.info(request, 'Tu cuenta ya está activada. Puedes iniciar sesión.')
+                return redirect('login')
+            else:
+                # Mostrar formulario para crear contraseña
+                return render(request, 'security/users/set_password.html', {
+                    'user': user,
+                    'uidb64': uidb64,
+                    'token': token,
+                    'title': 'Activar Cuenta',
+                    'title1': 'Crear tu Contraseña'
+                })
+        else:
+            # Token inválido o expirado
+            messages.error(request, 'El enlace de activación es inválido o ha expirado.')
+            return render(request, 'security/users/activation_invalid.html', {
+                'title': 'Enlace Inválido',
+                'title1': 'Error de Activación'
+            })
+
+    def post(self, request, uidb64, token):
+        try:
+            uid = force_str(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            user = None
+
+        if user is not None and default_token_generator.check_token(user, token):
+            password1 = request.POST.get('password1')
+            password2 = request.POST.get('password2')
+            
+            # Validar contraseñas
+            if not password1 or not password2:
+                messages.error(request, 'Ambos campos de contraseña son requeridos.')
+                return render(request, 'security/users/set_password.html', {
+                    'user': user,
+                    'uidb64': uidb64,
+                    'token': token,
+                    'title': 'Activar Cuenta',
+                    'title1': 'Crear tu Contraseña'
+                })
+            
+            if password1 != password2:
+                messages.error(request, 'Las contraseñas no coinciden.')
+                return render(request, 'security/users/set_password.html', {
+                    'user': user,
+                    'uidb64': uidb64,
+                    'token': token,
+                    'title': 'Activar Cuenta',
+                    'title1': 'Crear tu Contraseña'
+                })
+            
+            if len(password1) < 8:
+                messages.error(request, 'La contraseña debe tener al menos 8 caracteres.')
+                return render(request, 'security/users/set_password.html', {
+                    'user': user,
+                    'uidb64': uidb64,
+                    'token': token,
+                    'title': 'Activar Cuenta',
+                    'title1': 'Crear tu Contraseña'
+                })
+            
+            # Activar usuario y establecer contraseña
+            user.set_password(password1)
+            user.is_active = True
+            user.save()
+            
+            messages.success(request, '¡Cuenta activada exitosamente! Ya puedes iniciar sesión.')
+            return redirect('login')
+        else:
+            messages.error(request, 'El enlace de activación es inválido o ha expirado.')
+            return render(request, 'security/users/activation_invalid.html', {
+                'title': 'Enlace Inválido',
+                'title1': 'Error de Activación'
+            })
+
+
+class RequestNewActivationView(View):
+    """Vista para solicitar nuevo enlace de activación"""
+    
+    def get(self, request):
+        return render(request, 'security/users/request_activation.html', {
+            'title': 'Solicitar Activación',
+            'title1': 'Reenviar Enlace de Activación'
+        })
+    
+    def post(self, request):
+        email = request.POST.get('email', '').strip()
         
-        # Verificar que no sea el usuario actual
-        if self.object == request.user:
-            messages.error(request, 'No puedes eliminar tu propia cuenta.')
-            return redirect(self.success_url)
-        
-        # Verificar si es superusuario (opcional)
-        if self.object.is_superuser and not request.user.is_superuser:
-            messages.error(request, 'No tienes permisos para eliminar un superusuario.')
-            return redirect(self.success_url)
+        if not email:
+            messages.error(request, 'Por favor ingresa tu email.')
+            return render(request, 'security/users/request_activation.html', {
+                'title': 'Solicitar Activación',
+                'title1': 'Reenviar Enlace de Activación'
+            })
         
         try:
-            user_name = self.object.get_full_name
-            user_email = self.object.email
+            user = User.objects.get(email=email)
             
-            # Realizar la eliminación
-            self.object.delete()
+            if user.is_active:
+                messages.info(request, 'Tu cuenta ya está activada. Puedes iniciar sesión.')
+                return redirect('login')
+            
+            # Enviar nuevo email de activación
+            self.send_activation_email(user, request)
             
             messages.success(
                 request, 
-                f'Usuario "{user_name}" ({user_email}) eliminado exitosamente.'
+                f'Se ha enviado un nuevo enlace de activación a {email}. '
+                'Revisa tu bandeja de entrada y spam.'
             )
             
-            # Si es una petición AJAX
-            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-                return JsonResponse({
-                    'success': True,
-                    'message': f'Usuario "{user_name}" eliminado exitosamente.',
-                    'redirect_url': str(self.success_url)
-                })
+        except User.DoesNotExist:
+            # Por seguridad, no revelamos si el email existe o no
+            messages.success(
+                request, 
+                f'Si existe una cuenta con el email {email}, '
+                'se ha enviado un enlace de activación.'
+            )
+        
+        return render(request, 'security/users/request_activation.html', {
+            'title': 'Solicitar Activación',
+            'title1': 'Reenviar Enlace de Activación'
+        })
+    
+    def send_activation_email(self, user, request):
+        """Envía email de activación al usuario"""
+        current_site = get_current_site(request)
+        
+        # Generar nuevo token de activación
+        token = default_token_generator.make_token(user)
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        
+        # URL de activación
+        activation_url = f"http://{current_site.domain}/security/activate/{uid}/{token}/"
+        
+        # Contexto para el template del email
+        context = {
+            'user': user,
+            'activation_url': activation_url,
+            'site_name': current_site.name,
+            'domain': current_site.domain,
+        }
+        
+        # Renderizar template del email
+        html_message = render_to_string('security/emails/activation_email.html', context)
+        plain_message = strip_tags(html_message)
+        
+        # Enviar email
+        send_mail(
+            subject='Activa tu cuenta - Nuevo enlace',
+            message=plain_message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email],
+            html_message=html_message,
+            fail_silently=False,
+        )
+
+
+class UserToggleStatusView(LoginRequiredMixin, PermissionRequiredMixin, View):
+    """Vista para cambiar estado activo/inactivo del usuario"""
+    permission_required = 'auth.change_user'
+    
+    def post(self, request, pk):
+        try:
+            user = get_object_or_404(User, pk=pk)
+            data = json.loads(request.body)
+            is_active = data.get('is_active') == '1'
             
-            return redirect(self.success_url)
+            user.is_active = is_active
+            user.save()
+            
+            status_text = "activado" if is_active else "desactivado"
+            
+            return JsonResponse({
+                'success': True,
+                'message': f'Usuario {user.get_full_name} {status_text} exitosamente.',
+                'is_active': user.is_active
+            })
             
         except Exception as e:
-            error_message = f'Error al eliminar el usuario: {str(e)}'
-            messages.error(request, error_message)
+            return JsonResponse({
+                'success': False,
+                'error': f'Error al cambiar estado: {str(e)}'
+            })
             
-            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-                return JsonResponse({
-                    'success': False,
-                    'error': error_message
-                })
             
-            return redirect(self.success_url)
-    
-    def post(self, request, *args, **kwargs):
-        """Manejar la confirmación de eliminación"""
-        return self.delete(request, *args, **kwargs)
-
-
+            
 
 @csrf_exempt
 def toggle_user_status(request, user_id):
@@ -301,6 +445,7 @@ def toggle_user_status(request, user_id):
             'success': False,
             'error': 'Método no permitido.'
         })
+
 
 
 def user_list_view(request):
@@ -342,8 +487,4 @@ def user_list_view(request):
             })
     else:
         # Si NO es AJAX (desde loadContent en base.html), devuelve el parcial HTML completo
-        return render(request, 'security/users/user_list_partial.html', context)
-    
-    
-
-
+        return render(request, 'security/users/user_list_partial.html', context)            

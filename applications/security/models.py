@@ -120,7 +120,7 @@ class User(AbstractUser, PermissionsMixin):
     direction = models.CharField('Dirección', max_length=200, blank=True, null=True)
     phone = models.CharField('Teléfono', max_length=50, blank=True, null=True)
   
- 
+    
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["username", "first_name", "last_name"]
 
