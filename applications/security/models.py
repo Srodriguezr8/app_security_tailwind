@@ -181,6 +181,8 @@ class User(AbstractUser, PermissionsMixin):
         else:
             return '/static/img/usuario_anonimo.png'
 
+
+
 class AuditUser(models.Model):
     usuario = models.ForeignKey(User, verbose_name='Usuario',on_delete=models.PROTECT)
     tabla = models.CharField(max_length=100, verbose_name='Tabla')

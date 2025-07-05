@@ -1,4 +1,5 @@
 import json
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.http import JsonResponse
 from django.shortcuts import render
@@ -8,9 +9,11 @@ from django.urls import reverse_lazy
 from applications.security.components.mixin_crud import SessionGroupMixin, UpdateViewMixin, ListViewMixin, PermissionMixin
 from applications.security.forms.user import UserForm, UserStatusForm
 from applications.security.models import User
-from django.views.generic import ListView, UpdateView
+from django.views.generic import ListView, UpdateView, CreateView, DeleteView
 from django.core.paginator import Paginator
 from django.db.models import Q
+from django.core.exceptions import ValidationError
+from django.contrib.auth.hashers import make_password
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -50,10 +53,9 @@ class UserListView( SessionGroupMixin, PermissionMixin, ListViewMixin, ListView)
             context['permissions'] = self.request.user.get_all_permissions()
         else:
             context['permissions'] = self.request.user.get_user_permissions() # O Default
-         
-        print("Contenido de menu_list:",context['menu_list'])
-        print("Tipo de menu_list:", type(context['menu_list']))
-            
+        # es posible obtnener estsa lita    
+        # permissions = self.request.user.get_all_permissions()
+   
         return context
 
     def render_to_response(self, context, **response_kwargs):
@@ -91,26 +93,177 @@ class UserListView( SessionGroupMixin, PermissionMixin, ListViewMixin, ListView)
     
     
 
-class UserUpdateView(PermissionMixin, UpdateViewMixin, UpdateView):
+class UserCreateView(SessionGroupMixin, PermissionMixin, CreateView):
     model = User
-    template_name = 'security/users/form.html'
-    form_class = UserForm
+    template_name = 'security/users/create.html'  # Mismo template
+    permission_required = 'add_user'
     success_url = reverse_lazy('security:user_list')
-    permission_required = 'change_user'
-
+    
+    fields = [
+        'username', 'email', 'first_name', 'last_name', 
+        'dni', 'phone', 'direction', 'image', 'is_active'
+    ]
+    
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['grabar'] = 'Actualizar Usuario'
-        context['back_url'] = self.success_url
-        context['title'] = 'Actualizar Usuario'
+        context['title'] = 'Crear Usuario'
+        context['title1'] = 'Nuevo Usuario'
+        context['cancel_url'] = reverse_lazy('security:user_list')
+        context['is_edit'] = False  # Flag para saber si estamos creando
         return context
 
-    def form_valid(self, form):
-        response = super().form_valid(form)
-        user = self.object
-        messages.success(self.request, f"Éxito al actualizar el usuario {user.last_name}.")
-        return response
+
+class UserUpdateView(SessionGroupMixin, PermissionMixin, UpdateView):
+    model = User
+    template_name = 'security/users/create.html'  # Usaremos el mismo template
+    permission_required = 'change_user'
+    success_url = reverse_lazy('security:user_list')
     
+    fields = [
+        'username', 'email', 'first_name', 'last_name', 
+        'dni', 'phone', 'direction', 'image', 'is_active'
+    ]
+    
+    def get_object(self, queryset=None):
+        return get_object_or_404(User, pk=self.kwargs['pk'])
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Editar Usuario'
+        context['title1'] = 'Editar Usuario'
+        context['cancel_url'] = reverse_lazy('security:user_list')
+        context['is_edit'] = True  # Flag para saber si estamos editando
+        context['user_obj'] = self.object  # Objeto usuario para el template
+        return context
+    
+    def form_valid(self, form):
+        try:
+            # No modificamos la contraseña en la edición
+            # La contraseña se mantiene igual a menos que se use otra vista específica
+            
+            response = super().form_valid(form)
+            
+            messages.success(
+                self.request, 
+                f'Usuario {form.instance.get_full_name} actualizado exitosamente.'
+            )
+            return response
+            
+        except ValidationError as e:
+            form.add_error(None, e)
+            return self.form_invalid(form)
+        except Exception as e:
+            messages.error(self.request, f'Error al actualizar usuario: {str(e)}')
+            return self.form_invalid(form)
+    
+    def form_invalid(self, form):
+        messages.error(self.request, 'Por favor corrige los errores en el formulario.')
+        return super().form_invalid(form)
+
+
+
+class UserDeleteView(SessionGroupMixin, PermissionMixin, DeleteView):
+    model = User
+    template_name = 'security/users/delete.html'
+    permission_required = 'delete_user'
+    success_url = reverse_lazy('security:user_list')
+    context_object_name = 'user_obj'
+    
+    def get_object(self, queryset=None):
+        return get_object_or_404(User, pk=self.kwargs['pk'])
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Eliminar Usuario'
+        context['title1'] = 'Confirmar Eliminación'
+        context['cancel_url'] = reverse_lazy('security:user_list')
+        
+        # Verificar si el usuario tiene datos relacionados
+        user = self.object
+        context['has_related_data'] = self.check_related_data(user)
+        context['related_info'] = self.get_related_info(user)
+        
+        return context
+    
+    def check_related_data(self, user):
+        """Verificar si el usuario tiene datos relacionados que impedirían la eliminación"""
+        # Aquí puedes agregar verificaciones según tu modelo
+        # Por ejemplo, si tiene posts, comentarios, etc.
+        related_data = False
+        
+        # Ejemplo de verificaciones:
+        # if user.posts.exists():
+        #     related_data = True
+        # if user.comments.exists():
+        #     related_data = True
+        
+        return related_data
+    
+    def get_related_info(self, user):
+        """Obtener información sobre datos relacionados"""
+        info = []
+        
+        # Ejemplo de información relacionada:
+        # if user.posts.exists():
+        #     info.append(f"{user.posts.count()} publicaciones")
+        # if user.comments.exists():
+        #     info.append(f"{user.comments.count()} comentarios")
+        
+        return info
+    
+    def delete(self, request, *args, **kwargs):
+        """Sobrescribir el método delete para manejar la eliminación"""
+        self.object = self.get_object()
+        
+        # Verificar que no sea el usuario actual
+        if self.object == request.user:
+            messages.error(request, 'No puedes eliminar tu propia cuenta.')
+            return redirect(self.success_url)
+        
+        # Verificar si es superusuario (opcional)
+        if self.object.is_superuser and not request.user.is_superuser:
+            messages.error(request, 'No tienes permisos para eliminar un superusuario.')
+            return redirect(self.success_url)
+        
+        try:
+            user_name = self.object.get_full_name
+            user_email = self.object.email
+            
+            # Realizar la eliminación
+            self.object.delete()
+            
+            messages.success(
+                request, 
+                f'Usuario "{user_name}" ({user_email}) eliminado exitosamente.'
+            )
+            
+            # Si es una petición AJAX
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': True,
+                    'message': f'Usuario "{user_name}" eliminado exitosamente.',
+                    'redirect_url': str(self.success_url)
+                })
+            
+            return redirect(self.success_url)
+            
+        except Exception as e:
+            error_message = f'Error al eliminar el usuario: {str(e)}'
+            messages.error(request, error_message)
+            
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': False,
+                    'error': error_message
+                })
+            
+            return redirect(self.success_url)
+    
+    def post(self, request, *args, **kwargs):
+        """Manejar la confirmación de eliminación"""
+        return self.delete(request, *args, **kwargs)
+
+
 
 @csrf_exempt
 def toggle_user_status(request, user_id):
