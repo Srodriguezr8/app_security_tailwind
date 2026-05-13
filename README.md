@@ -50,30 +50,47 @@ API_SEQUENT_XALUMIND/
 
 ## 🚀 Installation
 
-1.  **Clone the repository**
+1. **Clone the repository**
 
-    ```bash
-    git clone [https://your-repository-url.git](https://your-repository-url.git)
-    cd API_SEQUENT_XALUMIND
-    ```
+```bash
+git clone https://your-repository-url.git
+cd API_SEQUENT_XALUMIND
+```
 
-2.  **Install dependencies**
+2. **Create virtual environment**
 
-    ```bash
-    pip install -r dependencies.txt
-    ```
+```bash
+python -m venv .venv
+```
 
-3.  **Run migrations**
+3. **Activate virtual environment (Windows PowerShell)**
 
-    ```bash
-    python manage.py migrate
-    ```
+```powershell
+.\.venv\Scripts\Activate.ps1
+```
 
-4.  **Start the development server**
+> Si PowerShell bloquea la ejecución, usa:
+```powershell
+Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
 
-    ```bash
-    python manage.py runserver
-    ```
+4. **Install dependencies**
+
+```bash
+pip install -r dependencies.txt
+```
+
+5. **Run migrations**
+
+```bash
+python manage.py migrate
+```
+
+6. **Start the development server**
+
+```bash
+python manage.py runserver
+```
 
 ## 📄 License
 This project is proprietary software. All rights reserved by the development team.
