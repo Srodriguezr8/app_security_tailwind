@@ -7,7 +7,7 @@ from django.views import View
 from applications.security.models import GroupModulePermission, Module, User,Group
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView,TemplateView
 from django.db.models import Q
-
+" Se implementan medidas de seguridad para el acceso a las vistas, utilizando el decorador login_required y permission_required. Esto garantiza que solo los usuarios autenticados y con los permisos adecuados puedan acceder a estas vistas y realizar las acciones correspondientes."
 class GroupModulePermissionListView(GroupModulePermission, TemplateView):
     template_name = 'security/group_module_permission/list.html'
 
