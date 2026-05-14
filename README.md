@@ -91,6 +91,35 @@ python manage.py migrate
 ```bash
 python manage.py runserver
 ```
+```md
+---
+
+# 🎓 Academic Practice Context
+
+This repository was forked and used as the base project for the practical assignment **Software Security and Change Management**.
+
+The objective of this practice was to simulate a collaborative software development workflow using modern software engineering practices, including:
+
+- Git and GitHub version control
+- Feature branches and Pull Requests
+- Continuous Integration (CI) with GitHub Actions
+- Static security analysis with Bandit
+- Release management with GitHub Releases
+
+## 👥 Team Members
+
+| Member | Professional Role |
+|---|---|
+| Juan Taday | Release Manager |
+| Erick Villavicencio | QA Engineer |
+| Santiago Rodriguez | Frontend Developer |
+| Daniel Palma | Security Engineer |
+
+## 📌 Academic Purpose
+
+This fork was used exclusively for educational and experimental purposes related to software security, version management, continuous integration, and collaborative development workflows.
+```
+
 
 ## 📄 License
 This project is proprietary software. All rights reserved by the development team.
