@@ -91,9 +91,8 @@ python manage.py migrate
 ```bash
 python manage.py runserver
 ```
-```md
----
 
+---
 # 🎓 Academic Practice Context
 
 This repository was forked and used as the base project for the practical assignment **Software Security and Change Management**.
@@ -118,13 +117,8 @@ The objective of this practice was to simulate a collaborative software developm
 ## 📌 Academic Purpose
 
 This fork was used exclusively for educational and experimental purposes related to software security, version management, continuous integration, and collaborative development workflows.
-```
 
 
 ## 📄 License
 This project is proprietary software. All rights reserved by the development team.
 
-Let me know if you'd like:
-- a logo or banner at the top,
-- badges for Python/Django versions,
-- to format it for GitLab/GitHub Pages.
