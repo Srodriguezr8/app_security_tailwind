@@ -12,10 +12,10 @@ jobs:
 
     steps:
     - name: Obtener el codigo
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Configurar Python 3.11
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: '3.11'
 
@@ -26,8 +26,8 @@ jobs:
 
     - name: Verificar configuracion de Django
       run: |
-        python manage.py check
+        python manage.py check --settings=proy_clinico.settings_ci
 
     - name: Ejecutar migraciones de prueba
       run: |
-        python manage.py migrate --run-syncdb
+        python manage.py migrate --run-syncdb --settings=proy_clinico.settings_ci
