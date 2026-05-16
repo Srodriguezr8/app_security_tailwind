@@ -20,7 +20,7 @@ from django.contrib import admin
 from django.urls import include, path
 
 from applications.security.views.home import StartTemplateView
-
+#dadaada
 
 urlpatterns = [
     path('', StartTemplateView.as_view()),
