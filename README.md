@@ -1,4 +1,4 @@
-a# 🏥 Clinic Management System
+## 🏥 Clinic Management System
 
 ## 📌 Description
 A comprehensive clinic management system designed to streamline healthcare operations. This web application facilitates secure user role-based access, efficient management of doctors, patients, appointments, and medical examinations. Built with modern web technologies to provide a responsive and intuitive interface.
@@ -50,35 +50,75 @@ API_SEQUENT_XALUMIND/
 
 ## 🚀 Installation
 
-1.  **Clone the repository**
+1. **Clone the repository**
 
-    ```bash
-    git clone [https://your-repository-url.git](https://your-repository-url.git)
-    cd API_SEQUENT_XALUMIND
-    ```
+```bash
+git clone https://your-repository-url.git
+cd API_SEQUENT_XALUMIND
+```
 
-2.  **Install dependencies**
+2. **Create virtual environment**
 
-    ```bash
-    pip install -r dependencies.txt
-    ```
+```bash
+python -m venv .venv
+```
 
-3.  **Run migrations**
+3. **Activate virtual environment (Windows PowerShell)**
 
-    ```bash
-    python manage.py migrate
-    ```
+```powershell
+.\.venv\Scripts\Activate.ps1
+```
 
-4.  **Start the development server**
+> Si PowerShell bloquea la ejecución, usa:
+```powershell
+Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
 
-    ```bash
-    python manage.py runserver
-    ```
+4. **Install dependencies**
+
+```bash
+pip install -r dependencies.txt
+```
+
+5. **Run migrations**
+
+```bash
+python manage.py migrate
+```
+
+6. **Start the development server**
+
+```bash
+python manage.py runserver
+```
+
+---
+# 🎓 Academic Practice Context
+
+This repository was forked and used as the base project for the practical assignment **Software Security and Change Management**.
+
+The objective of this practice was to simulate a collaborative software development workflow using modern software engineering practices, including:
+
+- Git and GitHub version control
+- Feature branches and Pull Requests
+- Continuous Integration (CI) with GitHub Actions
+- Static security analysis with Bandit
+- Release management with GitHub Releases
+
+## 👥 Team Members
+
+| Member | Professional Role |
+|---|---|
+| Juan Taday | Release Manager |
+| Erick Villavicencio | QA Engineer |
+| Santiago Rodriguez | Frontend Developer |
+| Daniel Palma | Security Engineer |
+
+## 📌 Academic Purpose
+
+This fork was used exclusively for educational and experimental purposes related to software security, version management, continuous integration, and collaborative development workflows.
+
 
 ## 📄 License
 This project is proprietary software. All rights reserved by the development team.
 
-Let me know if you'd like:
-- a logo or banner at the top,
-- badges for Python/Django versions,
-- to format it for GitLab/GitHub Pages.
